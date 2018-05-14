@@ -65,7 +65,7 @@ svms=['svm-dev-saas-01','svm-prod-saas-01']
 for mysvm in svms:
   myfiler='fcl02-mgmt.scl1.us.tribalfusion.net'
   user='cinderapi'
-  password='netapp123'
+  password='mypassword'
   cmd='/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python/apitest.py'
   s = NaServer(myfiler, 1, 7)
   s.set_admin_user(user,password)

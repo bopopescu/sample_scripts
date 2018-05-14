@@ -162,7 +162,7 @@ if __name__ == '__main__':
     os.environ["OS_PROJECT_NAME"] = "admin"
     os.environ["OS_TENANT_NAME"] = "admin"
     os.environ["OS_USERNAME"] = "admin"
-    os.environ["OS_PASSWORD"] = "0penst@ck"
+    os.environ["OS_PASSWORD"] = "XXXXXXXXXX"
     os.environ["OS_IDENTITY_API_VERSION"] = "3"
     auth = v3.Password(user_domain_name=env['OS_USER_DOMAIN_ID'],username=env['OS_USERNAME'],password=env['OS_PASSWORD'],project_domain_id=env['OS_USER_DOMAIN_ID'],project_name=env['OS_PROJECT_NAME'],auth_url=env['OS_AUTH_URL'])
     sess = session.Session(auth=auth)

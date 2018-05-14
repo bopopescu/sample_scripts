@@ -1,0 +1,1017 @@
+        
+heat_template_version: 2014-10-16
+
+description: >
+
+  k8s v1.7.0 HOT Production template with clustered master.
+
+parameters:
+  master_flavor:
+    type: string
+    default: large
+    description: flavor used by the k8s master nodes.
+    constraints:
+      - custom_constraint: nova.flavor
+  k8s_master_image:
+    type: string
+    default: CentOS7 Prod Heat
+    description: Image used for k8s master nodes.
+  k8s_worker_image:
+    type: string
+    default: CentOS7 Prod Heat
+    description: Image used for k8s worker nodes.
+  worker_flavor:
+    type: string
+    description: flavor used by the k8s worker nodes.
+    default: large
+    constraints:
+      - custom_constraint: nova.flavor
+  num_workers:
+    type: number
+    description: Number of k8s woker nodes required.
+    default: 1
+
+
+
+resources:
+
+  etcd_cluster_id:
+    type: OS::Heat::RandomString
+    properties:
+      length: 32
+      sequence: digits
+      
+  policy_group:
+    type: OS::Nova::ServerGroup
+    properties:
+      name: etcd-server-group
+      policies: [anti-affinity]
+
+  vip_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 00662632-3a5c-4d36-8712-2029fe7456b2
+      fixed_ips:
+        - subnet_id: 27a21d67-4ee3-4cc2-9bd4-53fe8bb7e67c
+
+  master_port1:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 00662632-3a5c-4d36-8712-2029fe7456b2
+      fixed_ips:
+        - subnet_id: 27a21d67-4ee3-4cc2-9bd4-53fe8bb7e67c
+      allowed_address_pairs: 
+        - ip_address: {get_attr: [ vip_port, fixed_ips, 0, ip_address ]}
+
+  master_port2:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 00662632-3a5c-4d36-8712-2029fe7456b2
+      fixed_ips:
+        - subnet_id: 27a21d67-4ee3-4cc2-9bd4-53fe8bb7e67c
+      allowed_address_pairs: 
+        - ip_address: {get_attr: [ vip_port, fixed_ips, 0, ip_address ]}
+        
+  master_port3:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 00662632-3a5c-4d36-8712-2029fe7456b2
+      fixed_ips:
+        - subnet_id: 27a21d67-4ee3-4cc2-9bd4-53fe8bb7e67c
+      allowed_address_pairs: 
+        - ip_address: {get_attr: [ vip_port, fixed_ips, 0, ip_address ]}
+        
+  etcd4_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: 00662632-3a5c-4d36-8712-2029fe7456b2
+      fixed_ips:
+        - subnet_id: 27a21d67-4ee3-4cc2-9bd4-53fe8bb7e67c
+        
+  etcd5_port:
+    type: OS::Neutron::Port
+    properties:    
+      network_id: 00662632-3a5c-4d36-8712-2029fe7456b2
+      fixed_ips:
+        - subnet_id: 27a21d67-4ee3-4cc2-9bd4-53fe8bb7e67c
+
+  master_1:
+    type: OS::Nova::Server
+    properties:
+      scheduler_hints: { group: { get_resource: policy_group }}
+      image:
+        get_param: k8s_master_image
+      flavor:
+        get_param: master_flavor
+      user_data_format: SOFTWARE_CONFIG
+      networks:
+        - port: { get_resource: master_port1 }
+  master_2:
+    type: OS::Nova::Server
+    properties:
+      scheduler_hints: { group: { get_resource: policy_group }}
+      image:
+        get_param: k8s_master_image
+      flavor:
+        get_param: master_flavor
+      user_data_format: SOFTWARE_CONFIG
+      networks:
+        - port: { get_resource: master_port2 }
+
+
+  master_3:
+    type: OS::Nova::Server
+    properties:
+      scheduler_hints: { group: { get_resource: policy_group }}
+      image:
+        get_param: k8s_master_image
+      flavor:
+        get_param: master_flavor
+      user_data_format: SOFTWARE_CONFIG
+      networks:
+        - port: { get_resource: master_port3 }
+        
+        
+  etcd_4:
+    type: OS::Nova::Server
+    properties:
+      scheduler_hints: { group: { get_resource: policy_group }}
+      image:
+        get_param: k8s_master_image
+      flavor:
+        get_param: master_flavor
+      user_data_format: SOFTWARE_CONFIG
+      networks:
+        - port: { get_resource: etcd4_port }
+        
+  etcd_5:
+    type: OS::Nova::Server
+    properties:
+      scheduler_hints: { group: { get_resource: policy_group }}
+      image:
+        get_param: k8s_master_image
+      flavor:
+        get_param: master_flavor
+      user_data_format: SOFTWARE_CONFIG
+      networks:
+        - port: { get_resource: etcd5_port }
+    
+  config_etcd4:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+      - name: master1_ip
+        default: {get_attr: [master_1, networks, Prod-SCL1, 0]}
+      - name: master2_ip
+        default: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+      - name: master3_ip
+        default: {get_attr: [master_3, networks, Prod-SCL1, 0]}
+      - name: etcd4_ip
+        default: {get_attr: [etcd_4, networks, Prod-SCL1, 0]}
+      - name: etcd5_ip
+        default: {get_attr: [etcd_5, networks, Prod-SCL1, 0]}
+      - name: cluster_id
+        default: {get_attr: [etcd_cluster_id, value]}
+      group: script
+      config: |
+            #!/bin/bash 
+            echo $cluster_id > /var/tmp/.etcd_clusterid.txt
+            chattr +i /var/tmp/.etcd_clusterid.txt
+            yum install docker -y
+            systemctl enable docker && systemctl start docker
+            cd /root
+            git clone https://github.com/cookeem/kubeadm-ha 
+            cd kubeadm-ha/
+            git checkout bb6cf9823ff91f1280cdd1950e860bd0ee1a2236
+            cd /root/
+            yum install wget mariadb  -y
+            wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+            chmod +x ./jq
+            cp jq /usr/bin
+            rm -f /root/.ssh/*
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/ssh_keys/* .ssh/
+            chmod 600 /root/.ssh/id_rsa
+            chmod 644 /root/.ssh/id_rsa.pub
+            chmod 644 /root/.ssh/authorized_keys
+            docker pull gcr.io/google_containers/kube-proxy-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-apiserver-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-controller-manager-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-scheduler-amd64:v1.7.0
+            docker pull gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+            docker pull nginx:latest
+            docker pull gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+            docker pull quay.io/coreos/flannel:v0.7.1-amd64
+            docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+            docker pull gcr.io/google_containers/heapster-amd64:v1.3.0
+            docker pull gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+            docker pull gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
+            docker pull gcr.io/google_containers/pause-amd64:3.0
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/kubernetes.repo /etc/yum.repos.d/kubernetes.repo
+            yum update -y
+            echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf
+            echo "net.bridge.bridge-nf-call-ip6tables = 1" >>  /etc/sysctl.d/k8s.conf
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/resolv.conf > /etc/resolv.conf
+            yum install vim bind-utils kubelet-1.7.0-0.x86_64 kubectl-1.7.0-0.x86_64 kubernetes-cni-0.5.1-0.x86_64  kubeadm-1.7.0-0.x86_64 -y
+            docker run -d \
+            --restart always \
+            -v /etc/ssl/certs:/etc/ssl/certs \
+            -v /var/lib/etcd-cluster:/var/lib/etcd \
+            -p 4001:4001 \
+            -p 2380:2380 \
+            -p 2379:2379 \
+            --name etcd \
+            gcr.io/google_containers/etcd-amd64:3.0.17 \
+            etcd --name=etcd4 \
+            --advertise-client-urls=http://$etcd4_ip:2379,http://$etcd4_ip:4001 \
+            --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 \
+            --initial-advertise-peer-urls=http://$etcd4_ip:2380 \
+            --listen-peer-urls=http://0.0.0.0:2380 \
+            --initial-cluster-token=$cluster_id \
+            --initial-cluster=etcd0=http://$master1_ip:2380,etcd1=http://$master2_ip:2380,etcd2=http://$master3_ip:2380,etcd4=http://$etcd4_ip:2380,etcd5=http://$etcd5_ip:2380 \
+            --initial-cluster-state=new \
+            --auto-tls \
+            --peer-auto-tls \
+            --data-dir=/var/lib/etcd
+
+            
+            
+  deployment_etcd4:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: config_etcd4
+      server:
+        get_resource: etcd_4
+ 
+  config_etcd5:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+      - name: master1_ip
+        default: {get_attr: [master_1, networks, Prod-SCL1, 0]}
+      - name: master2_ip
+        default: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+      - name: master3_ip
+        default: {get_attr: [master_3, networks, Prod-SCL1, 0]}
+      - name: etcd4_ip
+        default: {get_attr: [etcd_4, networks, Prod-SCL1, 0]}
+      - name: etcd5_ip
+        default: {get_attr: [etcd_5, networks, Prod-SCL1, 0]}
+      - name: cluster_id
+        default: {get_attr: [etcd_cluster_id, value]}
+      group: script
+      config: |
+            #!/bin/bash 
+            echo $cluster_id > /var/tmp/.etcd_clusterid.txt
+            chattr +i /var/tmp/.etcd_clusterid.txt
+            yum install docker -y
+            systemctl enable docker && systemctl start docker
+            cd /root
+            git clone https://github.com/cookeem/kubeadm-ha 
+            cd kubeadm-ha/
+            git checkout bb6cf9823ff91f1280cdd1950e860bd0ee1a2236
+            cd /root/
+            yum install wget mariadb  -y
+            wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+            chmod +x ./jq
+            cp jq /usr/bin
+            rm -f /root/.ssh/*
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/ssh_keys/* .ssh/
+            chmod 600 /root/.ssh/id_rsa
+            chmod 644 /root/.ssh/id_rsa.pub
+            chmod 644 /root/.ssh/authorized_keys
+            docker pull gcr.io/google_containers/kube-proxy-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-apiserver-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-controller-manager-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-scheduler-amd64:v1.7.0
+            docker pull gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+            docker pull nginx:latest
+            docker pull gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+            docker pull quay.io/coreos/flannel:v0.7.1-amd64
+            docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+            docker pull gcr.io/google_containers/heapster-amd64:v1.3.0
+            docker pull gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+            docker pull gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
+            docker pull gcr.io/google_containers/pause-amd64:3.0
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/kubernetes.repo /etc/yum.repos.d/kubernetes.repo
+            yum update -y
+            echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf
+            echo "net.bridge.bridge-nf-call-ip6tables = 1" >>  /etc/sysctl.d/k8s.conf
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/resolv.conf > /etc/resolv.conf
+            yum install vim bind-utils kubelet-1.7.0-0.x86_64 kubectl-1.7.0-0.x86_64 kubernetes-cni-0.5.1-0.x86_64  kubeadm-1.7.0-0.x86_64 -y
+            docker run -d \
+            --restart always \
+            -v /etc/ssl/certs:/etc/ssl/certs \
+            -v /var/lib/etcd-cluster:/var/lib/etcd \
+            -p 4001:4001 \
+            -p 2380:2380 \
+            -p 2379:2379 \
+            --name etcd \
+            gcr.io/google_containers/etcd-amd64:3.0.17 \
+            etcd --name=etcd5 \
+            --advertise-client-urls=http://$etcd5_ip:2379,http://$etcd5_ip:4001 \
+            --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 \
+            --initial-advertise-peer-urls=http://$etcd5_ip:2380 \
+            --listen-peer-urls=http://0.0.0.0:2380 \
+            --initial-cluster-token=$cluster_id \
+            --initial-cluster=etcd0=http://$master1_ip:2380,etcd1=http://$master2_ip:2380,etcd2=http://$master3_ip:2380,etcd4=http://$etcd4_ip:2380,etcd5=http://$etcd5_ip:2380 \
+            --initial-cluster-state=new \
+            --auto-tls \
+            --peer-auto-tls \
+            --data-dir=/var/lib/etcd
+
+            
+            
+  deployment_etcd5:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: config_etcd5
+      server:
+        get_resource: etcd_5
+  
+      
+
+  config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+      - name: master1_ip
+        default: {get_attr: [master_1, networks, Prod-SCL1, 0]}
+      - name: master2_ip
+        default: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+      - name: master3_ip
+        default: {get_attr: [master_3, networks, Prod-SCL1, 0]}
+      - name: etcd4_ip
+        default: {get_attr: [etcd_4, networks, Prod-SCL1, 0]}
+      - name: etcd5_ip
+        default: {get_attr: [etcd_5, networks, Prod-SCL1, 0]}
+      - name: cluster_id
+        default: {get_attr: [etcd_cluster_id, value]}
+      group: script
+      config: |
+            #!/bin/bash 
+            echo $cluster_id > /var/tmp/.etcd_clusterid.txt
+            chattr +i /var/tmp/.etcd_clusterid.txt
+            yum install docker -y
+            systemctl enable docker && systemctl start docker
+            cd /root
+            git clone https://github.com/cookeem/kubeadm-ha 
+            cd kubeadm-ha/
+            git checkout bb6cf9823ff91f1280cdd1950e860bd0ee1a2236
+            cd /root/
+            yum install wget mariadb  -y
+            wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+            chmod +x ./jq
+            cp jq /usr/bin
+            rm -f /root/.ssh/*
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/ssh_keys/* .ssh/
+            chmod 600 /root/.ssh/id_rsa
+            chmod 644 /root/.ssh/id_rsa.pub
+            chmod 644 /root/.ssh/authorized_keys
+            docker pull gcr.io/google_containers/kube-proxy-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-apiserver-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-controller-manager-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-scheduler-amd64:v1.7.0
+            docker pull gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+            docker pull nginx:latest
+            docker pull gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+            docker pull quay.io/coreos/flannel:v0.7.1-amd64
+            docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+            docker pull gcr.io/google_containers/heapster-amd64:v1.3.0
+            docker pull gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+            docker pull gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
+            docker pull gcr.io/google_containers/pause-amd64:3.0
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/kubernetes.repo /etc/yum.repos.d/kubernetes.repo
+            yum update -y
+            echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf
+            echo "net.bridge.bridge-nf-call-ip6tables = 1" >>  /etc/sysctl.d/k8s.conf
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/resolv.conf > /etc/resolv.conf
+            yum install vim bind-utils kubelet-1.7.0-0.x86_64 kubectl-1.7.0-0.x86_64 kubernetes-cni-0.5.1-0.x86_64  kubeadm-1.7.0-0.x86_64 -y
+            docker run -d \
+            --restart always \
+            -v /etc/ssl/certs:/etc/ssl/certs \
+            -v /var/lib/etcd-cluster:/var/lib/etcd \
+            -p 4001:4001 \
+            -p 2380:2380 \
+            -p 2379:2379 \
+            --name etcd \
+            gcr.io/google_containers/etcd-amd64:3.0.17 \
+            etcd --name=etcd0 \
+            --advertise-client-urls=http://$master1_ip:2379,http://$master1_ip:4001 \
+            --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 \
+            --initial-advertise-peer-urls=http://$master1_ip:2380 \
+            --listen-peer-urls=http://0.0.0.0:2380 \
+            --initial-cluster-token=$cluster_id \
+            --initial-cluster=etcd0=http://$master1_ip:2380,etcd1=http://$master2_ip:2380,etcd2=http://$master3_ip:2380,etcd4=http://$etcd4_ip:2380,etcd5=http://$etcd5_ip:2380 \
+            --initial-cluster-state=new \
+            --auto-tls \
+            --peer-auto-tls \
+            --data-dir=/var/lib/etcd
+            
+            
+  deployment_a:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: config
+      server:
+        get_resource: master_1
+        
+        
+  config_2:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+      - name: master1_ip
+        default: {get_attr: [master_1, networks, Prod-SCL1, 0]}
+      - name: master2_ip
+        default: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+      - name: master3_ip
+        default: {get_attr: [master_3, networks, Prod-SCL1, 0]}
+      - name: master1_name
+        default: {get_attr: [master_1, name]}
+      - name: master2_name
+        default: {get_attr: [master_2, name]}
+      - name: master3_name
+        default: {get_attr: [master_3, name]}
+      - name: vip_ip
+        default: {get_attr: [ vip_port, fixed_ips, 0, ip_address ]}
+      - name: etcd4_ip
+        default: {get_attr: [etcd_4, networks, Prod-SCL1, 0]}
+      - name: etcd5_ip
+        default: {get_attr: [etcd_5, networks, Prod-SCL1, 0]}
+      - name: cluster_id
+        default: {get_attr: [etcd_cluster_id, value]}
+      group: script
+      config: |
+            #!/bin/bash 
+            echo $cluster_id > /var/tmp/.etcd_clusterid.txt
+            chattr +i /var/tmp/.etcd_clusterid.txt
+            yum install docker -y
+            systemctl enable docker && systemctl start docker
+            cd /root
+            git clone https://github.com/cookeem/kubeadm-ha 
+            cd kubeadm-ha/
+            git checkout bb6cf9823ff91f1280cdd1950e860bd0ee1a2236
+            cd /root/
+            yum install wget mariadb -y
+            wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+            chmod +x ./jq
+            cp jq /usr/bin
+            rm -f /root/.ssh/*
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/ssh_keys/* .ssh/
+            chmod 600 /root/.ssh/id_rsa
+            chmod 644 /root/.ssh/id_rsa.pub
+            chmod 644 /root/.ssh/authorized_keys
+            docker pull gcr.io/google_containers/kube-proxy-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-apiserver-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-controller-manager-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-scheduler-amd64:v1.7.0
+            docker pull gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+            docker pull nginx:latest
+            docker pull gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+            docker pull quay.io/coreos/flannel:v0.7.1-amd64
+            docker pull gcr.io/google_containers/heapster-amd64:v1.3.0
+            docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+            docker pull gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+            docker pull gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
+            docker pull gcr.io/google_containers/pause-amd64:3.0
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/kubernetes.repo /etc/yum.repos.d/kubernetes.repo
+            yum update -y
+            yum install bind-utils -y
+            echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf
+            echo "net.bridge.bridge-nf-call-ip6tables = 1" >>  /etc/sysctl.d/k8s.conf
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/resolv.conf > /etc/resolv.conf
+            yum install vim bind-utils kubelet-1.7.0-0.x86_64 kubectl-1.7.0-0.x86_64 kubernetes-cni-0.5.1-0.x86_64  kubeadm-1.7.0-0.x86_64  -y
+            systemctl enable kubelet.service;systemctl start kubelet.service
+            docker run -d \
+            --restart always \
+            -v /etc/ssl/certs:/etc/ssl/certs \
+            -v /var/lib/etcd-cluster:/var/lib/etcd \
+            -p 4001:4001 \
+            -p 2380:2380 \
+            -p 2379:2379 \
+            --name etcd \
+            gcr.io/google_containers/etcd-amd64:3.0.17 \
+            etcd --name=etcd1 \
+            --advertise-client-urls=http://$master2_ip:2379,http://$master2_ip:4001 \
+            --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 \
+            --initial-advertise-peer-urls=http://$master2_ip:2380 \
+            --listen-peer-urls=http://0.0.0.0:2380 \
+            --initial-cluster-token=$cluster_id \
+            --initial-cluster=etcd0=http://$master1_ip:2380,etcd1=http://$master2_ip:2380,etcd2=http://$master3_ip:2380,etcd4=http://$etcd4_ip:2380,etcd5=http://$etcd5_ip:2380 \
+            --initial-cluster-state=new \
+            --auto-tls \
+            --peer-auto-tls \
+            --data-dir=/var/lib/etcd
+            while [[ `pidof kubelet|wc -l` -eq 0 ]]
+            do
+                sleep 30s
+                systemctl start kubelet
+                break
+            done
+            
+            
+  
+  deployment_b:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: config_2
+      server:
+        get_resource: master_2
+        
+  config_3:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+      - name: master1_ip
+        default: {get_attr: [master_1, networks, Prod-SCL1, 0]}
+      - name: master2_ip
+        default: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+      - name: master3_ip
+        default: {get_attr: [master_3, networks, Prod-SCL1, 0]}
+      - name: etcd4_ip
+        default: {get_attr: [etcd_4, networks, Prod-SCL1, 0]}
+      - name: etcd5_ip
+        default: {get_attr: [etcd_5, networks, Prod-SCL1, 0]}
+      - name: cluster_id
+        default: {get_attr: [etcd_cluster_id, value]}
+      group: script
+      config: |
+            #!/bin/bash 
+            echo $cluster_id > /var/tmp/.etcd_clusterid.txt
+            chattr +i /var/tmp/.etcd_clusterid.txt
+            yum install docker -y
+            systemctl enable docker && systemctl start docker
+            cd /root
+            git clone https://github.com/cookeem/kubeadm-ha 
+            cd kubeadm-ha/
+            git checkout bb6cf9823ff91f1280cdd1950e860bd0ee1a2236
+            cd /root/
+            yum install wget mariadb -y
+            wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+            chmod +x ./jq
+            cp jq /usr/bin
+            rm -f /root/.ssh/*
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/ssh_keys/* .ssh/
+            chmod 600 /root/.ssh/id_rsa
+            chmod 644 /root/.ssh/id_rsa.pub
+            chmod 644 /root/.ssh/authorized_keys
+            docker pull gcr.io/google_containers/kube-proxy-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-apiserver-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-controller-manager-amd64:v1.7.0
+            docker pull gcr.io/google_containers/kube-scheduler-amd64:v1.7.0
+            docker pull gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+            docker pull gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+            docker pull nginx:latest
+            docker pull gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+            docker pull quay.io/coreos/flannel:v0.7.1-amd64
+            docker pull gcr.io/google_containers/heapster-amd64:v1.3.0
+            docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+            docker pull gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+            docker pull gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
+            docker pull gcr.io/google_containers/pause-amd64:3.0
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/kubernetes.repo /etc/yum.repos.d/kubernetes.repo
+            yum update -y
+            echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf
+            echo "net.bridge.bridge-nf-call-ip6tables = 1" >>  /etc/sysctl.d/k8s.conf
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/resolv.conf > /etc/resolv.conf
+            yum install vim bind-utils kubelet-1.7.0-0.x86_64 kubectl-1.7.0-0.x86_64 kubernetes-cni-0.5.1-0.x86_64  kubeadm-1.7.0-0.x86_64  -y
+            systemctl enable kubelet && systemctl start kubelet
+            docker run -d \
+            --restart always \
+            -v /etc/ssl/certs:/etc/ssl/certs \
+            -v /var/lib/etcd-cluster:/var/lib/etcd \
+            -p 4001:4001 \
+            -p 2380:2380 \
+            -p 2379:2379 \
+            --name etcd \
+            gcr.io/google_containers/etcd-amd64:3.0.17 \
+            etcd --name=etcd2 \
+            --advertise-client-urls=http://$master3_ip:2379,http://$master3_ip:4001 \
+            --listen-client-urls=http://0.0.0.0:2379,http://0.0.0.0:4001 \
+            --initial-advertise-peer-urls=http://$master3_ip:2380 \
+            --listen-peer-urls=http://0.0.0.0:2380 \
+            --initial-cluster-token=$cluster_id \
+            --initial-cluster=etcd0=http://$master1_ip:2380,etcd1=http://$master2_ip:2380,etcd2=http://$master3_ip:2380,etcd4=http://$etcd4_ip:2380,etcd5=http://$etcd5_ip:2380 \
+            --initial-cluster-state=new \
+            --auto-tls \
+            --peer-auto-tls \
+            --data-dir=/var/lib/etcd
+            while [[ `pidof kubelet|wc -l` -eq 0 ]]
+            do
+                sleep 30s
+                systemctl start kubelet
+                break
+            done
+               
+  deployment_c:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: config_3
+      server:
+        get_resource: master_3
+        
+        
+  deployment_master2:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: 
+      - deployment_a
+      - deployment_b
+      - deployment_c
+    properties:
+      signal_transport: NO_SIGNAL
+      config:
+        get_resource: config_master2
+      server:
+        get_resource: master_2
+        
+        
+  config_master2:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      inputs:
+      - name: master1_ip
+        default: {get_attr: [master_1, networks, Prod-SCL1, 0]}
+      - name: master2_ip
+        default: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+      - name: master3_ip
+        default: {get_attr: [master_3, networks, Prod-SCL1, 0]}
+      - name: master1_name
+        default: {get_attr: [master_1, name]}
+      - name: master2_name
+        default: {get_attr: [master_2, name]}
+      - name: master3_name
+        default: {get_attr: [master_3, name]}
+      - name: vip_ip
+        default: {get_attr: [ vip_port, fixed_ips, 0, ip_address ]}
+      - name: etcd4_ip
+        default: {get_attr: [etcd_4, networks, Prod-SCL1, 0]}
+      - name: etcd5_ip
+        default: {get_attr: [etcd_5, networks, Prod-SCL1, 0]}
+      - name: num_nodes
+        default: { get_param: num_workers }
+      - name: cluster_id
+        default: {get_attr: [etcd_cluster_id, value]}
+      group: script
+      config: |
+            #!/bin/bash 
+            echo $cluster_id > /var/tmp/.etcd_clusterid.txt
+            chattr +i /var/tmp/.etcd_clusterid.txt
+            mysql_user="k8s_user"
+            mysql_password="exposecret"
+            mysql=$(which mysql)
+            mysql_host="vmreports.tf-net.tribalfusion.com"
+            vrrp_id=$(mysql k8s -u${mysql_user} -p${mysql_password} -h${mysql_host}  -e "select min(vrrp_id) from vrrp where k8s_master_1='';"|grep -v min)
+            if [[ $vrrp_id == "NULL" ]]
+            then
+                echo "`date` ********** Running out of VRRP_ID in DB, contact noc.exponential.com for help *************" >> /var/log/messages
+                exit 1
+            fi
+            mysql k8s -u${mysql_user} -p${mysql_password} -h${mysql_host}  -e "UPDATE vrrp SET k8s_master_1='$(host $master1_ip|awk '{print  $5}')', k8s_master_2='$(host $master2_ip|awk '{print  $5}')',k8s_master_3='$(host $master3_ip|awk '{print  $5}')',submission_date='$(date "+%Y-%m-%d")'  where vrrp_id='$vrrp_id';"
+            tail -n 2 /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml |tee -a /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_NAME}/s//$(host $master1_ip |awk '{print $5}'| sed 's/.$//'|grep master)/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_NAME}/s//$(host $master2_ip |awk '{print $5}'| sed 's/.$//'|grep master)/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_NAME}/s//$(host $master3_ip |awk '{print $5}'| sed 's/.$//'|grep master)/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$master1_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$master2_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$master3_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${VIRTUAL_IP}/s//$vip_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$master1_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$master2_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$master3_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$etcd4_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sed -i "0,/\${HOST_IP}/s//$etcd5_ip/" /root/kubeadm-ha/kubeadm-init-v1.7.x.yaml
+            sleep 30
+            rm -f /var/lib/kubelet/*
+            kubeadm init --config=/root/kubeadm-ha/kubeadm-init-v1.7.x.yaml --skip-preflight-checks
+            export WARG="admission-control=Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota"
+            export ARG="admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota,DefaultTolerationSeconds"
+            sed -i "s/$WARG/$ARG/" /etc/kubernetes/manifests/kube-apiserver.yaml
+            systemctl restart docker kubelet
+            sleep 60
+            while [[ `pidof kubelet|wc -l` -eq 0 ]]
+            do
+                sleep 30s
+                systemctl start kubelet
+                break
+            done
+            echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /root/.bashrc
+            source /root/.bashrc
+            kubectl create -f   /root/kubeadm-ha/kube-flannel
+            kubectl create -f /root/kubeadm-ha/kube-dashboard/
+            kubectl proxy --address='0.0.0.0' &
+            kubectl taint nodes --all node-role.kubernetes.io/master-node
+            systemctl restart docker kubelet
+            sleep 5
+            while [[ `pidof kubelet|wc -l` -eq 0 ]]
+            do
+                sleep 30s
+                systemctl start kubelet
+                break
+            done
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r /etc/kubernetes/ $master1_ip:/etc/
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r /etc/kubernetes/ $master3_ip:/etc/ 
+            sleep 150
+            cp /etc/kubernetes/kubelet.conf /var/tmp/master1-kubelet.conf
+            cp /etc/kubernetes/admin.conf /var/tmp/master1-admin.conf
+            cp /etc/kubernetes/controller-manager.conf /var/tmp/master1-controller-manager.conf
+            cp /etc/kubernetes/scheduler.conf /var/tmp/master1-scheduler.conf
+            cp /etc/kubernetes/kubelet.conf /var/tmp/master3-kubelet.conf
+            cp /etc/kubernetes/admin.conf /var/tmp/master3-admin.conf
+            cp /etc/kubernetes/controller-manager.conf /var/tmp/master3-controller-manager.conf
+            cp /etc/kubernetes/scheduler.conf /var/tmp/master3-scheduler.conf    
+            while [ $(grep $master2_ip /var/tmp/master1-kubelet.conf |wc -l) -eq 1 ]
+            do 
+                sed -i "0,/$master2_ip/s//$master1_ip/" /var/tmp/master1-kubelet.conf 
+            done
+            while [ $(grep $master2_ip /var/tmp/master1-admin.conf |wc -l) -eq 1 ]
+            do 
+                sed -i "0,/$master2_ip/s//$master1_ip/" /var/tmp/master1-admin.conf
+            done
+            while [ $(grep $master2_ip /var/tmp/master1-controller-manager.conf |wc -l) -eq 1 ]
+            do 
+                sed -i "0,/$master2_ip/s//$master1_ip/" /var/tmp/master1-controller-manager.conf
+            done
+            while [ $(grep $master2_ip /var/tmp/master1-scheduler.conf |wc -l) -eq 1 ]
+            do 
+                sed -i "0,/$master2_ip/s//$master1_ip/" /var/tmp/master1-scheduler.conf 
+            done
+            sleep 10
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip "rm -f /etc/kubernetes/kubelet.conf"
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master1-kubelet.conf $master1_ip:/etc/kubernetes/kubelet.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master1-admin.conf $master1_ip:/etc/kubernetes/admin.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master1-controller-manager.conf $master1_ip:/etc/kubernetes/controller-manager.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master1-scheduler.conf $master1_ip:/etc/kubernetes/scheduler.conf  
+            while [ $(grep $master2_ip /var/tmp/master3-kubelet.conf |wc -l) -eq 1 ]
+            do 
+                sed -i "0,/$master2_ip/s//$master3_ip/" /var/tmp/master3-kubelet.conf 
+            done
+            while [ $(grep $master2_ip /var/tmp/master3-admin.conf  |wc -l) -eq 1 ]
+            do
+                sed -i "0,/$master2_ip/s//$master3_ip/" /var/tmp/master3-admin.conf  
+            done
+            while [ $(grep $master2_ip /var/tmp/master3-controller-manager.conf  |wc -l) -eq 1 ]
+            do
+                sed -i "0,/$master2_ip/s//$master3_ip/" /var/tmp/master3-controller-manager.conf 
+            done
+            while [ $(grep $master2_ip /var/tmp/master3-scheduler.conf  |wc -l) -eq 1 ]
+            do
+            	sed -i "0,/$master2_ip/s//$master3_ip/" /var/tmp/master3-scheduler.conf 
+            done
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master3-kubelet.conf $master3_ip:/etc/kubernetes/kubelet.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master3-admin.conf $master3_ip:/etc/kubernetes/admin.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master3-controller-manager.conf $master3_ip:/etc/kubernetes/controller-manager.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master3-scheduler.conf $master3_ip:/etc/kubernetes/scheduler.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip:/etc/kubernetes/manifests/kube-apiserver.yaml /var/tmp/kube-apiserver-master1.yaml
+            sed -i "s/$WARG/$ARG/" /var/tmp/kube-apiserver-master1.yaml
+            sed -i "s/$master2_ip/$master1_ip/" /var/tmp/kube-apiserver-master1.yaml
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/kube-apiserver-master1.yaml $master1_ip:/etc/kubernetes/manifests/kube-apiserver.yaml
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /root/.bashrc'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'source /root/.bashrc'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'systemctl daemon-reload && systemctl restart docker kubelet'
+            sleep 5
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'while [[ `pidof kubelet|wc -l` -eq 0 ]];do sleep 30s; systemctl start kubelet;break;done'
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip:/etc/kubernetes/manifests/kube-apiserver.yaml /var/tmp/kube-apiserver-master3.yaml
+            sed -i "s/$WARG/$ARG/" /var/tmp/kube-apiserver-master3.yaml
+            sed -i "s/$master2_ip/$master3_ip/" /var/tmp/kube-apiserver-master3.yaml
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /root/.bashrc'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'source /root/.bashrc'
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/kube-apiserver-master3.yaml $master3_ip:/etc/kubernetes/manifests/kube-apiserver.yaml
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'systemctl daemon-reload && systemctl restart docker kubelet'
+            sleep 5
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'while [[ `pidof kubelet|wc -l` -eq 0 ]];do sleep 30s; systemctl start kubelet;break;done'
+            chmod 604 /etc/kubernetes/admin.conf
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip  "chmod 604 /etc/kubernetes/admin.conf"
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip  "chmod 604 /etc/kubernetes/admin.conf"
+            sleep 150
+            kubectl scale --replicas=3 -n kube-system deployment/kube-dns
+            kubectl scale --replicas=3 -n kube-system deployment/kubernetes-dashboard
+            yum install -y keepalived
+            systemctl enable keepalived && systemctl restart keepalived
+            cp /mnt/svmprod01expoesmmonitor01/expostack_heat/check_apiserver.sh /etc/keepalived/check_apiserver.sh
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/keepalived.conf > /etc/keepalived/keepalived.conf
+            chmod a+x /etc/keepalived/check_apiserver.sh
+            sed -i  "s/LVS_DEVEL/$vrrp_id/g" /etc/keepalived/keepalived.conf
+            sed -i "s/\${STATE}/MASTER/" /etc/keepalived/keepalived.conf
+            sed -i "s/\${INTERFACE_NAME}/eth0/" /etc/keepalived/keepalived.conf
+            sed -i "s/\${HOST_IP}/$master2_ip/" /etc/keepalived/keepalived.conf
+            sed -i "s/\${PRIORITY}/104/" /etc/keepalived/keepalived.conf
+            sed -i "s/\${VIRTUAL_IP}/$vip_ip\/20/" /etc/keepalived/keepalived.conf
+            systemctl restart keepalived
+            sleep 15            
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'yum install -y keepalived;systemctl enable keepalived && systemctl restart keepalived'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'cp /mnt/svmprod01expoesmmonitor01/expostack_heat/check_apiserver.sh /etc/keepalived/check_apiserver.sh'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'chmod a+x /etc/keepalived/check_apiserver.sh'
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/keepalived.conf > /var/tmp/master1-keepalived.conf
+            sed -i  "s/LVS_DEVEL/$vrrp_id/g" /var/tmp/master1-keepalived.conf
+            sed -i "s/\${STATE}/BACKUP/" /var/tmp/master1-keepalived.conf
+            sed -i "s/\${INTERFACE_NAME}/eth0/" /var/tmp/master1-keepalived.conf
+            sed -i "s/\${HOST_IP}/$master1_ip/" /var/tmp/master1-keepalived.conf
+            sed -i "s/\${PRIORITY}/103/" /var/tmp/master1-keepalived.conf
+            sed -i "s/\${VIRTUAL_IP}/$vip_ip\/20/" /var/tmp/master1-keepalived.conf
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master1-keepalived.conf $master1_ip:/etc/keepalived/keepalived.conf 
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'systemctl restart keepalived'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'yum install -y keepalived;systemctl enable keepalived && systemctl restart keepalived'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'cp /mnt/svmprod01expoesmmonitor01/expostack_heat/check_apiserver.sh /etc/keepalived/check_apiserver.sh'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'chmod a+x /etc/keepalived/check_apiserver.sh'
+            cat /mnt/svmprod01expoesmmonitor01/expostack_heat/keepalived.conf >/var/tmp/master3-keepalived.conf
+            sed -i  "s/LVS_DEVEL/$vrrp_id/g" /var/tmp/master3-keepalived.conf 
+            sed -i "s/\${STATE}/BACKUP/" /var/tmp/master3-keepalived.conf 
+            sed -i "s/\${INTERFACE_NAME}/eth0/" /var/tmp/master3-keepalived.conf 
+            sed -i "s/\${HOST_IP}/$master3_ip/" /var/tmp/master3-keepalived.conf 
+            sed -i "s/\${PRIORITY}/102/" /var/tmp/master3-keepalived.conf 
+            sed -i "s/\${VIRTUAL_IP}/$vip_ip\/20/" /var/tmp/master3-keepalived.conf 
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/master3-keepalived.conf $master3_ip:/etc/keepalived/keepalived.conf 
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'systemctl restart keepalived'
+            sed -i "0,/\${HOST_IP}/s//$master1_ip/" /root/kubeadm-ha/nginx-default.conf
+            sed -i "0,/\${HOST_IP}/s//$master2_ip/" /root/kubeadm-ha/nginx-default.conf
+            sed -i "0,/\${HOST_IP}/s//$master3_ip/" /root/kubeadm-ha/nginx-default.conf
+            docker run -d -p 8443:8443 \
+            --name nginx-lb \
+            --restart always \
+            -v /root/kubeadm-ha/nginx-default.conf:/etc/nginx/nginx.conf nginx
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /root/kubeadm-ha/nginx-default.conf $master1_ip:/var/tmp/nginx-default.conf 
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'docker run -d -p 8443:8443 --name nginx-lb --restart always -v /var/tmp/nginx-default.conf:/etc/nginx/nginx.conf nginx'
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /root/kubeadm-ha/nginx-default.conf $master3_ip:/var/tmp/nginx-default.conf 
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'docker run -d -p 8443:8443 --name nginx-lb --restart always -v /var/tmp/nginx-default.conf:/etc/nginx/nginx.conf nginx'
+            sleep 40
+            kubectl -n kube-system get configmaps kube-proxy -o yaml > /tmp/kube-proxy.yaml
+            sed -i "s/$master2_ip/$vip_ip/g" /tmp/kube-proxy.yaml
+            kubectl -n kube-system apply -f /tmp/kube-proxy.yaml
+            sleep 5
+            systemctl restart docker kubelet keepalived
+            sleep 150
+            while [[ `pidof kubelet|wc -l` -eq 0 ]]
+            do
+                sleep 30s
+                systemctl start kubelet
+                break
+            done
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'systemctl restart docker kubelet keepalived'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'systemctl restart docker kubelet keepalived'
+            sleep 10
+            kubectl patch node $(host $master1_ip |awk -F "." '{print $6}'|awk '{print $5}') -p '{"spec":{"unschedulable":true}}'
+            kubectl patch node $(host $master2_ip |awk -F "." '{print $6}'|awk '{print $5}') -p '{"spec":{"unschedulable":true}}'
+            kubectl patch node $(host $master3_ip |awk -F "." '{print $6}'|awk '{print $5}') -p '{"spec":{"unschedulable":true}}'
+            kubeadm join --token $(kubeadm token list |awk '{print $1}'|grep -v TOKEN) $vip_ip:8443 --skip-preflight-checks
+            kubeadm token list |awk '{print $1}'|grep -v TOKEN > /var/tmp/token
+            echo "kubeadm join --token $(cat /var/tmp/token) $vip_ip:8443 --skip-preflight-checks" > /var/tmp/node-join.sh
+            chmod a+x /var/tmp/node-join.sh
+            chattr +i /var/tmp/node_join.sh
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/node-join.sh $master1_ip:/var/tmp/node-join.sh
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /var/tmp/node-join.sh $master3_ip:/var/tmp/node-join.sh
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'sh /var/tmp/node-join.sh'
+            sleep 15
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'rm -f /var/tmp/*.yaml /var/tmp/*.conf /var/tmp/token  /var/tmp/*.sh'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'rm -f /var/tmp/*.yaml /var/tmp/*.conf /var/tmp/token  /var/tmp/*.sh'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'rm -f /root/.ssh/*'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master1_ip 'rm -f /root/.ssh/*'
+            ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $master3_ip 'rm -f /root/.ssh/*'
+            rm -f /var/tmp/*.yaml /var/tmp/*.conf /var/tmp/token 
+            while true;do
+            if [ `kubectl get nodes|grep -v STATUS |grep -v master|grep Ready|wc -l` -lt $num_nodes ]
+            then
+            sleep 10
+            continue;
+            else
+            kubectl create -f /root/kubeadm-ha/kube-heapster/
+            kubectl scale --replicas=3 -n kube-system deployment/monitoring-grafana
+            kubectl scale --replicas=3 -n kube-system deployment/monitoring-influxdb
+            kubectl scale --replicas=3 -n kube-system deployment/heapster
+            break;
+            fi
+            done
+            
+        
+  
+  nodes_group:
+    type: OS::Heat::AutoScalingGroup
+    properties:
+      min_size: { get_param: num_workers }
+      max_size: { get_param: num_workers }
+      resource:
+        type: OS::Nova::Server
+        properties:
+            image: { get_param: k8s_worker_image }
+            flavor: { get_param: worker_flavor }
+            networks: [ network: 00662632-3a5c-4d36-8712-2029fe7456b2 ]
+            user_data: 
+                str_replace:
+                  template: |
+                    #!/bin/bash 
+                    update-ca-trust force-enable;update-ca-trust extract
+                    yum install docker -y
+                    systemctl enable docker && systemctl start docker
+                    cd /root
+                    git clone https://github.com/cookeem/kubeadm-ha 
+                    cd kubeadm-ha/
+                    git checkout bb6cf9823ff91f1280cdd1950e860bd0ee1a2236
+                    cd /root/
+                    yum install wget mariadb -y
+                    wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+                    chmod +x ./jq
+                    cp jq /usr/bin
+                    rm -f /root/.ssh/*
+                    cp /mnt/svmprod01expoesmmonitor01/expostack_heat/ssh_keys/* .ssh/
+                    chmod 600 /root/.ssh/id_rsa
+                    chmod 644 /root/.ssh/id_rsa.pub
+                    chmod 644 /root/.ssh/authorized_keys
+                    docker pull gcr.io/google_containers/kube-proxy-amd64:v1.7.0
+                    docker pull gcr.io/google_containers/kube-apiserver-amd64:v1.7.0
+                    docker pull gcr.io/google_containers/kube-controller-manager-amd64:v1.7.0
+                    docker pull gcr.io/google_containers/kube-scheduler-amd64:v1.7.0
+                    docker pull gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+                    docker pull gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+                    docker pull gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+                    docker pull nginx:latest
+                    docker pull gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+                    docker pull quay.io/coreos/flannel:v0.7.1-amd64
+                    docker pull gcr.io/google_containers/heapster-amd64:v1.3.0
+                    docker pull gcr.io/google_containers/etcd-amd64:3.0.17
+                    docker pull gcr.io/google_containers/heapster-grafana-amd64:v4.0.2
+                    docker pull gcr.io/google_containers/heapster-influxdb-amd64:v1.1.1
+                    docker pull gcr.io/google_containers/pause-amd64:3.0
+                    cp /mnt/svmprod01expoesmmonitor01/expostack_heat/kubernetes.repo /etc/yum.repos.d/kubernetes.repo
+                    yum update -y
+                    echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf
+                    echo "net.bridge.bridge-nf-call-ip6tables = 1" >>  /etc/sysctl.d/k8s.conf
+                    cat /mnt/svmprod01expoesmmonitor01/expostack_heat/resolv.conf > /etc/resolv.conf
+                    yum install vim bind-utils kubelet-1.7.0-0.x86_64 kubectl-1.7.0-0.x86_64 kubernetes-cni-0.5.1-0.x86_64  kubeadm-1.7.0-0.x86_64  -y
+                    echo $vip_ip > /var/tmp/ip.txt   
+                    systemctl enable kubelet && systemctl start kubelet
+                    sleep 5
+                    while [[ `pidof kubelet|wc -l` -eq 0 ]]
+                    do
+                      sleep 30s
+                      systemctl start kubelet
+                      break
+                    done
+                    while true;do
+                    ssh  -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null `cat /var/tmp/ip.txt` "cat /var/tmp/node-join.sh"
+                    if [ `echo $?` -gt 0 ]
+                    then
+                    sleep 10
+                    continue;
+                    else
+                    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null `cat /var/tmp/ip.txt`:/var/tmp/node-join.sh /var/tmp/node-join.sh
+                    break;
+                    fi
+                    done
+                    rm -f /var/lib/kubelet/* 
+                    sh /var/tmp/node-join.sh
+                    rm -f /root/.ssh/*
+                    rm -f /var/tmp/*.yaml /var/tmp/*.conf /var/tmp/token
+                    sed -i "0,/$master2_ip/s//$vip_ip/" /etc/kubernetes/kubelet.conf
+                    systemctl restart kubelet
+                    sleep 5
+                    while [[ `pidof kubelet|wc -l` -eq 0 ]]
+                    do
+                       sleep 30s
+                       systemctl start kubelet
+                       break
+                    done
+                  params:
+                    $vip_ip: {get_attr: [ vip_port, fixed_ips, 0, ip_address ]}
+                    $master2_ip: {get_attr: [master_2, networks, Prod-SCL1, 0]}
+
+outputs:
+  master1_networks:
+    description: IP of k8s master node 1 (2nd on keepalived VIP priority list)
+    value:
+      get_attr: [master_1, networks, Prod-SCL1, 0]
+  master2_networks:
+    description: IP of k8s master node 2 (1st on keepalived VIP priority list)
+    value:
+      get_attr: [master_2, networks, Prod-SCL1, 0]
+  master3_networks:
+    description: IP of k8s master node 3 (3rd on keepalived VIP priority list)
+    value:
+      get_attr: [master_3, networks, Prod-SCL1, 0]
+  etcd4_networks:
+    description: IP of Etcd node 4
+    value:
+      get_attr: [etcd_4, networks, Prod-SCL1, 0]
+  etcd5_networks:
+    description: IP of Etcd node 5
+    value:
+      get_attr: [etcd_5, networks, Prod-SCL1, 0]
+  vip_networks:
+    description: VIP for k8s master nodes cluster
+    value:
+      get_attr: [ vip_port, fixed_ips, 0, ip_address ]
+  node_group_addresses:
+    description: IPs of k8s worker nodes
+    value: { get_attr: [nodes_group, outputs_list, networks, Prod-SCL1, 0] }

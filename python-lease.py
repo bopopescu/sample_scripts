@@ -10,14 +10,14 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
 def notify(receiver, sharename, flavor, whattodo):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     receiversplit = receiver.split("@")
     if len(receiversplit)==2:
        aaaa=""
     else:
-       receiver = "esm@exponential.com"
+       receiver = "esm@mydomain.com"
     msg['From'] = me
     you = receiver;
     msg['To'] = receiver;

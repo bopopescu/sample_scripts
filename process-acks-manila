@@ -32,10 +32,10 @@ body = msg['body']
 
 if re.findall("LA region under project",subject_concat) :
   mysql_host='controllerla'
-  netapp_url ='fcl01-mgmt.prod.la1.us.tribalfusion.net'
+  netapp_url ='fcl01-mgmt.prod.la1.us.mydomain.com'
 else:
   mysql_host='controller'
-  netapp_url ='fcl02-mgmt.scl1.us.tribalfusion.net'
+  netapp_url ='fcl02-mgmt.scl1.us.mydomain.com'
 db = pymysql.connect(host=mysql_host, port=3306, user='expostack', passwd='XXXXXX', db='expo_manila')
 print "Controller Name: " + mysql_host
 

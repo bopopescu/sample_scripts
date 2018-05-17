@@ -1,7 +1,7 @@
 #########################
 ## Script to check compute nodes and perform auto evacutaion of instances from faulty compute node
 ## Author: Suhaib Chishti
-## Prerequisites: Make sure physical server console IP is updated to DNS. Format: servername-console.domain  e.g: bc7-b1-console.scl1.us.tribalfusion.net
+## Prerequisites: Make sure physical server console IP is updated to DNS. Format: servername-console.domain  e.g: bc7-b1-console.scl1.us.mydomain.com
 ##		 Install ipmitool & VMware vCenter API for fencing compute nodes
 ##		 Check Keystone, MYSQL VCenter & HP console credentials
 ##		 Preferably keyless authentication to compute nodes
@@ -37,7 +37,7 @@ NodeStatus () {
 if [ `echo $1|grep ^vm|wc -l` -gt 0 ];
  then
 
-BadNodePowerStatus=$(/usr/lib/vmware-vcli/apps/vm/vminfo.pl --url https://vcenter-01.scl1.us.tribalfusion.net:443/sdk/webService --username vrealize --password password powerstatus --vmname $1 | grep "IP Address" | grep "Not Known" | wc -l)
+BadNodePowerStatus=$(/usr/lib/vmware-vcli/apps/vm/vminfo.pl --url https://vcenter-01.scl1.us.mydomain.com:443/sdk/webService --username vrealize --password password powerstatus --vmname $1 | grep "IP Address" | grep "Not Known" | wc -l)
 
  else
 
@@ -51,7 +51,7 @@ NodeOff () {
 #Fence the node using IPMI for physical node & using vCenter API for VMware instance
 if [ `echo $1|grep ^vm|wc -l` -gt 0 ];
  then
-  /usr/lib/vmware-vcli/apps/vm/vmcontrol.pl --url https://vcenter-01.scl1.us.tribalfusion.net:443/sdk/webService --username XXXXXXX --vcenteruser password --operation poweroff --vmname $1
+  /usr/lib/vmware-vcli/apps/vm/vmcontrol.pl --url https://vcenter-01.scl1.us.mydomain.com:443/sdk/webService --username XXXXXXX --vcenteruser password --operation poweroff --vmname $1
   echo "`date` # -> Fencing compute node $1 for evacuation"
 
  else
@@ -100,7 +100,7 @@ while true; do
 	  echo "`date` # -> Comupte service is up on $RenableComp"
 	  echo "`date` # -> Re-Enabling compute node $RenableComp"
           nova-manage service enable --host=$RenableComp --service=nova-compute
-          echo "As per config, Compute Nodes excluded from compute check script: $IGNORE_COMPUTE \n\n\n $(nova service-list --binary nova-compute)"|mail -s "Recovery- nova-compute service on $RenableComp" NOC@exponential.com
+          echo "As per config, Compute Nodes excluded from compute check script: $IGNORE_COMPUTE \n\n\n $(nova service-list --binary nova-compute)"|mail -s "Recovery- nova-compute service on $RenableComp" NOC@mydomain.com
      fi
 
      BadNode=$(nova service-list --binary nova-compute | grep -v disabled | grep -w down | egrep -w -v "$IGNORE_COMPUTE" | head -1 | awk '{print $6}' | xargs)
@@ -120,7 +120,7 @@ while true; do
                         elif [ $Nic_Status -gt 0 ] && [ $counter -eq 0 ]
                         then
                                 #An interface found down on compute node
-                                ssh $r "/sbin/ifconfig -a" |mail -s "Alert- Interface Down on compute node $r" NOC@exponential.com
+                                ssh $r "/sbin/ifconfig -a" |mail -s "Alert- Interface Down on compute node $r" NOC@mydomain.com
                                 counter=1
                         elif [ $Nic_Status -gt 0 ] && [ $counter -eq 100 ]
                         then
@@ -141,7 +141,7 @@ while true; do
                 echo "`date` # -> Compute Node $BadNode has not checked in"
 		echo "`date` # -> Compute Node $BadNode is pinging hence will try to restart compute service"
      		nova-manage service disable --host=$BadNode --service=nova-compute
-     		echo "As per config, Compute Nodes excluded from compute check script: $IGNORE_COMPUTE \n\n\n $(nova service-list --binary nova-compute)"|mail -s "Alert- Check nova-compute service on $BadNode" NOC@exponential.com
+     		echo "As per config, Compute Nodes excluded from compute check script: $IGNORE_COMPUTE \n\n\n $(nova service-list --binary nova-compute)"|mail -s "Alert- Check nova-compute service on $BadNode" NOC@mydomain.com
 		ssh $BadNode "service nova-compute start"
 		continue;
 
@@ -157,7 +157,7 @@ while true; do
 			mysql expo_nova -u${mysql_user} -p${mysql_password} -e "SELECT * FROM instances WHERE host = '$BadNode' AND vm_state = 'active'\G;" > "/tmp/instance-evac-list-$BadNode-`date +"%b-%d-%y"`.txt";
 			echo "`date` # -> Disabling Compute Node $BadNode"
                 	nova-manage service disable --host=$BadNode --service=nova-compute
-                	echo "As per config, Compute Nodes excluded from compute check script: $IGNORE_COMPUTE \n\n\n $(nova service-list --binary nova-compute)"|mail -s "Alert- Network down on compute node $BadNode [Compute Service Down]" NOC@exponential.com
+                	echo "As per config, Compute Nodes excluded from compute check script: $IGNORE_COMPUTE \n\n\n $(nova service-list --binary nova-compute)"|mail -s "Alert- Network down on compute node $BadNode [Compute Service Down]" NOC@mydomain.com
                 	continue;
 		else
                #AvailZone=$(nova service-list --binary nova-compute|grep $BadNode | egrep -w -v "$IGNORE_COMPUTE" | awk -F '|' '{print $5}'|xargs)
@@ -174,7 +174,7 @@ while true; do
 		#Disable Compute Service on controller
 		echo "`date` # -> Disabling compute service on fenced Compute Node $BadNode"
                 nova-manage service disable --host=$BadNode --service=nova-compute
-     		echo "\n\n\n ######## Check under /tmp/instance-evac-list-$BadNode-$(date +"%b-%d-%y").txt for list of evacuated active instances"|mail -s "Alert- Powering off $BadNode & doing instance evacuation" NOC@exponential.com
+     		echo "\n\n\n ######## Check under /tmp/instance-evac-list-$BadNode-$(date +"%b-%d-%y").txt for list of evacuated active instances"|mail -s "Alert- Powering off $BadNode & doing instance evacuation" NOC@mydomain.com
 
                 #Issue Evacuate of instances to healthy compute
                 LeftInsts=$(mysql expo_nova -u${mysql_user} -p${mysql_password} -e "select * FROM instances WHERE host = '$BadNode' AND vm_state = 'active'\G;"| grep -w id | wc -l)
@@ -212,7 +212,7 @@ while true; do
 
 			       echo "`date` # -> Done with instance evacuation on $k"
 
-			echo "Make sure all evacuated instances instances are up before starting this service \n\n $(service openstack_lease_mgmt status)"|mail -s "Please manually start Openstack Lease service on `hostname -f`" NOC@exponential.com
+			echo "Make sure all evacuated instances instances are up before starting this service \n\n $(service openstack_lease_mgmt status)"|mail -s "Please manually start Openstack Lease service on `hostname -f`" NOC@mydomain.com
 		   	done
 	        fi
 		fi

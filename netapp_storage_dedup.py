@@ -99,7 +99,7 @@ for mysvm in svms:
 	    print_status(x)
 	  except:
 		print "\n Error occurred while updating volume '"+key+"', please check manually! \n"
-	        os.system("'echo Please check volume and run netapp_storage_dedup.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
+	        os.system("'echo Please check volume and run netapp_storage_dedup.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
    
   else:
       print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status "

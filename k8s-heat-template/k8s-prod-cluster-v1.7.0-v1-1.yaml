@@ -677,7 +677,7 @@ resources:
             vrrp_id=$(mysql k8s -u${mysql_user} -p${mysql_password} -h${mysql_host}  -e "select min(vrrp_id) from vrrp where k8s_master_1='';"|grep -v min)
             if [[ $vrrp_id == "NULL" ]]
             then
-                echo "`date` ********** Running out of VRRP_ID in DB, contact noc.exponential.com for help *************" >> /var/log/messages
+                echo "`date` ********** Running out of VRRP_ID in DB, contact noc.mydomain.com for help *************" >> /var/log/messages
                 exit 1
             fi
             mysql k8s -u${mysql_user} -p${mysql_password} -h${mysql_host}  -e "UPDATE vrrp SET k8s_master_1='$(host $master1_ip|awk '{print  $5}')', k8s_master_2='$(host $master2_ip|awk '{print  $5}')',k8s_master_3='$(host $master3_ip|awk '{print  $5}')',submission_date='$(date "+%Y-%m-%d")'  where vrrp_id='$vrrp_id';"

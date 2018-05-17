@@ -40,14 +40,14 @@ from email.mime.image import MIMEImage
 import os
 
 def notify(receiver, vmname, flavor, whattodo,ipaddressa,submitter):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     receiversplit = receiver.split("@")
     if len(receiversplit)==2:
        aaaa=""
     else:
-       receiver = "cloudautomation@exponential.com"
+       receiver = "cloudautomation@mydomain.com"
     msg['From'] = me
     you = receiver;
     msg['To'] = receiver;
@@ -105,7 +105,7 @@ def lease_project_verify(tenant_id, controllername):
 
     db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='BSoniC', db='expo_keystone')
     cursor = db.cursor()
-    cursor.execute("select d.local_id, e.name, f.name from assignment c, id_mapping d, project e, role f where c.actor_id=d.public_id and d.local_id='vpc.leaseadmin@exponential.com' and c.target_id=e.id and e.id='" + tenant_id + "' and c.role_id=f.id and f.name='admin'")
+    cursor.execute("select d.local_id, e.name, f.name from assignment c, id_mapping d, project e, role f where c.actor_id=d.public_id and d.local_id='vpc.leaseadmin@mydomain.com' and c.target_id=e.id and e.id='" + tenant_id + "' and c.role_id=f.id and f.name='admin'")
     if cursor.rowcount == 0:
        return False
     else:
@@ -351,7 +351,7 @@ def delete_share_lease_record(controllername, instance, trueowner):
     resultnew = cursor.fetchall()
     generatetime1 = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
     generatetime = str(generatetime1)
-    trueowner = "cloudautomation@exponential.com"
+    trueowner = "cloudautomation@mydomain.com"
     for rows in resultnew:
         vmname = rows[1]
         trueownersql = "select owner from lease_active_shares where sharename='" + vmname +"' and shareuuid='" + rows[0] + "'"
@@ -367,9 +367,9 @@ def online_share(storage_name,manilaid,controller):
     netapp_user = 'cinderapi'
     netapp_passwd = 'netapp123'
     if '10.29.16.67' in controller or '10.29.16.253' in controller or '10.29.16.60' in controller or 'expostack.tf-net.tribalfusion.com' in controller:
-    	netapp_url = 'fcl02-mgmt.scl1.us.tribalfusion.net'
+    	netapp_url = 'fcl02-mgmt.scl1.us.mydomain.com'
     else:
-        netapp_url = 'fcl01-mgmt.prod.la1.us.tribalfusion.net'
+        netapp_url = 'fcl01-mgmt.prod.la1.us.mydomain.com'
 
     mount_cmd = "/usr/bin/python " + filepath + "/apitest.py -v svm-dev-saas-01" + " " + netapp_url + " " + netapp_user + " " + netapp_passwd + " volume-mount volume-name " + storage_name + " junction-path /"+ storage_name + " >>/dev/null 2>&1"
     online_cmd = "/usr/bin/python " + filepath + "/apitest.py -v svm-dev-saas-01" + " " + netapp_url + " " + netapp_user + " " + netapp_passwd + " volume-online name " + storage_name + " >>/dev/null 2>&1"

@@ -441,23 +441,23 @@ MIN_QEMU_S390_VERSION = (2, 3, 0)
 NO_COMPRESSION_TYPES = ('qcow2',)
 
 def notify(receiver, vmname, flavor, whattodo,ipaddressa):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     receiversplit = receiver.split("@")
     if len(receiversplit)==2:
        aaaa=""
     else:
-       receiver = "esm@exponential.com"
+       receiver = "esm@mydomain.com"
     msg['From'] = me
     you = receiver;
     msg['To'] = receiver;
     msg.preamble = 'This is a multi-part message in MIME format.'
     text = "Hi!"
     if ipaddressa  in ipcalc.Network('10.26.32.0/20'):
-       domainnam = ".vpc.prod.la1.us.tribalfusion.net"
+       domainnam = ".vpc.prod.la1.us.mydomain.com"
     else:
-       domainnam = ".vpc.dev.la1.us.tribalfusion.net"
+       domainnam = ".vpc.dev.la1.us.mydomain.com"
 
     if whattodo == "createrequestsuccess":
        msg['Subject'] = "Virtual Machine " + vmname + domainnam + " is activated"
@@ -2591,8 +2591,8 @@ class LibvirtDriver(driver.ComputeDriver):
             #      LOG.info(_LI("Instance Data %s."),
             #            {'data': data })
 		   if jordanipaddress  in ipcalc.Network('10.26.32.0/20'):
-                        print("vpc.prod.scl1.us.tribalfusion.net")
-                        cmd_dns='dns/vpc.prod.scl1.us.tribalfusion.net/a/' + instance.hostname + '/set/' + jordanipaddress
+                        print("vpc.prod.scl1.us.mydomain.com")
+                        cmd_dns='dns/vpc.prod.scl1.us.mydomain.com/a/' + instance.hostname + '/set/' + jordanipaddress
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                              r = requests.get(dnsapiurl)
@@ -2602,8 +2602,8 @@ class LibvirtDriver(driver.ComputeDriver):
                                 data='SuccessCreate'
                                 r = requests.get(dnsapiurl)
                    else:
-                        print("vpc.dev.scl1.us.tribalfusion.net")
-                        cmd_dns="dns/vpc.dev.scl1.us.tribalfusion.net/a/" + instance.hostname + "/set/" + jordanipaddress
+                        print("vpc.dev.scl1.us.mydomain.com")
+                        cmd_dns="dns/vpc.dev.scl1.us.mydomain.com/a/" + instance.hostname + "/set/" + jordanipaddress
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                                 r = requests.get(dnsapiurl)
@@ -7382,8 +7382,8 @@ class LibvirtDriver(driver.ComputeDriver):
                 flavorinst = flavorname.name
 
                 if jordanipaddress  in ipcalc.Network('10.26.32.0/20'):
-                        print("vpc.prod.scl1.us.tribalfusion.net")
-                        cmd_dns='dns/vpc.prod.scl1.us.tribalfusion.net/a/' + instance.hostname + '/remove'
+                        print("vpc.prod.scl1.us.mydomain.com")
+                        cmd_dns='dns/vpc.prod.scl1.us.mydomain.com/a/' + instance.hostname + '/remove'
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                                 r = requests.get(dnsapiurl)
@@ -7393,8 +7393,8 @@ class LibvirtDriver(driver.ComputeDriver):
                                 data='SuccessDelete'
                                 r = requests.get(dnsapiurl)
                 else:
-                        print("vpc.dev.scl1.us.tribalfusion.net")
-                        cmd_dns="dns/vpc.dev.scl1.us.tribalfusion.net/a/" + instance.hostname + "/remove"
+                        print("vpc.dev.scl1.us.mydomain.com")
+                        cmd_dns="dns/vpc.dev.scl1.us.mydomain.com/a/" + instance.hostname + "/remove"
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                                 r = requests.get(dnsapiurl)

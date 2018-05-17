@@ -139,7 +139,7 @@ def fix_group_duplicates(server_group_id):
 		      fix_group_duplicates(group)
 		   except:
 	              logger.error('Possible error while migrating instance %s to host %s.', instance_id,free_node_name)
-  		      os.system("printf '\n \n \n Reason: Possiblely an error occured during live migration.' | mail -s 'Alert - Error while trying to enforce anti-affinity on server groups.' NOC@exponential.com")
+  		      os.system("printf '\n \n \n Reason: Possiblely an error occured during live migration.' | mail -s 'Alert - Error while trying to enforce anti-affinity on server groups.' NOC@mydomain.com")
 		      sys.exit(1)
 			
 		

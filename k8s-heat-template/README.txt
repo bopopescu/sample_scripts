@@ -10,9 +10,9 @@ Instructions to use:
 
 1) Git clone below file from public Stash repository.
 
-	https://stash.exponential.com/projects/EXS/repos/k8s-heat-template/browse/k8s-cluster-v1.7.0-v1.yaml
+	https://stash.mydomain.com/projects/EXS/repos/k8s-heat-template/browse/k8s-cluster-v1.7.0-v1.yaml
 
-2) Login to Expostack (expostack.tf-net.tribalfusion.com) in Engineering Development Project.
+2) Login to Expostack (expostack.tf-net.mydomain.com) in Engineering Development Project.
 
 3) Click on launch stack under below path
 	Project -> Orchestration -> Stacks

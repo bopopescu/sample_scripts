@@ -26,15 +26,15 @@ os.environ['https_proxy'] = ''
 filepath = '/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python'
 netapp_user = 'cinderapi'
 netapp_passwd = 'netapp123'
-netapp_url = 'fcl02-mgmt.scl1.us.tribalfusion.net'
+netapp_url = 'fcl02-mgmt.scl1.us.mydomain.com'
 
 def notify(receiver,sharename,shareid,project_name,hours,whattodo):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     msg['From'] = me
     if receiver == "admin":
-       receiver = "admin@exponential.com"
+       receiver = "admin@mydomain.com"
     you = receiver
     msg['To'] = receiver
     msg.preamble = 'This is a multi-part message in MIME format.'
@@ -45,18 +45,18 @@ def notify(receiver,sharename,shareid,project_name,hours,whattodo):
     if whattodo == "delete":
  #     if ipaddress  in ipcalc.Network('10.32.32.0/20'):
          msg['Subject'] = "Manila Share " + sharename + "(" + shareid + ")" + " in SCL region under project " + project_name + " has been deleted."
-         html1 = "<html><head></head><body><pre>Share Name  : " + sharename + "(" + shareid + ")" + " in SCL region under project " + project_name + " is deleted.<br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         html1 = "<html><head></head><body><pre>Share Name  : " + sharename + "(" + shareid + ")" + " in SCL region under project " + project_name + " is deleted.<br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
  #     else:
- #       msg['Subject'] = "Manila Share " + sharename + ".vpc.dev.la1.us.tribalfusion.net" + " is deleted"
- #       html1 = "<html><head></head><body><pre>Vitual machine  : " + sharename + ".vpc.dev.la1.us.tribalfusion.net is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+ #       msg['Subject'] = "Manila Share " + sharename + ".vpc.dev.la1.us.mydomain.com" + " is deleted"
+ #       html1 = "<html><head></head><body><pre>Vitual machine  : " + sharename + ".vpc.dev.la1.us.mydomain.com is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     if whattodo == "offline":
  #     if ipaddress  in ipcalc.Network('10.32.32.0/20'):
          msg['Subject'] = "Manila Share " + sharename + "(" + shareid + ")" + " in SCL region under project " + project_name + " lease has expired & is offline now."
-         html1 = "<html><head></head><body><pre>Share Name  : " + sharename + "(" + shareid + ")" + " in SCL region under project " + project_name + " lease  has expired hence has been made offline, please renew if required.<br><br>For any questions / issues to renew share lease. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         html1 = "<html><head></head><body><pre>Share Name  : " + sharename + "(" + shareid + ")" + " in SCL region under project " + project_name + " lease  has expired hence has been made offline, please renew if required.<br><br>For any questions / issues to renew share lease. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
  #     else:
  #       msg['Subject'] = "Alert - Manila Share " + sharename + "(" + shareid + ")" + " in SCL1 region under project" + project_name + " lease  has expired, please renew if required."
- #       html1 = "<html><head></head><body><pre>Volume Name  : " + sharename + "(" + shareid + ")" + " in SCL1 region under project" + project_name + " lease  has expired, please renew if required.<br><br>For any questions / issues to renew Volume. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+ #       html1 = "<html><head></head><body><pre>Volume Name  : " + sharename + "(" + shareid + ")" + " in SCL1 region under project" + project_name + " lease  has expired, please renew if required.<br><br>For any questions / issues to renew Volume. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     htmlfinal = []
     htmlb = ''.join(htmlfinal)
@@ -66,19 +66,19 @@ def notify(receiver,sharename,shareid,project_name,hours,whattodo):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.tribalfusion.com')
+    s = smtplib.SMTP('mail.mydomain.com')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 
 share_archival_days = "31"
-controller_ip = "url.tf-net.tribalfusion.com"
-user_name = "user@exponential.com"
+controller_ip = "url.tf-net.mydomain.com"
+user_name = "user@mydomain.com"
 passwordvpc = 'XXXXXXXX'
 VERSION = "2"
 
-db = MySQLdb.connect("localhost","root","H&perS0nic","expo_manila" )
+db = MySQLdb.connect("localhost","root","XXXXXXX","expo_manila" )
 
-dbks = MySQLdb.connect("localhost","root","H&perS0nic","expo_keystone")
+dbks = MySQLdb.connect("localhost","root","XXXXXXX","expo_keystone")
 cursorks = dbks.cursor()
 
 sqlks = "select c.name,d.name,c.id from project c,domain d where c.domain_id=d.id and d.name != 'heat' and c.name != 'service' and c.name!='demo' and d.name!='admin'";
@@ -180,29 +180,29 @@ for rowks in resultsks:
 			
                                            
                        notify(owner,rowsa.name,rowsa.id,project_name,rowlease[2],"offline")
-                      #notify("suhaib.chishti@exponential.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
-                       notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,project_name,rowlease[2],"offline")
+                      #notify("suhaib.chishti@mydomain.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
+                       notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,project_name,rowlease[2],"offline")
 			
 
                    #   try:
                         #manilac.shares.delete(rowsa.id)
                     #   notify(owner,rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
-                    #   notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
-                    #   notify("noc@exponential.com",rowsa.name,rowsa.id,rowlease[2],"alert")
+                    #   notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
+                    #   notify("noc@mydomain.com",rowsa.name,rowsa.id,rowlease[2],"alert")
                     #  except :
                     #    print "\tError Sending message " + owner + " " + rowsa.name + " Age Shut/Delete (minutes) : " + str(rowlease[2]) + "/" + str(sharearchivetime)
                                            
                     #  notify(owner,rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
-                    #  notify("suhaib.chishti@exponential.com",rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
-                    #  notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
+                    #  notify("suhaib.chishti@mydomain.com",rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
+                    #  notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,project_name,rowlease[2],"alert")
 
                  if rowlease[3] <= 0:
                     owner = rowlease[5]
                     print "\tDelete Volume " + rowsa.name + " Age Shut/Delete (minutes) : " + str(rowlease[2]) + "/" + str(sharearchivetime)
                     manilac.shares.delete(rowsa.id)
                     notify(owner,rowsa.name,rowsa.id,project_name,rowlease[2],"delete")
-                   #notify("suhaib.chishti@exponential.com",rowsa.name,ipaddress,rowlease[2],"delete")
-                    notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,project_name,rowlease[2],"delete")
+                   #notify("suhaib.chishti@mydomain.com",rowsa.name,ipaddress,rowlease[2],"delete")
+                    notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,project_name,rowlease[2],"delete")
  
     listshares()
 

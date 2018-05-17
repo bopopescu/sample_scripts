@@ -19,12 +19,12 @@ import os
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 def notify(receiver,vmname,ipaddress,hours,whattodo):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     msg['From'] = me
     if receiver == "admin":
-       receiver = "admin@exponential.com"
+       receiver = "admin@mydomain.com"
     you = receiver
     msg['To'] = receiver
     msg.preamble = 'This is a multi-part message in MIME format.'
@@ -33,19 +33,19 @@ def notify(receiver,vmname,ipaddress,hours,whattodo):
 
     if whattodo == "shutdown":
        if ipaddress  in ipcalc.Network('10.26.32.0/20'):
-         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.prod.scl1.us.tribalfusion.net" + " lease is expired and is shutdown"
-         html1 = "<html><head></head><body><pre>VM Name  : " + vmname + ".vpc.prod.scl1.us.tribalfusion.net is expired and shutdown.<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.prod.scl1.us.mydomain.com" + " lease is expired and is shutdown"
+         html1 = "<html><head></head><body><pre>VM Name  : " + vmname + ".vpc.prod.scl1.us.mydomain.com is expired and shutdown.<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
        else:
-         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.dev.scl1.us.tribalfusion.net" + " lease is expired and is shutdown"
-         html1 = "<html><head></head><body><pre>VM Name  : " + vmname + ".vpc.dev.scl1.us.tribalfusion.net is expired and shutdown.<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.dev.scl1.us.mydomain.com" + " lease is expired and is shutdown"
+         html1 = "<html><head></head><body><pre>VM Name  : " + vmname + ".vpc.dev.scl1.us.mydomain.com is expired and shutdown.<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     if whattodo == "delete":
        if ipaddress  in ipcalc.Network('10.26.32.0/20'):
-         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.prod.scl1.us.tribalfusion.net" + " is deleted"
-         html1 = "<html><head></head><body><pre>Vitual machine  : " + vmname + ".vpc.prod.scl1.us.tribalfusion.net is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.prod.scl1.us.mydomain.com" + " is deleted"
+         html1 = "<html><head></head><body><pre>Vitual machine  : " + vmname + ".vpc.prod.scl1.us.mydomain.com is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
        else:
-         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.dev.scl1.us.tribalfusion.net" + " is deleted"
-         html1 = "<html><head></head><body><pre>Vitual machine  : " + vmname + ".vpc.dev.scl1.us.tribalfusion.net is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         msg['Subject'] = "Virtual Machine " + vmname + ".vpc.dev.scl1.us.mydomain.com" + " is deleted"
+         html1 = "<html><head></head><body><pre>Vitual machine  : " + vmname + ".vpc.dev.scl1.us.mydomain.com is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     htmlfinal = []
     htmlb = ''.join(htmlfinal)
@@ -61,12 +61,12 @@ def notify(receiver,vmname,ipaddress,hours,whattodo):
 
 vm_archival_days = "7"
 controller_ip = "10.29.16.01"
-user_name = "user@exponential.com"
+user_name = "user@mydomain.com"
 passwordvpc = 'XXXXXXX'
 
-db = MySQLdb.connect("localhost","root","H&perS0nic","expo_nova" )
+db = MySQLdb.connect("localhost","root","XXXXXXX","expo_nova" )
 
-dbks = MySQLdb.connect("localhost","root","H&perS0nic","expo_keystone")
+dbks = MySQLdb.connect("localhost","root","XXXXXXX","expo_keystone")
 cursorks = dbks.cursor()
 
 sqlks = "select c.name,d.name,c.id from project c,domain d where c.domain_id=d.id and d.name != 'heat' and c.name != 'service' and c.name!='demo' and d.name!='admin'";
@@ -133,18 +133,18 @@ for rowks in resultsks:
                          print "\tError Shut down " + owner + " " + rowsa.name + " Age Shut/Delete (minutes) : " + str(rowlease[2]) + "/" + str(vmarchivetime)
                                            
                        notify(owner,rowsa.name,ipaddress,rowlease[2],"shutdown")
-                      #notify("suhaib.chishti@exponential.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
-                       notify("cloudautomation@exponential.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
-                       notify("NOC@exponential.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
+                      #notify("suhaib.chishti@mydomain.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
+                       notify("cloudautomation@mydomain.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
+                       notify("NOC@mydomain.com",rowsa.name,ipaddress,rowlease[2],"shutdown")
 
                  if rowlease[3] <= 0:
                     owner = rowlease[5]
                     print "\tDelete VM " + rowsa.name + " Age Shut/Delete (minutes) : " + str(rowlease[2]) + "/" + str(vmarchivetime)
                     novac.servers.delete(rowsa.id)
                     notify(owner,rowsa.name,ipaddress,rowlease[2],"delete")
-                   #notify("suhaib.chishti@exponential.com",rowsa.name,ipaddress,rowlease[2],"delete")
-                    notify("cloudautomation@exponential.com",rowsa.name,ipaddress,rowlease[2],"delete")
-                    notify("NOC@exponential.com",rowsa.name,ipaddress,rowlease[2],"delete")
+                   #notify("suhaib.chishti@mydomain.com",rowsa.name,ipaddress,rowlease[2],"delete")
+                    notify("cloudautomation@mydomain.com",rowsa.name,ipaddress,rowlease[2],"delete")
+                    notify("NOC@mydomain.com",rowsa.name,ipaddress,rowlease[2],"delete")
  
     listservers()
 

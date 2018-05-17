@@ -11,7 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
-#db = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='H&perS0nic', db='expo_nova')
+#db = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='XXXXXXXXXX', db='expo_nova')
 full_msg = sys.stdin.readlines()
 
 msg = email.message_from_string(''.join(full_msg))
@@ -25,17 +25,17 @@ if ".la1." in subject :
   mysql_host='controllerla'
 else:
   mysql_host='controller'
-db = pymysql.connect(host=mysql_host, port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+db = pymysql.connect(host=mysql_host, port=3306, user='openstack', passwd='XXXXXX', db='expo_nova')
 
 def notify(receiver, vmname, flavor, whattodo,ipaddress,submitter):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     receiversplit = receiver.split("@")
     if len(receiversplit)==2:
        aaaa=""
     else:
-       receiver = "cloudautomation@exponential.com"
+       receiver = "cloudautomation@mydomain.com"
     msg['From'] = me
     you = receiver;
     msg['To'] = receiver;
@@ -52,7 +52,7 @@ def notify(receiver, vmname, flavor, whattodo,ipaddress,submitter):
 
     if whattodo == "extendlease":
        msg['Subject'] = "Lease of Virtual Machine " + vmname + " is extended successfully by " + flavor + ""
-       html1 = "<html><head></head><body><pre>Lease for VM Name  : " + vmname + " is extended successfully by " + flavor +                                          "<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expo Stack Administrator</pre>"
+       html1 = "<html><head></head><body><pre>Lease for VM Name  : " + vmname + " is extended successfully by " + flavor +                                          "<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expo Stack Administrator</pre>"
 
     htmlfinal = []
     htmlb = ''.join(htmlfinal)
@@ -62,7 +62,7 @@ def notify(receiver, vmname, flavor, whattodo,ipaddress,submitter):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.tribalfusion.com')
+    s = smtplib.SMTP('mail.mydomain.com')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 
@@ -101,12 +101,12 @@ else:
                 db.commit()
                 if int(howmanysplit[1]) > 60:
                    notify(userowner,hostname,60,"extendlease","nil","nil")
-                   notify("suhaib.chishti@exponential.com",hostname,60,"extendlease","nil","nil")
-                   notify("cloudautomation@exponential.com",hostname,60,"extendlease","nil","nil")
+                   notify("suhaib.chishti@mydomain.com",hostname,60,"extendlease","nil","nil")
+                   notify("cloudautomation@mydomain.com",hostname,60,"extendlease","nil","nil")
                 else:
                    notify(userowner,hostname,howmany,"extendlease","nil","nil") 
-                   notify("suhaib.chishti@exponential.com",hostname,howmany,"extendlease","nil","nil") 
-                   notify("cloudautomation@exponential.com",hostname,howmany,"extendlease","nil","nil")
+                   notify("suhaib.chishti@mydomain.com",hostname,howmany,"extendlease","nil","nil") 
+                   notify("cloudautomation@mydomain.com",hostname,howmany,"extendlease","nil","nil")
 
              if "h" in howmany:
                 howmanysplit1 = howmany.split('h')
@@ -118,12 +118,12 @@ else:
                 db.commit()
                 if int(howmanysplit[1]) > 1440:
 		   notify(userowner,hostname,60,"extendlease","nil","nil")
-                   notify("suhaib.chishti@exponential.com",hostname,60,"extendlease","nil","nil")
-                   notify("cloudautomation@exponential.com",hostname,60,"extendlease","nil","nil")
+                   notify("suhaib.chishti@mydomain.com",hostname,60,"extendlease","nil","nil")
+                   notify("cloudautomation@mydomain.com",hostname,60,"extendlease","nil","nil")
                 else:
                    notify(userowner,hostname,howmany,"extendlease","nil","nil")
-                   notify("suhaib.chishti@exponential.com",hostname,howmany,"extendlease","nil","nil")
-                   notify("cloudautomation@exponential.com",hostname,howmany,"extendlease","nil","nil")
+                   notify("suhaib.chishti@mydomain.com",hostname,howmany,"extendlease","nil","nil")
+                   notify("cloudautomation@mydomain.com",hostname,howmany,"extendlease","nil","nil")
 
    if "Create" in subject or "create" in subject:
       stringsplit = subject.split(' ');

@@ -22,12 +22,12 @@ import os
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 def notify(receiver,vmname,vmname_id,hours,whattodo):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     msg['From'] = me
     if receiver == "admin":
-       receiver = "admin@exponential.com"
+       receiver = "admin@mydomain.com"
     you = receiver
     msg['To'] = receiver
     msg.preamble = 'This is a multi-part message in MIME format.'
@@ -35,11 +35,11 @@ def notify(receiver,vmname,vmname_id,hours,whattodo):
 
     if whattodo == "shutdown":
          msg['Subject'] = "Sahara Cluster: " + vmname + " lease is expired and is shutdown"
-         html1 = "<html><head></head><body><pre>Sahara Cluster: " + vmname + "<br><br>If you have any questions / issues to renew cluster. Please open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         html1 = "<html><head></head><body><pre>Sahara Cluster: " + vmname + "<br><br>If you have any questions / issues to renew cluster. Please open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     if whattodo == "delete":
          msg['Subject'] = "Sahara Cluster:" + vmname + " is deleted"
-         html1 = "<html><head></head><body><pre>Sahara Cluster  : " + vmname + " is deleted. <br><br>If you have any questions / issues, Please open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         html1 = "<html><head></head><body><pre>Sahara Cluster  : " + vmname + " is deleted. <br><br>If you have any questions / issues, Please open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     htmlfinal = []
     htmlb = ''.join(htmlfinal)
@@ -49,11 +49,11 @@ def notify(receiver,vmname,vmname_id,hours,whattodo):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.tribalfusion.com')
+    s = smtplib.SMTP('mail.mydomain.com')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 
-user_name = "newuser@exponential.com"
+user_name = "newuser@mydomain.com"
 passwordvpc = 'XXXXXXXX'
 AUTH_URL = 'http://10.29.16.203:5000/v3'
 PROJECT_ID= 'Engineering Development'
@@ -64,9 +64,9 @@ project_id = '5e13d215ccdc492d889e0a7ef19078c5'
 cluster_archival_days = "7"
 controller_ip = "10.29.16.253"
 
-db = MySQLdb.connect("localhost","root","H&perS0nic","expo_sahara" )
+db = MySQLdb.connect("localhost","root","XXXXXXXXXX","expo_sahara" )
 
-dbks = MySQLdb.connect("localhost","root","H&perS0nic","expo_keystone")
+dbks = MySQLdb.connect("localhost","root","XXXXXXXXX","expo_keystone")
 cursorks = dbks.cursor()
 
 sqlks = "select c.name,d.name,c.id from project c,domain d where c.domain_id=d.id and d.name != 'heat' and c.name != 'service' and c.name!='demo' and d.name!='admin'";
@@ -148,8 +148,8 @@ for rowks in resultsks:
                     		print "\tDelete Cluster " + cluster.name + " Age Shut/Delete (minutes) : " + str(rowlease[2]) + "/" + str(cluster_archivetime)
 		    		sahara_client_obj.clusters.delete(cluster.id)
                     		notify(owner,cluster.name,cluster.id,rowlease[2],"delete")
-                    		#notify("samir.chowdhary@exponential.com",cluster.name,rowlease[2],"delete")
-                    		notify("cloudautomation@exponential.com",cluster.name,cluster.id,rowlease[2],"shutdown")
+                    		#notify("samir.chowdhary@mydomain.com",cluster.name,rowlease[2],"delete")
+                    		notify("cloudautomation@mydomain.com",cluster.name,cluster.id,rowlease[2],"shutdown")
 
     listclusters()
 

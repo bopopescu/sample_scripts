@@ -21,12 +21,12 @@ import os
 os.environ['http_proxy'] = ''
 os.environ['https_proxy'] = ''
 def notify(receiver,volname,volid,hours,whattodo):
-    me = "expostack@exponential.com"
+    me = "expostack@mydomain.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     msg['From'] = me
     if receiver == "admin":
-       receiver = "admin@exponential.com"
+       receiver = "admin@mydomain.com"
     you = receiver
     msg['To'] = receiver
     msg.preamble = 'This is a multi-part message in MIME format.'
@@ -35,19 +35,19 @@ def notify(receiver,volname,volid,hours,whattodo):
 
   # if whattodo == "shutdown":
   #    if ipaddress  in ipcalc.Network('10.32.32.0/20'):
-  #      msg['Subject'] = "Cinder Volume " + vmname + ".vpc.prod.la1.us.tribalfusion.net" + " lease is expired and is shutdown"
-  #      html1 = "<html><head></head><body><pre>Volume Name  : " + vmname + ".vpc.prod.la1.us.tribalfusion.net is expired and shutdown.<br><br>If you have any questions / issues to renew Volume. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+  #      msg['Subject'] = "Cinder Volume " + vmname + ".vpc.prod.la1.us.mydomain.com" + " lease is expired and is shutdown"
+  #      html1 = "<html><head></head><body><pre>Volume Name  : " + vmname + ".vpc.prod.la1.us.mydomain.com is expired and shutdown.<br><br>If you have any questions / issues to renew Volume. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
   #    else:
-  #      msg['Subject'] = "Cinder Volume " + vmname + ".vpc.dev.la1.us.tribalfusion.net" + " lease is expired and is shutdown"
-  #      html1 = "<html><head></head><body><pre>Volume Name  : " + vmname + ".vpc.dev.la1.us.tribalfusion.net is expired and shutdown.<br><br>If you have any questions / issues to renew Volume. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+  #      msg['Subject'] = "Cinder Volume " + vmname + ".vpc.dev.la1.us.mydomain.com" + " lease is expired and is shutdown"
+  #      html1 = "<html><head></head><body><pre>Volume Name  : " + vmname + ".vpc.dev.la1.us.mydomain.com is expired and shutdown.<br><br>If you have any questions / issues to renew Volume. Please open" +             " Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     if whattodo == "delete":
   #    if ipaddress  in ipcalc.Network('10.32.32.0/20'):
          msg['Subject'] = "Cinder Volume " + volname + "(" + volid + ")" + " in SCL region under project " + project_name + " has been deleted."
-         html1 = "<html><head></head><body><pre>Volume Name  : " + volname + "(" + volid + ")" + " in SCL region under project " + project_name + " is deleted.<br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+         html1 = "<html><head></head><body><pre>Volume Name  : " + volname + "(" + volid + ")" + " in SCL region under project " + project_name + " is deleted.<br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
   #    else:
-  #      msg['Subject'] = "Cinder Volume " + vmname + ".vpc.dev.la1.us.tribalfusion.net" + " is deleted"
-  #      html1 = "<html><head></head><body><pre>Vitual machine  : " + vmname + ".vpc.dev.la1.us.tribalfusion.net is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expostack Administrator</pre>"
+  #      msg['Subject'] = "Cinder Volume " + vmname + ".vpc.dev.la1.us.mydomain.com" + " is deleted"
+  #      html1 = "<html><head></head><body><pre>Vitual machine  : " + vmname + ".vpc.dev.la1.us.mydomain.com is deleted. <br><br>If you have any" +         "questions / issues, Pease" +        " open Helpdesk Ticket to noc@mydomain.com.<br><br>Regards,<br>Expostack Administrator</pre>"
 
     htmlfinal = []
     htmlb = ''.join(htmlfinal)
@@ -57,18 +57,18 @@ def notify(receiver,volname,volid,hours,whattodo):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.tribalfusion.com')
+    s = smtplib.SMTP('mail.mydomain')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 
 vol_archival_days = "31"
-controller_ip = "url.tf-net.tribalfusion.com"
-user_name = "user@exponential.com"
+controller_ip = "url.tf-net.mydomain"
+user_name = "user@mydomain.com"
 passwordvpc = 'XXXXXXX'
 
-db = MySQLdb.connect("localhost","root","H&perS0nic","expo_cinder" )
+db = MySQLdb.connect("localhost","root","XXXXXXX","expo_cinder" )
 
-dbks = MySQLdb.connect("localhost","root","H&perS0nic","expo_keystone")
+dbks = MySQLdb.connect("localhost","root","XXXXXXX","expo_keystone")
 cursorks = dbks.cursor()
 
 sqlks = "select c.name,d.name,c.id from project c,domain d where c.domain_id=d.id and d.name != 'heat' and c.name != 'service' and c.name!='demo' and d.name!='admin'";
@@ -130,14 +130,14 @@ for rowks in resultsks:
             #          try:
                         #cinderc.volumes.delete(rowsa.id)
                        #notify(owner,rowsa.name,rowsa.id,rowlease[2],"Volume lease expiry Alert")
-                       #notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,rowlease[2],"Volume lease expiry Alert")
-                       #notify("noc@exponential.com",rowsa.name,rowsa.id,rowlease[2],"Volume lease expiry Alert")
+                       #notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,rowlease[2],"Volume lease expiry Alert")
+                       #notify("noc@mydomain.com",rowsa.name,rowsa.id,rowlease[2],"Volume lease expiry Alert")
             #          except :
             #            print "\tError Sending message " + owner + " " + rowsa.name + " Age Shut/Delete (minutes) : " + str(rowlease[2]) + "/" + str(volarchivetime)
                                            
                       #notify(owner,rowsa.name,rowsa.id,rowlease[2],"shutdown")
-                      #notify("suhaib.chishti@exponential.com",rowsa.name,rowsa.id,rowlease[2],"shutdown")
-                      #notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,rowlease[2],"shutdown")
+                      #notify("suhaib.chishti@mydomain.com",rowsa.name,rowsa.id,rowlease[2],"shutdown")
+                      #notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,rowlease[2],"shutdown")
 
                  if rowlease[3] <= 0:
                     owner = rowlease[5]
@@ -145,8 +145,8 @@ for rowks in resultsks:
                     try:
                        cinderc.volumes.delete(rowsa.id)
                        notify(owner,rowsa.name,rowsa.id,rowlease[2],"delete")
-                       #notify("suhaib.chishti@exponential.com",rowsa.name,ipaddress,rowlease[2],"delete")
-                       notify("cloudautomation@exponential.com",rowsa.name,rowsa.id,rowlease[2],"delete")
+                       #notify("suhaib.chishti@mydomain.com",rowsa.name,ipaddress,rowlease[2],"delete")
+                       notify("cloudautomation@mydomain.com",rowsa.name,rowsa.id,rowlease[2],"delete")
 		    except:
 		       print "Note: Cannot delete Volume " + rowsa.name + " as it's not in available state."
  

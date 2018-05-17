@@ -9,7 +9,7 @@ my $driver = "mysql";
 my $database = "expo_nova";
 my $dsn = "DBI:$driver:database=$database";
 my $userid = "root";
-my $password = "H&perS0nic";
+my $password = "XXXXXXXXXX";
 sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return lc "$s"; };
 my $dbh = DBI->connect($dsn, $userid, $password ) or die $DBI::errstr;
 $logfile = '/home/expostack/procmail.log';
@@ -86,7 +86,7 @@ else
 {
  exit;
 }
-my $sth = $dbh->prepare("SELECT id from vrealize where name='$hostname' and owner='$user\@tf-net.tribalfusion.com'");
+my $sth = $dbh->prepare("SELECT id from vrealize where name='$hostname' and owner='$user\@tf-net.mydomain.com'");
 $sth->execute() or die $DBI::errstr;
 while (my @row = $sth->fetchrow_array()) {
    my ($id ) = @row;
@@ -96,7 +96,7 @@ while (my @row = $sth->fetchrow_array()) {
    my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
    $stha->execute($id,$daysa,$type) or die $DBI::errstr;
    $stha->finish();
-   print "g $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+   print "g $hostname,$days, $user\@tf-net.mydomain.com, $plus, $daysa, $type, $howmany, $end\n";
 }
 
    if(($daysa >= 1440) && ($type eq "hours"))
@@ -105,7 +105,7 @@ while (my @row = $sth->fetchrow_array()) {
    my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
    $stha->execute($id,$daysa,$type) or die $DBI::errstr;
    $stha->finish();
-   print "g $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+   print "g $hostname,$days, $user\@tf-net.mydomain.com, $plus, $daysa, $type, $howmany, $end\n";
 }
 
 
@@ -114,7 +114,7 @@ while (my @row = $sth->fetchrow_array()) {
    my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
    $stha->execute($id,$daysa,$type) or die $DBI::errstr;
    $stha->finish();
-   print "l $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+   print "l $hostname,$days, $user\@tf-net.mydomain.com, $plus, $daysa, $type, $howmany, $end\n";
 } 
 
    if(($daysa < 1440) && ($type eq "hours"))
@@ -122,7 +122,7 @@ while (my @row = $sth->fetchrow_array()) {
    my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
    $stha->execute($id,$daysa,$type) or die $DBI::errstr;
    $stha->finish();
-   print "l $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+   print "l $hostname,$days, $user\@tf-net.mydomain.com, $plus, $daysa, $type, $howmany, $end\n";
 }
 
    exit

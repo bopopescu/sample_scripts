@@ -21,11 +21,11 @@ export OS_USER_DOMAIN_ID=default
 export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
-export OS_PASSWORD=0penst@ck
+export OS_PASSWORD=XXXXXXXX
 export OS_AUTH_URL=http://controller:35357/v3
 export OS_IDENTITY_API_VERSION=3
 mysql_user="root"
-mysql_password="H&perS0nic"
+mysql_password="XXXXXXXXXXX"
 mysql=$(which mysql)
 
 #To ignore specfic compute nodes e.g: IGNORE_COMPUTE="bc4-b4|bc4-b3" (restart requiried)
@@ -51,7 +51,7 @@ NodeOff () {
 #Fence the node using IPMI for physical node & using vCenter API for VMware instance
 if [ `echo $1|grep ^vm|wc -l` -gt 0 ];
  then
-  /usr/lib/vmware-vcli/apps/vm/vmcontrol.pl --url https://vcenter-01.scl1.us.tribalfusion.net:443/sdk/webService --username vrealize --password password --operation poweroff --vmname $1
+  /usr/lib/vmware-vcli/apps/vm/vmcontrol.pl --url https://vcenter-01.scl1.us.tribalfusion.net:443/sdk/webService --username XXXXXXX --vcenteruser password --operation poweroff --vmname $1
   echo "`date` # -> Fencing compute node $1 for evacuation"
 
  else

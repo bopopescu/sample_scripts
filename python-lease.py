@@ -46,7 +46,7 @@ def notify(receiver, sharename, flavor, whattodo):
 
 
 def checkowneremail(ownerid):
-    dba = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_keystone')
+    dba = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_keystone')
     cursora = dba.cursor()
     checkowner = "select local_id from id_mapping where public_id='"+ownerid+"'"
     cursora.execute(checkowner)
@@ -56,7 +56,7 @@ def checkowneremail(ownerid):
     return ownermail
 
 def create_success(ownername, shareuuid, name, size):
-    db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_manila')
+    db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_manila')
     cursor = db.cursor()
     generatetime1 = datetimea.strftime(datetimea.now(), '%Y-%m-%d %H:%M:%S')
     generatetime = str(generatetime1)
@@ -80,7 +80,7 @@ def create_success(ownername, shareuuid, name, size):
     notify(owneremail, name, sizea, "createrequestsuccess")
 
 def delete_success(share_id, ownername):
-    db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_manila')
+    db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_manila')
     cursor = db.cursor()
     sql = "select sharename from lease_active_shares where shareuuid='" + share_id + "'"
     cursor.execute(sql)

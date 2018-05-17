@@ -2575,7 +2575,7 @@ class LibvirtDriver(driver.ComputeDriver):
             if state == power_state.RUNNING:
                 LOG.info(_LI("Instance spawned successfully."),
                          instance=instance)
-                db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+                db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
                 cursor = db.cursor()
 
                 for ipaddress in network_info:
@@ -2586,7 +2586,7 @@ class LibvirtDriver(driver.ComputeDriver):
             #   port = 1053
                 try:
             #      s.connect((host, port))
-            #      s.send("root H&perS0nic " + instance.hostname + " " + jordanipaddress + " create")
+            #      s.send("root XXXXXXX " + instance.hostname + " " + jordanipaddress + " create")
             #      data = s.recv(1024)
             #      LOG.info(_LI("Instance Data %s."),
             #            {'data': data })
@@ -7354,7 +7354,7 @@ class LibvirtDriver(driver.ComputeDriver):
                      instance=instance)
             return False
 
-        db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+        db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
         cursor = db.cursor()
         generatetime1 = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')
         generatetime = str(generatetime1)
@@ -7376,7 +7376,7 @@ class LibvirtDriver(driver.ComputeDriver):
            #port = 1053
             try:
            #   s.connect((host, port))
-           #   s.send("root H&perS0nic " + instance.hostname + " " + jordanipaddress + " delete")
+           #   s.send("root XXXXXXX " + instance.hostname + " " + jordanipaddress + " delete")
            #   data = s.recv(1024)
                 flavorname = instance.get_flavor()
                 flavorinst = flavorname.name

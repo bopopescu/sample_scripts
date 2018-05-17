@@ -1,0 +1,165 @@
+#!/usr/bin/python
+import pymysql
+from datetime import datetime
+from pytz import timezone
+import re
+import pytz
+import sys
+import email
+import smtplib
+import socket
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+
+#db = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='H&perS0nic', db='expo_nova')
+full_msg = sys.stdin.readlines()
+
+msg = email.message_from_string(''.join(full_msg))
+#msg = 'Reminder: Share Name shareleasetest(18396138-ff24-4cec-989c-1556cdd40182) in LA region under project Corporate IT will expire after 1 hour'
+
+to = msg['to']
+froma = msg['from']
+#froma = 'suhaib.chishti@exponential.com'
+subject = msg['subject']
+#subject = 'RE: Reminder: Volume Name doll(5307016b-fb9f-4d0f-920d-2f976329258e) in LA region under project Corporate IT will expire after 1 hour +7d'
+subject_concat = msg['subject'].replace('\n', '')
+body = msg['body']
+
+
+if re.findall("LA region under project",subject_concat) :
+#if re.findall("LA region under project",subject) :
+  mysql_host='controllerla'
+else:
+  mysql_host='controller'
+db = pymysql.connect(host=mysql_host, port=3306, user='expostack', passwd='BSoniC', db='expo_cinder')
+print "Controller Name: " + mysql_host
+
+def notify(receiver, volume, flavor, whattodo,ipaddress,submitter):
+    me = "expostack@exponential.com"
+    msg = MIMEMultipart('related')
+    msgAlternative = MIMEMultipart('alternative')
+    receiversplit = receiver.split("@")
+    if len(receiversplit)==2:
+       aaaa=""
+    else:
+       receiver = "cloudautomation@exponential.com"
+    msg['From'] = me
+    you = receiver;
+    msg['To'] = receiver;
+    msg.preamble = 'This is a multi-part message in MIME format.'
+    text = "Hi!"
+    font = "<font face=verdana size=2>"
+    if whattodo == "createrequeststart":
+       msg['Subject'] = "Your request for Expostack Volume " + volume + "" + " is submitted"
+       html1 = "<html><head></head><body>" + font + "<b>Volume Name  : </b>" + volume + "<br><b>flavor : </b>" + flavor + "<br><br> <b>Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "deleterequeststart":
+       msg['Subject'] = "Your request for Expostack Volume " + volume + "" + " destroy has been submitted"
+       html1 = "<html><head></head><body>" + font + "<b>Volume Name  : </b>" + volume + "<br><b>Submitted By</b> :" + submitter + "<br><b> Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "extendlease":
+       msg['Subject'] = "Lease of Expostack Volume " + volume + " is extended successfully by " + flavor + ""
+       html1 = "<html><head></head><body><pre>Lease for Volume Name  : " + volume + " is extended successfully by " + flavor +                                          "<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expo Stack Administrator</pre>"
+
+    htmlfinal = []
+    htmlb = ''.join(htmlfinal)
+    html = ''.join(str(x) for x in (html1,htmlb))
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+    msg.attach(msgAlternative)
+    msgAlternative.attach(part1)
+    msgAlternative.attach(part2)
+    s = smtplib.SMTP('mail.tribalfusion.com')
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
+
+
+if froma == "":
+   print "Send to spam"
+else:
+   if "RE: Reminder: Volume Name" in subject or "Re: Reminder: Volume Name" in subject:
+      stringsplit = subject.split(' ');
+      volume_concat = stringsplit[4];
+      volume = volume_concat.replace('\n', '')
+      volume_id = re.findall("\((.*?)\)", volume)
+      volumeid = volume_id[0]
+      howmany = stringsplit[len(stringsplit) - 1];
+      volname = volume.split('(')[0]
+      sql = "select owner,volumename from lease_active_volumes where voluuid='"+volumeid+"'"
+      cursor = db.cursor()
+      cursor.execute(sql)
+      resultnew = cursor.fetchall()
+      for rows in resultnew:
+          userowner = rows[0] 
+          volname = rows[1]
+          if userowner == "":
+             print "Owner not found";
+          else:
+             date_format='%Y-%m-%d %H:%M:%S'
+             datez = datetime.now(tz=pytz.utc)
+             currentdate = datetime.strftime(datez, date_format);
+
+             if "d" in howmany:
+                howmanysplit1 = howmany.split('d')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_volumes set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='days' where voluuid='"+volumeid+"'"
+                print sql
+                if int(howmanysplit[1]) > 180:
+                   sql = "update lease_active_volumes set created_on='"+currentdate+"',leasedays=180,requesttype='days' where voluuid='"+volumeid+"'"
+                cursor.execute(sql)
+                print "AMan " + str(userowner) + " " + str(volname) + " " + str(howmany)
+                db.commit()
+                if int(howmanysplit[1]) > 180:
+                  notify(userowner,volume,180,"extendlease","nil","nil")
+                  notify("suhaib.chishti@exponential.com",volume,180,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",volume,180,"extendlease","nil","nil")
+                else:
+                  notify(userowner,volume,howmany,"extendlease","nil","nil") 
+                  notify("suhaib.chishti@exponential.com",volume,howmany,"extendlease","nil","nil") 
+                  notify("cloudautomation@exponential.com",volume,howmany,"extendlease","nil","nil")
+
+             if "h" in howmany:
+                howmanysplit1 = howmany.split('h')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_volumes set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='hours' where voluuid='"+volumeid+"'"
+                if int(howmanysplit[1]) > 4320:
+                   sql = "update lease_active_volumes set created_on='"+currentdate+"',leasedays=180,requesttype='days' where voluuid='"+volumeid+"'"
+                cursor.execute(sql)
+                db.commit()
+                if int(howmanysplit[1]) > 4320:
+		   notify(userowner,volume,180,"extendlease","nil","nil")
+                   notify("suhaib.chishti@exponential.com",volume,180,"extendlease","nil","nil")
+                   notify("cloudautomation@exponential.com",volume,180,"extendlease","nil","nil")
+                else:
+                   notify(userowner,volume,howmany,"extendlease","nil","nil")
+                   notify("suhaib.chishti@exponential.com",volume,howmany,"extendlease","nil","nil")
+                   notify("cloudautomation@exponential.com",volume,howmany,"extendlease","nil","nil")
+		  
+
+   if "Create Volume" in subject or "create volume" in subject:
+      stringsplit = subject.split(' ');
+      volume = stringsplit[2];
+      howmany = stringsplit[3];
+      ownername = stringsplit[4];
+      size = stringsplit[5];
+      volname = volume.split('.')
+      cursor = db.cursor()
+      checkexist = "select * from lease_active_volumes where voluuid='" + voluuid + "'"
+      cursor.execute(checkexist)
+      print "AMan Create " + str(voluuid) + " " + str(howmany) + " " + str(ownername)
+      if cursor.rowcount == 0:
+         checkleaseinfo = "select * from leaseinfo where volname='" + volname + "'"
+         cursor.execute(checkleaseinfo)
+
+         if cursor.rowcount == 0:
+           #sql = "insert into leaseinfo values ('','" + voluuid + "','" + howmany + "')";
+	   print ('Insert into sql')
+         else:
+	   print ('Update into sql')
+           #sql = "update leaseinfo set leasedays='" + howmany + "' where volname='" + voluuid + "'"
+
+         cursor.execute(sql)
+         db.commit()
+         db.close()
+        #notify(ownername,voluuid,flavor,"createrequeststart","nil","nil")

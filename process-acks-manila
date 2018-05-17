@@ -1,0 +1,220 @@
+#!/usr/bin/python
+import pymysql
+from datetime import datetime
+from pytz import timezone
+import re
+import pytz
+import sys
+import email
+import smtplib
+import socket
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+import os
+
+#db = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='H&perS0nic', db='expo_nova')
+full_msg = sys.stdin.readlines()
+
+msg = email.message_from_string(''.join(full_msg))
+#msg =  "Re: Reminder: Share Name 1day(2994b14d-4e52-4149-8312-91eafb70c62d) in SCL region under project ITOps will expire after 1 hours +5d"
+
+to = msg['to']
+froma = msg['from']
+#froma = 'suhaib.chishti@exponential.com'
+subject = msg['subject']
+#subject = "Re: Reminder: Share Name 1day(2994b14d-4e52-4149-8312-91eafb70c62d) in SCL region under project ITOps will expire after 1 hours +5d"
+subject_concat = msg['subject'].replace('\n', '')
+#subject_concat = "Re: Reminder: Share Name 1day(2994b14d-4e52-4149-8312-91eafb70c62d) in SCL region under project ITOps will expire after 1 hours +5d"
+body = msg['body']
+#body = 'It worked'
+
+
+if re.findall("LA region under project",subject_concat) :
+  mysql_host='controllerla'
+  netapp_url ='fcl01-mgmt.prod.la1.us.tribalfusion.net'
+else:
+  mysql_host='controller'
+  netapp_url ='fcl02-mgmt.scl1.us.tribalfusion.net'
+db = pymysql.connect(host=mysql_host, port=3306, user='expostack', passwd='BSoniC', db='expo_manila')
+print "Controller Name: " + mysql_host
+
+def notify(receiver, sharename, flavor, whattodo,ipaddress,submitter):
+    me = "expostack@exponential.com"
+    msg = MIMEMultipart('related')
+    msgAlternative = MIMEMultipart('alternative')
+    receiversplit = receiver.split("@")
+    if len(receiversplit)==2:
+       aaaa=""
+    else:
+       receiver = "cloudautomation@exponential.com"
+    msg['From'] = me
+    you = receiver;
+    msg['To'] = receiver;
+    msg.preamble = 'This is a multi-part message in MIME format.'
+    text = "Hi!"
+    font = "<font face=verdana size=2>"
+    if whattodo == "createrequeststart":
+       msg['Subject'] = "Your request for Expostack Share " + sharename + "" + " is submitted"
+       html1 = "<html><head></head><body>" + font + "<b>Share Name  : </b>" + sharename + "<br><b>flavor : </b>" + flavor + "<br><br> <b>Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "deleterequeststart":
+       msg['Subject'] = "Your request for Expostack Share " + sharename + "" + " destroy has been submitted"
+       html1 = "<html><head></head><body>" + font + "<b>Share Name  : </b>" + sharename + "<br><b>Submitted By</b> :" + submitter + "<br><b> Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "extendlease":
+       msg['Subject'] = "Lease of Expostack Share " + sharename + " is extended successfully by " + flavor + ""
+       html1 = "<html><head></head><body><pre>Lease for Share Name  : " + sharename + " is extended successfully by " + flavor +                                          "<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expo Stack Administrator</pre>"
+
+    htmlfinal = []
+    htmlb = ''.join(htmlfinal)
+    html = ''.join(str(x) for x in (html1,htmlb))
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+    msg.attach(msgAlternative)
+    msgAlternative.attach(part1)
+    msgAlternative.attach(part2)
+    s = smtplib.SMTP('mail.tribalfusion.com')
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
+
+
+if froma == "":
+   print "Send to spam"
+else:
+   if "RE: Reminder: Share Name" in subject or "Re: Reminder: Share Name" in subject:
+      stringsplit = subject.split(' ');
+      share = stringsplit[4];
+      share_id = re.findall("\((.*?)\)", share)
+      shareid = share_id[0]
+      howmany = stringsplit[len(stringsplit) - 1];
+     #sharename = share.split('(')[0]
+      sql = "select owner,sharename from lease_active_shares where shareuuid='"+shareid+"'"
+      cursor = db.cursor()
+      cursor.execute(sql)
+      resultnew = cursor.fetchall()
+      for rows in resultnew:
+          userowner = rows[0] 
+          sharename = rows[1]
+          if userowner == "":
+             print "Owner not found";
+          else:
+	     def online_share(storage_name,manilaid):
+      	       filepath = '/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python'
+      	       netapp_user = 'cinderapi'
+      	       netapp_passwd = 'netapp123'
+		
+               mount_cmd = "python " + filepath + "/apitest.py -v svm-dev-saas-01" + " " + netapp_url + " " + netapp_user + " " + netapp_passwd + " volume-mount volume-name " + storage_name + " junction-path /"+storage_name
+               online_cmd = "python " + filepath + "/apitest.py -v svm-dev-saas-01" + " " + netapp_url + " " + netapp_user + " " + netapp_passwd + " volume-online name " + storage_name
+              #print_cmd = 'printf "\n `date` : Online Netapp Share: ' + storage_name + ' ( ' + manilaid  + ' ) ' + ' " |tee -a /var/log/lease_expire/renew_share_list.txt '
+   	 
+               try:
+            	    os.system(online_cmd)
+              	    os.system(mount_cmd)
+		    return "success"
+            #    os.system(print_cmd)
+               except:
+            	    print "\tError trying to online " + storage_name + " " + manilaid      
+		    return "failure"
+
+             date_format='%Y-%m-%d %H:%M:%S'
+             datez = datetime.now(tz=pytz.utc)
+             currentdate = datetime.strftime(datez, date_format);
+
+             if "d" in howmany:
+                howmanysplit1 = howmany.split('d')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_shares set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='days' where shareuuid='"+shareid+"'"
+                print sql
+                if int(howmanysplit[1]) > 180:
+                   sql = "update lease_active_shares set created_on='"+currentdate+"',leasedays=180,requesttype='days' where shareuuid='"+shareid+"'"
+                cursor.execute(sql)
+                print "AMan " + str(userowner) + " " + str(sharename) + " " + str(howmany)
+                db.commit()
+	        status_cmd = "select share_status from lease_active_shares where shareuuid = '" + share_id[0] + "'"
+                cursor.execute(status_cmd)
+                sharestatus = cursor.fetchall()
+                share_status = sharestatus[0][0]
+                if 'online' in share_status:
+                      db.close()
+                else:
+                      name_sql = "select storage_name from lease_active_shares where shareuuid ='"+share_id[0]+"'"
+                      cursor.execute(name_sql)
+                      storagename = cursor.fetchall()
+                      storage_name = str(storagename).split("'")[1]
+                      online_res = online_share(storage_name,share_id)
+                      if "success"  in online_res:
+                           update_share = "update lease_active_shares set share_status='online' where shareuuid='"+share_id[0]+"'"
+                           cursor.execute(update_share)
+                           db.commit()
+                      db.close()
+                if int(howmanysplit[1]) > 180:
+                  notify(userowner,share,180,"extendlease","nil","nil")
+                  notify("suhaib.chishti@exponential.com",share,180,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",share,180,"extendlease","nil","nil")
+                else:
+                  notify(userowner,share,howmany,"extendlease","nil","nil") 
+                  notify("suhaib.chishti@exponential.com",share,howmany,"extendlease","nil","nil") 
+                  notify("cloudautomation@exponential.com",share,howmany,"extendlease","nil","nil")
+
+             if "h" in howmany:
+                howmanysplit1 = howmany.split('h')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_shares set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='hours' where shareuuid='"+shareid+"'"
+                if int(howmanysplit[1]) > 4320:
+                   sql = "update lease_active_shares set created_on='"+currentdate+"',leasedays=180,requesttype='days' where shareuuid='"+shareid+"'"
+                cursor.execute(sql)
+                db.commit()
+		status_cmd = "select share_status from lease_active_shares where shareuuid = '" + share_id + "'"
+		cursor.execute(status_cmd)
+                sharestatus = cursor.fetchall()
+                share_status = str(sharestatus).split("'")[1]
+                if 'online' in share_status:
+                      db.close()
+                else:
+                      name_sql = "select storage_name from lease_active_shares where shareuuid ='"+share_id+"'"
+                      cursor.execute(name_sql)
+                      storagename = cursor.fetchall()
+                      storage_name = str(storagename).split("'")[1]
+                      online_res = online_share(storage_name,share_id)
+                      if "success"  in online_res:
+                           update_share = "update lease_active_shares set share_status='online' where shareuuid='"+share_id[0]+"'"
+                           cursor.execute(update_share)
+                           db.commit()
+                      db.close()
+                if int(howmanysplit[1]) > 4320:
+		  notify(userowner,share,180,"extendlease","nil","nil")
+                  notify("suhaib.chishti@exponential.com",share,180,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",share,180,"extendlease","nil","nil")
+                else:
+                  notify(userowner,share,howmany,"extendlease","nil","nil")
+                  notify("suhaib.chishti@exponential.com",share,howmany,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",share,howmany,"extendlease","nil","nil")
+		  
+
+   if "Create Share" in subject or "create share" in subject:
+      stringsplit = subject.split(' ');
+      share = stringsplit[2];
+      howmany = stringsplit[3];
+      ownername = stringsplit[4];
+      size = stringsplit[5];
+      sharename = share.split('.')
+      cursor = db.cursor()
+      checkexist = "select * from lease_active_shares where hostname='" + hostname + "'"
+      cursor.execute(checkexist)
+      print "AMan Create " + str(hostname) + " " + str(howmany) + " " + str(ownername)
+      if cursor.rowcount == 0:
+         checkleaseinfo = "select * from leaseinfo where sharename='" + hostname + "'"
+         cursor.execute(checkleaseinfo)
+
+         if cursor.rowcount == 0:
+           #sql = "insert into leaseinfo values ('','" + hostname + "','" + howmany + "')";
+	   print ('Insert into sql')
+         else:
+	   print ('Update into sql')
+           #sql = "update leaseinfo set leasedays='" + howmany + "' where sharename='" + hostname + "'"
+
+         cursor.execute(sql)
+         db.commit()
+         db.close()
+        #notify(ownername,hostname,flavor,"createrequeststart","nil","nil")

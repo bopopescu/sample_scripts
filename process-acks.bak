@@ -1,0 +1,129 @@
+#!/usr/bin/perl
+#
+# WARNING:  Contains hostspecific directive:
+#$commandfile = '/var/spool/icinga/cmd/icinga.cmd';
+use DBI;
+$what = '';
+$header = 1;
+my $driver = "mysql";
+my $database = "expo_nova";
+my $dsn = "DBI:$driver:database=$database";
+my $userid = "root";
+my $password = "H&perS0nic";
+sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return lc "$s"; };
+my $dbh = DBI->connect($dsn, $userid, $password ) or die $DBI::errstr;
+$logfile = '/home/expostack/procmail.log';
+while (<STDIN>) {
+        chomp;
+        if (/^$/ or $header < 1) {  # Ignore all but 1st line of body
+                if ($header == 0) {
+                        $acktext = $_;
+                }
+                $header--;
+                next;
+        }
+        # sporks the "From " line but we don't care
+        if ($header == 1) {
+                if (/^[A-Z]/) {
+                        # 1st line of header
+                        ($what,$contents) = /^(.*?):(.*)/; # .*? = nongreedy
+                        $contents =~ s/^\s+//;
+                        $header{$what} = $contents;
+                }
+                if (/^\s+/) {
+                        # continuation of prev header
+                        s/\s+/ /;
+                        $header{$what} = $header{$what}.$_;
+                }
+        }
+}
+
+if ($header{Subject} =~ /^R[eE]:\s+Reminder:\s/) {
+        $acktype = 'HOSTACK';
+        ($hostname,$state,$a,$b,$days,$hd,$plus) = $header{Subject} =~
+                /Reminder: (.*) (.*) (.*) (.*) (.*) (.*) (.*)/;
+}
+
+#Added by Anil and Amit on 20160202
+elsif ($header{Subject} =~ /Machine/) {
+        $acktype = 'HOSTACK';
+	$hostname_initial=$';
+@hostnamewithoutrightsquarebracket=split(/\[/,$hostname_initial);
+
+@hostnamewithoutleftsquarebracket=split(/\]/,$hostnamewithoutrightsquarebracket[1]);
+@daysfromhostname_initial=split(/\+/,$hostname_initial);
+$hostname=$hostnamewithoutleftsquarebracket[0];
+$plus="+".$daysfromhostname_initial[1];
+chomp($plus);
+ #       ($hostname,$state,$a,$b,$days,$hd,$plus) = $header{Subject} =~
+ #               /Machine: (.*) (.*) (.*) (.*) (.*) (.*)/;
+}
+
+($userc) = $header{From} =~ /.*\<(.*\..*)\@.*/;
+$user=trim($userc);
+if(!$hostname)
+{
+  print "hostname null\n";
+  exit
+}
+if(!$plus)
+{
+  print "days null\n";
+  exit
+}
+
+my @plussplit = split /\+/, $plus;
+$howmany = trim($plussplit[1]);
+my @end1 = split(//, "$howmany");
+$end = "$end1[-1]";
+chomp($end);
+if(("$end" eq "d") || ("$end" eq "h"))
+{
+if("$end" eq "d") { my @daysa1 = split(/d/, "$howmany"); $daysa = $daysa1[0]; $type = "days"; } 
+if("$end" eq "h") { my @daysa1 = split(/h/, "$howmany"); $daysa = $daysa1[0]; $type = "hours";} 
+}
+else
+{
+ exit;
+}
+my $sth = $dbh->prepare("SELECT id from vrealize where name='$hostname' and owner='$user\@tf-net.tribalfusion.com'");
+$sth->execute() or die $DBI::errstr;
+while (my @row = $sth->fetchrow_array()) {
+   my ($id ) = @row;
+   if(($daysa >= 60) && ($type eq "days"))
+{
+   $daysa = 60;
+   my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
+   $stha->execute($id,$daysa,$type) or die $DBI::errstr;
+   $stha->finish();
+   print "g $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+}
+
+   if(($daysa >= 1440) && ($type eq "hours"))
+{
+   $daysa = 1440;
+   my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
+   $stha->execute($id,$daysa,$type) or die $DBI::errstr;
+   $stha->finish();
+   print "g $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+}
+
+
+   if(($daysa < 60) && ($type eq "days"))
+{
+   my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
+   $stha->execute($id,$daysa,$type) or die $DBI::errstr;
+   $stha->finish();
+   print "l $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+} 
+
+   if(($daysa < 1440) && ($type eq "hours"))
+{
+   my $stha = $dbh->prepare("INSERT INTO request values (?,?,?)");
+   $stha->execute($id,$daysa,$type) or die $DBI::errstr;
+   $stha->finish();
+   print "l $hostname,$days, $user\@tf-net.tribalfusion.com, $plus, $daysa, $type, $howmany, $end\n";
+}
+
+   exit
+}

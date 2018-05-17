@@ -1,0 +1,173 @@
+#!/usr/bin/python
+import pymysql
+from datetime import datetime
+from pytz import timezone
+import re
+import pytz
+import sys
+import email
+import smtplib
+import socket
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+import os
+
+#db = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='H&perS0nic', db='expo_nova')
+full_msg = sys.stdin.readlines()
+
+msg = email.message_from_string(''.join(full_msg))
+#msg = "Re: Reminder: Cluster Name Demo-Hadoop-Samir(9351e5ac-291a-4b1a-965f-b9469fe42356) in SCL region under project Big Data Development will expire after 1 days"
+
+to = msg['to']
+froma = msg['from']
+#froma = 'samir.chowdhary@exponential.com'
+subject = msg['subject']
+#subject = "Re: Reminder: Cluster Name Demo-Hadoop-Samir(9351e5ac-291a-4b1a-965f-b9469fe42356) in SCL region under project Big Data Development will expire after 1 days +5d"
+subject_concat = msg['subject'].replace('\n', '')
+#subject_concat = "Re: Reminder: Share Name 1day(2994b14d-4e52-4149-8312-91eafb70c62d) in SCL region under project ITOps will expire after 1 hours +5d"
+body = msg['body']
+#body = 'It worked'
+
+
+if re.findall("LA region under project",subject_concat) :
+  mysql_host='10.19.16.253'
+else:
+  mysql_host='10.29.16.60'
+db = pymysql.connect(host=mysql_host, port=3306, user='expostack', passwd='BSoniC', db='expo_sahara')
+print "Controller Name: " + mysql_host
+
+def notify(receiver, sharename, flavor, whattodo,ipaddress,submitter):
+    me = "expostack@exponential.com"
+    msg = MIMEMultipart('related')
+    msgAlternative = MIMEMultipart('alternative')
+    receiversplit = receiver.split("@")
+    if len(receiversplit)==2:
+       aaaa=""
+    else:
+       #receiver = "cloudautomation@exponential.com"
+	receiver = "samir.chowdhary@exponential.com"
+    msg['From'] = me
+    you = receiver;
+    msg['To'] = receiver;
+    msg.preamble = 'This is a multi-part message in MIME format.'
+    text = "Hi!"
+    font = "<font face=verdana size=2>"
+    if whattodo == "createrequeststart":
+       msg['Subject'] = "Your request for Expostack Cluster " + sharename + "" + " is submitted"
+       html1 = "<html><head></head><body>" + font + "<b>Cluster Name  : </b>" + sharename + "<br> <br> <b>Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "deleterequeststart":
+       msg['Subject'] = "Your request for Expostack Cluster" + sharename + "" + " destroy has been submitted"
+       html1 = "<html><head></head><body>" + font + "<b>Cluster Name  : </b>" + sharename + "<br><b>Submitted By</b> :" + submitter + "<br><b> Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "extendlease":
+       msg['Subject'] = "Lease of Expostack Cluster " + sharename + " is extended successfully "
+       days = str(flavor)
+       html1 = "<html><head></head><body><pre>Lease for Cluster Name  : " + sharename + " is extended successfully extended by "+days+".<br><br>If you have any questions / issues to renew Cluster. Please open Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expo Stack Administrator</pre>"
+
+    htmlfinal = []
+    htmlb = ''.join(htmlfinal)
+    html = ''.join(str(x) for x in (html1,htmlb))
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+    msg.attach(msgAlternative)
+    msgAlternative.attach(part1)
+    msgAlternative.attach(part2)
+    s = smtplib.SMTP('mail.tribalfusion.com')
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
+
+
+if froma == "":
+   print "Send to spam"
+else:
+   if "RE: Reminder: Cluster Name" in subject or "Re: Reminder: Cluster Name" in subject:
+      stringsplit = subject.split(' ');
+      share = stringsplit[4];
+      share_id = re.findall("\((.*?)\)", share)
+      print share_id
+      shareid = share_id[0]
+      howmany = stringsplit[len(stringsplit) - 1];
+      print howmany
+     #sharename = share.split('(')[0]
+      sql = "select owner,cluster_name from lease_active_clusters where Cluster_id='"+shareid+"'"
+      cursor = db.cursor()
+      cursor.execute(sql)
+      resultnew = cursor.fetchall()
+      for rows in resultnew:
+          userowner = rows[0] 
+          sharename = rows[1]
+          if userowner == "":
+             print "Owner not found";
+          else:
+             date_format='%Y-%m-%d %H:%M:%S'
+             datez = datetime.now(tz=pytz.utc)
+             currentdate = datetime.strftime(datez, date_format);
+
+             if "d" in howmany:
+                howmanysplit1 = howmany.split('d')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_clusters set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='days' where Cluster_id='"+shareid+"'"
+                print sql
+                if int(howmanysplit[1]) > 60:
+                   sql = "update lease_active_clusters set created_on='"+currentdate+"',leasedays=60,requesttype='days' where Cluster_id='"+shareid+"'"
+                cursor.execute(sql)
+                print "Cluster Name " + str(userowner) + " " + str(sharename) + " " + str(howmany)
+                db.commit()
+
+                if int(howmanysplit[1]) > 60:
+                  notify(userowner,share,60,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",share,60,"extendlease","nil","nil")
+		  notify("samir.chowdhary@exponential.com",share,60,"extendlease","nil","nil")
+                else:
+                  notify(userowner,share,howmany,"extendlease","nil","nil") 
+                  notify("cloudautomation@exponential.com",share,howmany,"extendlease","nil","nil")
+		  notify("samir.chowdhary@exponential.com",share,howmany,"extendlease","nil","nil")
+
+             if "h" in howmany:
+                howmanysplit1 = howmany.split('h')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_clusters set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='hours' where Cluster_id='"+shareid+"'"
+		print sql
+                if int(howmanysplit[1]) > 1440:
+                   sql = "update lease_active_clusters set created_on='"+currentdate+"',leasedays=60,requesttype='days' where Cluster_id='"+shareid+"'"
+                cursor.execute(sql)
+                db.commit()
+
+                if int(howmanysplit[1]) > 1440:
+		  notify(userowner,share,60,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",share,60,"extendlease","nil","nil")
+		  notify("samir.chowdhary@exponential.com",share,60,"extendlease","nil","nil")
+                else:
+                  notify(userowner,share,howmany,"extendlease","nil","nil")
+                  notify("cloudautomation@exponential.com",share,howmany,"extendlease","nil","nil")
+		  notify("samir.chowdhary@exponential.com",share,howmany,"extendlease","nil","nil")
+		  
+
+   if "Create Cluster" in subject or "create cluster" in subject:
+      stringsplit = subject.split(' ');
+      share = stringsplit[2];
+      howmany = stringsplit[3];
+      ownername = stringsplit[4];
+      size = stringsplit[5];
+      sharename = share.split('.')
+      cursor = db.cursor()
+      checkexist = "select * from lease_active_clusters where cluster_name='" + hostname + "'"
+      cursor.execute(checkexist)
+      print "Cluster Create " + str(hostname) + " " + str(howmany) + " " + str(ownername)
+      if cursor.rowcount == 0:
+         checkleaseinfo = "select * from leaseinfo where cluster_name='" + hostname + "'"
+         cursor.execute(checkleaseinfo)
+
+         if cursor.rowcount == 0:
+           #sql = "insert into leaseinfo values ('','" + hostname + "','" + howmany + "')";
+	   print ('Insert into sql')
+         else:
+	   print ('Update into sql')
+           #sql = "update leaseinfo set leasedays='" + howmany + "' where sharename='" + hostname + "'"
+
+         cursor.execute(sql)
+         db.commit()
+         db.close()
+        #notify(ownername,hostname,flavor,"createrequeststart","nil","nil")

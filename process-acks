@@ -1,0 +1,151 @@
+#!/usr/bin/python
+import pymysql
+from datetime import datetime
+from pytz import timezone
+import pytz
+import sys
+import email
+import smtplib
+import socket
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+
+#db = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='H&perS0nic', db='expo_nova')
+full_msg = sys.stdin.readlines()
+
+msg = email.message_from_string(''.join(full_msg))
+
+to = msg['to']
+froma = msg['from']
+subject = msg['subject']
+body = msg['body']
+
+if ".la1." in subject :
+  mysql_host='controllerla'
+else:
+  mysql_host='controller'
+db = pymysql.connect(host=mysql_host, port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+
+def notify(receiver, vmname, flavor, whattodo,ipaddress,submitter):
+    me = "expostack@exponential.com"
+    msg = MIMEMultipart('related')
+    msgAlternative = MIMEMultipart('alternative')
+    receiversplit = receiver.split("@")
+    if len(receiversplit)==2:
+       aaaa=""
+    else:
+       receiver = "cloudautomation@exponential.com"
+    msg['From'] = me
+    you = receiver;
+    msg['To'] = receiver;
+    msg.preamble = 'This is a multi-part message in MIME format.'
+    text = "Hi!"
+    font = "<font face=verdana size=2>"
+    if whattodo == "createrequeststart":
+       msg['Subject'] = "Your request for virtual Machine " + vmname + "" + " is submitted"
+       html1 = "<html><head></head><body>" + font + "<b>VM Name  : </b>" + vmname + "<br><b>Flavor : </b>" + flavor + "<br><br> <b>Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "deleterequeststart":
+       msg['Subject'] = "Your request for virtual Machine " + vmname + "" + " destroy has been submitted"
+       html1 = "<html><head></head><body>" + font + "<b>VM Name  : </b>" + vmname + "<br><b>Submitted By</b> :" + submitter + "<br><b> Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "extendlease":
+       msg['Subject'] = "Lease of Virtual Machine " + vmname + " is extended successfully by " + flavor + ""
+       html1 = "<html><head></head><body><pre>Lease for VM Name  : " + vmname + " is extended successfully by " + flavor +                                          "<br><br>If you have any questions / issues to renew VM. Please open" +             " Helpdesk Ticket to noc@exponential.com.<br><br>Regards,<br>Expo Stack Administrator</pre>"
+
+    htmlfinal = []
+    htmlb = ''.join(htmlfinal)
+    html = ''.join(str(x) for x in (html1,htmlb))
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+    msg.attach(msgAlternative)
+    msgAlternative.attach(part1)
+    msgAlternative.attach(part2)
+    s = smtplib.SMTP('mail.tribalfusion.com')
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
+
+
+if froma == "":
+   print "Send to spam"
+else:
+   if "RE: Reminder:" in subject or "Re: Reminder:" in subject:
+      stringsplit = subject.split(' ');
+      hostname = stringsplit[2];
+      howmany = stringsplit[8];
+      hostnamesplit = hostname.split('.')
+      sql = "select owner,hostname from lease_active_vms where hostname='"+hostnamesplit[0]+"'"
+      print sql
+      cursor = db.cursor()
+      cursor.execute(sql)
+      resultnew = cursor.fetchall()
+      for rows in resultnew:
+          userowner = rows[0] 
+          vmname = rows[1]
+          if userowner == "":
+             print "Owner not found";
+          else:
+             date_format='%Y-%m-%d %H:%M:%S'
+             datez = datetime.now(tz=pytz.utc)
+             currentdate = datetime.strftime(datez, date_format);
+
+             if "d" in howmany:
+                howmanysplit1 = howmany.split('d')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_vms set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='days' where hostname='"+hostnamesplit[0]+"'"
+                if int(howmanysplit[1]) > 60:
+                   sql = "update lease_active_vms set created_on='"+currentdate+"',leasedays=60,requesttype='days' where hostname='"+hostnamesplit[0]+"'"
+                cursor.execute(sql)
+                print "AMan " + str(userowner) + " " + str(hostname) + " " + str(howmany)
+                db.commit()
+                if int(howmanysplit[1]) > 60:
+                   notify(userowner,hostname,60,"extendlease","nil","nil")
+                   notify("suhaib.chishti@exponential.com",hostname,60,"extendlease","nil","nil")
+                   notify("cloudautomation@exponential.com",hostname,60,"extendlease","nil","nil")
+                else:
+                   notify(userowner,hostname,howmany,"extendlease","nil","nil") 
+                   notify("suhaib.chishti@exponential.com",hostname,howmany,"extendlease","nil","nil") 
+                   notify("cloudautomation@exponential.com",hostname,howmany,"extendlease","nil","nil")
+
+             if "h" in howmany:
+                howmanysplit1 = howmany.split('h')
+                howmanysplit = howmanysplit1[0].split('+')
+                sql = "update lease_active_vms set created_on='"+currentdate+"',leasedays="+howmanysplit[1]+",requesttype='hours' where hostname='"+hostnamesplit[0]+"'"
+                if int(howmanysplit[1]) > 1440:
+                   sql = "update lease_active_vms set created_on='"+currentdate+"',leasedays=60,requesttype='days' where hostname='"+hostnamesplit[0]+"'"
+                cursor.execute(sql)
+                db.commit()
+                if int(howmanysplit[1]) > 1440:
+		   notify(userowner,hostname,60,"extendlease","nil","nil")
+                   notify("suhaib.chishti@exponential.com",hostname,60,"extendlease","nil","nil")
+                   notify("cloudautomation@exponential.com",hostname,60,"extendlease","nil","nil")
+                else:
+                   notify(userowner,hostname,howmany,"extendlease","nil","nil")
+                   notify("suhaib.chishti@exponential.com",hostname,howmany,"extendlease","nil","nil")
+                   notify("cloudautomation@exponential.com",hostname,howmany,"extendlease","nil","nil")
+
+   if "Create" in subject or "create" in subject:
+      stringsplit = subject.split(' ');
+      hostname = stringsplit[1];
+      howmany = stringsplit[2];
+      ownername = stringsplit[3];
+      flavor = stringsplit[4];
+      hostnamesplit = hostname.split('.')
+      cursor = db.cursor()
+      checkexist = "select * from lease_active_vms where hostname='" + hostname + "'"
+      cursor.execute(checkexist)
+      print "AMan Create " + str(hostname) + " " + str(howmany) + " " + str(ownername)
+      if cursor.rowcount == 0:
+         checkleaseinfo = "select * from leaseinfo where vmname='" + hostname + "'"
+         cursor.execute(checkleaseinfo)
+
+         if cursor.rowcount == 0:
+            sql = "insert into leaseinfo values ('','" + hostname + "','" + howmany + "')";
+         else:
+            sql = "update leaseinfo set leasedays='" + howmany + "' where vmname='" + hostname + "'"
+
+         cursor.execute(sql)
+         db.commit()
+         db.close()
+         notify(ownername,hostname,flavor,"createrequeststart","nil","nil")

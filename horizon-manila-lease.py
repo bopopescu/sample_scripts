@@ -87,12 +87,12 @@ def notify(receiver, vmname, flavor, whattodo,ipaddressa,submitter):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.tribalfusion.com')
+    s = smtplib.SMTP('mail.mydomain.com')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 
 def id_to_ownername(controllername, ownerid):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_keystone')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_keystone')
     cursor = db.cursor()
     sql = "select local_id from id_mapping where public_id='"+ownerid+"'"
     cursor.execute(sql)
@@ -103,7 +103,7 @@ def id_to_ownername(controllername, ownerid):
 
 def lease_project_verify(tenant_id, controllername):
 
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_keystone')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_keystone')
     cursor = db.cursor()
     cursor.execute("select d.local_id, e.name, f.name from assignment c, id_mapping d, project e, role f where c.actor_id=d.public_id and d.local_id='vpc.leaseadmin@mydomain.com' and c.target_id=e.id and e.id='" + tenant_id + "' and c.role_id=f.id and f.name='admin'")
     if cursor.rowcount == 0:
@@ -112,7 +112,7 @@ def lease_project_verify(tenant_id, controllername):
        return True
 
 def check_instance_owner(controllername, instancename):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_nova')
     cursor = db.cursor()
     sql = "select owner from lease_active_vms where hostname='" + instancename + "'"
     cursor.execute(sql)
@@ -122,7 +122,7 @@ def check_instance_owner(controllername, instancename):
         return owner
 
 def check_instance_lease(controllername, instancename , instancetenantid):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_nova')
     cursor = db.cursor()
     date_formatv='%Y-%m-%d %H:%M:%S'
     datev = datetime.now(tz=pytz.utc)
@@ -140,7 +140,7 @@ def check_instance_lease(controllername, instancename , instancetenantid):
         return leaseexpire
 
 def check_volume_owner(controllername, instancename):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_cinder')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_cinder')
     cursor = db.cursor()
     sql = "select owner from lease_active_volumes where voluuid='" + instancename + "'"
     cursor.execute(sql)
@@ -153,7 +153,7 @@ def check_volume_owner(controllername, instancename):
         #return id_to_ownername(controllername,owner)
 
 def check_volume_lease(controllername, instancename , instancetenantid):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_cinder')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_cinder')
     cursor = db.cursor()
     date_formatv='%Y-%m-%d %H:%M:%S'
     datev = datetime.now(tz=pytz.utc)
@@ -171,7 +171,7 @@ def check_volume_lease(controllername, instancename , instancetenantid):
         return leaseexpire
 
 def update_volume_lease(controllername, volume_id, lease_days):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_cinder')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_cinder')
     cursor = db.cursor()
     lease_days_pass = str(lease_days)
     sql = "update lease_active_volumes set leasedays='" + lease_days_pass + "' where voluuid='"+volume_id+"'"
@@ -181,7 +181,7 @@ def update_volume_lease(controllername, volume_id, lease_days):
 
 #api.lease.create_lease_record(controllername, name, lease_days_pass, request.user.username, flavor_name.name)
 def create_lease_record(controllername ,instancename, lease_days, owner, flavor):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_nova')
     cursor = db.cursor()
     lease_days_pass = str(lease_days)
     generatetime1 = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -203,7 +203,7 @@ def create_lease_record(controllername ,instancename, lease_days, owner, flavor)
        notify(owner,instancename,flavor,"createrequeststart","nil","nil")
 
 def create_sahara_lease_record(controllername ,clustername, lease_days, owner):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_sahara')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_sahara')
     cursor = db.cursor()
     lease_days_pass = str(lease_days)
     generatetime1 = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -226,7 +226,7 @@ def create_sahara_lease_record(controllername ,clustername, lease_days, owner):
 
 #api.lease.delete_lease_record(controllername, instance, trueowner)
 def delete_lease_record(controllername, instance, trueowner):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_nova')
     cursor = db.cursor()
     sql = "select d.network_info,c.hostname from instances c, instance_info_caches d where c.uuid=d.instance_uuid and c.uuid='" + instance + "'"
     cursor.execute(sql)
@@ -244,9 +244,9 @@ def delete_lease_record(controllername, instance, trueowner):
     notify(trueowner,vmname,"nil","deleterequeststart","nil",trueowner)
 
 def trove_instance_delete(controllername, instance_id, owner):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_nova')
     cursor = db.cursor()
-    dba = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_trove')
+    dba = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_trove')
     cursora = dba.cursor()
     trovesql = "select compute_instance_id from instances where id='" + instance_id + "'"
     cursora.execute(trovesql)
@@ -279,7 +279,7 @@ def trove_instance_delete(controllername, instance_id, owner):
        notify(trueowner,vmname,"nil","deleterequeststart","nil",owner)
 
 def create_volume_lease_record(controllername ,instancename, lease_days, owner, size):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_cinder')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_cinder')
     cursor = db.cursor()
     lease_days_pass = str(lease_days)
     generatetime1 = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -302,7 +302,7 @@ def create_volume_lease_record(controllername ,instancename, lease_days, owner, 
        notify(owner,instancename,sizea,"createvolumerequeststart","nil","nil")
 
 def delete_volume_lease_record(controllername, instance, trueowner):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_cinder')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_cinder')
     cursor = db.cursor()
     sql = "select id,display_name from volumes where id='" + instance + "'"
     cursor.execute(sql)
@@ -321,7 +321,7 @@ def delete_volume_lease_record(controllername, instance, trueowner):
     notify(trueowner,vmname,"nil","deletevolumerequeststart","nil",trueowner)
 
 def create_share_lease_record(controllername ,instancename, lease_days, owner, size):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_manila')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_manila')
     cursor = db.cursor()
     lease_days_pass = str(lease_days)
     generatetime1 = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
@@ -344,7 +344,7 @@ def create_share_lease_record(controllername ,instancename, lease_days, owner, s
        notify(owner,instancename,sizea,"createsharerequeststart","nil","nil")
 
 def delete_share_lease_record(controllername, instance, trueowner):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_manila')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_manila')
     cursor = db.cursor()
     sql = "select id,display_name from shares where id='" + instance + "'"
     cursor.execute(sql)
@@ -366,7 +366,7 @@ def online_share(storage_name,manilaid,controller):
     filepath = '/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python'
     netapp_user = 'cinderapi'
     netapp_passwd = 'netapp123'
-    if '10.29.16.67' in controller or '10.29.16.253' in controller or '10.29.16.60' in controller or 'expostack.tf-net.tribalfusion.com' in controller:
+    if '10.29.16.67' in controller or '10.29.16.253' in controller or '10.29.16.60' in controller or 'expostack.tf-net.mydomain.com' in controller:
     	netapp_url = 'fcl02-mgmt.scl1.us.mydomain.com'
     else:
         netapp_url = 'fcl01-mgmt.prod.la1.us.mydomain.com'
@@ -386,7 +386,7 @@ def online_share(storage_name,manilaid,controller):
 	     return "failure"
 
 def update_share_lease(controllername, share_id, lease_days):
-    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXXX', db='expo_manila')
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='XXXXXX', db='expo_manila')
     cursor = db.cursor()
     lease_days_pass = str(lease_days)
     sql = "update lease_active_shares set leasedays='" + lease_days_pass + "' where shareuuid='"+share_id+"'"

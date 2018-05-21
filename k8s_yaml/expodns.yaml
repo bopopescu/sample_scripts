@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: expodnsk8s
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: expodnsk8s
+    spec:
+      containers:
+      - name: expodnsk8s
+        image: expodockerregistry.tf-net.tribalfusion.com/itops/expodns:base
+        env:
+        - name: ROOT_PASSWORD
+          value: BSoniC
+        ports:
+        - containerPort: 53
+          name: dns-port-tcp
+          protocol: TCP
+        - containerPort: 53
+          name: dns-port-udp
+          protocol: UDP
+        - containerPort: 443
+          name: webmin
+        - containerPort: 10000
+          name: webmin-new
+      imagePullSecrets:
+      - name: regsecret

@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: expodnsk8s
+spec:
+  selector:
+    app: expodnsk8s
+  ports:
+  - name: dns-tcp
+    protocol: TCP
+    port: 53
+    targetPort: 53
+  - name: dns-udp
+    protocol: UDP
+    port: 53
+    targetPort: 53
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 443
+  - name: webmin
+    protocol: TCP
+    port: 10000
+    targetPort: 10000

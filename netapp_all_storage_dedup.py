@@ -10,7 +10,7 @@
 ## python /usr/local/bin/netapp_storage_dedup.py help
 ##
 ## Usage- Volume dedup status:
-## python netapp_storage_dedup.py status 
+## python netapp_storage_dedup.py status smv-name
 ##
 ## Usage- Volume enable dedup/compression:
 ## python netapp_storage_dedup.py efficiency
@@ -25,15 +25,17 @@ import os
 import xml.etree.ElementTree as ET
 
 if len (sys.argv) != 3 :
-    print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status "
-    print "\n Usage- Volume enable dedup/compression:\n python netapp_storage_dedup.py efficiency \n"
+    print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status svm-name"
+    print "\n Usage- Volume enable dedup/compression:\n python netapp_storage_dedup.py efficiency svm-name\n"
     sys.exit (1)
 
 def print_status(x):
    figures = {}
    rxo = s.invoke_elem(x)
    if (rxo.results_status() == "failed"):
-            raise NAException(rxo.sprintf())
+            print ("Error:\n")
+            print (rxo.sprintf())
+            sys.exit (1)
    str_rxo = str(rxo.sprintf())
    res=BeautifulSoup(str_rxo)
    volume_info = ET.fromstring(str_rxo)
@@ -102,6 +104,6 @@ for mysvm in svms:
 	        os.system("'echo Please check volume and run netapp_storage_dedup.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
    
   else:
-      print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status "
-      print "\n Usage- Volume enable dedup/compression:\n python netapp_storage_dedup.py efficiency \n"
+      print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status svm-name "
+      print "\n Usage- Volume enable dedup/compression:\n python netapp_storage_dedup.py efficiency svm-name\n"
       sys.exit(1)

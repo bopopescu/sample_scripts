@@ -6,7 +6,7 @@
 ## 
 ## Prerequisites: Please make sure Cinder-Weekly & Manila-Weekly Storage efficiency policies exist on the SVM 
 ## 
-## NOTE: Make sure all SVM used by  Expostack Storage As a Service are placed in list 'smvs'
+## NOTE: SVM can be passed as argument or code can be change to have a list in 'smvs'
 ## python /usr/local/bin/netapp_storage_dedup.py help
 ##
 ## Usage- Volume dedup status:

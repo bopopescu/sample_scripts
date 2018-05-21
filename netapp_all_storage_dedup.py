@@ -6,11 +6,19 @@
 ## 
 ## Prerequisites: Please make sure Cinder-Weekly & Manila-Weekly Storage efficiency policies exist on the SVM 
 ## 
+<<<<<<< HEAD
 ## NOTE: Make sure all SVM used by  Expostack Storage As a Service are placed in list 'smvs'
 ## python /usr/local/bin/expo_netapp_dedup_checker.py help
 ##
 ## Usage- Volume dedup status:
 ## python expo_netapp_dedup_checker.py status 
+=======
+## NOTE: SVM can be passed as argument or code can be change to have a list in 'smvs'
+## python /usr/local/bin/netapp_storage_dedup.py help
+##
+## Usage- Volume dedup status:
+## python netapp_storage_dedup.py status smv-name
+>>>>>>> 2f96a407dbc7d90864228c1874030bc7131adee1
 ##
 ## Usage- Volume enable dedup/compression:
 ## python expo_netapp_dedup_checker.py efficiency
@@ -24,21 +32,33 @@ from prettytable import PrettyTable
 import os
 import xml.etree.ElementTree as ET
 
+<<<<<<< HEAD
 if len (sys.argv) < 2 :
     print "\n Usage- Volume dedup status on all SVMs:\n python expo_netapp_dedup_checker.py status "
     print "\n Usage- Volume enable dedup/compression on all SVMs:\n python expo_netapp_dedup_checker.py efficiency \n"
     print "\n Usage- Volume dedup status of specified SVM:\n python expo_netapp_dedup_checker.py status <svm name> "
     print "\n Usage- Volume enable dedup/compression on specified SVM:\n python expo_netapp_dedup_checker.py efficiency <svm name> \n"
     print "\n Usage- Volume enable dedup/compression of a single volume on a on specified SVM :\n python expo_netapp_dedup_checker.py dedup <svm name> <volume name> \n "
+=======
+if len (sys.argv) != 3 :
+    print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status svm-name"
+    print "\n Usage- Volume enable dedup/compression:\n python netapp_storage_dedup.py efficiency svm-name\n"
+>>>>>>> 2f96a407dbc7d90864228c1874030bc7131adee1
     sys.exit (1)
 
 def print_status(x):
    figures = {}
    rxo = s.invoke_elem(x)
    if (rxo.results_status() == "failed"):
+<<<<<<< HEAD
 	    print ("Error:\n")
             print (rxo.sprintf())
 	    sys.exit (1)
+=======
+            print ("Error:\n")
+            print (rxo.sprintf())
+            sys.exit (1)
+>>>>>>> 2f96a407dbc7d90864228c1874030bc7131adee1
    str_rxo = str(rxo.sprintf())
    res=BeautifulSoup(str_rxo)
    volume_info = ET.fromstring(str_rxo)
@@ -134,9 +154,14 @@ for mysvm in svms:
 	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
 
   else:
+<<<<<<< HEAD
       print "\n Usage- Volume dedup status on all SVMs:\n python expo_netapp_dedup_checker.py status "
       print "\n Usage- Volume enable dedup/compression on all SVMs:\n python expo_netapp_dedup_checker.py efficiency \n"
       print "\n Usage- Volume dedup status of specified SVM:\n python expo_netapp_dedup_checker.py status <svm name> "
       print "\n Usage- Volume enable dedup/compression on specified SVM:\n python expo_netapp_dedup_checker.py efficiency <svm name> \n"
       print "\n Usage- Volume enable dedup/compression of a single volume on a on specified SVM :\n python expo_netapp_dedup_checker.py dedup <svm name> <volume name> \n"
+=======
+      print "\n Usage- Volume dedup status:\n python netapp_storage_dedup.py status svm-name "
+      print "\n Usage- Volume enable dedup/compression:\n python netapp_storage_dedup.py efficiency svm-name\n"
+>>>>>>> 2f96a407dbc7d90864228c1874030bc7131adee1
       sys.exit(1)

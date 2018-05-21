@@ -9,11 +9,11 @@
 ## NOTE: Make sure all SVM used by  Expostack Storage As a Service are placed in list 'smvs'
 ## python /usr/local/bin/expo_netapp_dedup_checker.py help
 ##
-## Usage- Volume dedup status:
-## python expo_netapp_dedup_checker.py status 
-##
-## Usage- Volume enable dedup/compression:
-## python expo_netapp_dedup_checker.py efficiency
+##  Usage- Volume dedup status on all SVMs: python expo_netapp_dedup_checker.py status 
+##  Usage- Volume enable dedup/compression on all SVMs: python expo_netapp_dedup_checker.py efficiency 
+##  Usage- Volume dedup status of specified SVM: python expo_netapp_dedup_checker.py status <svm name> 
+##  Usage- Volume enable dedup/compression on specified SVM: python expo_netapp_dedup_checker.py efficiency <svm name> 
+##  Usage- Volume enable dedup/compression of a single volume on a on specified SVM: python expo_netapp_dedup_checker.py dedup <svm name> <volume name> 
 ########################
 #!/usr/bin/python
 import sys
@@ -26,10 +26,10 @@ import xml.etree.ElementTree as ET
 
 if len (sys.argv) < 2 :
     print "\n Usage- Volume dedup status on all SVMs:\n python expo_netapp_dedup_checker.py status "
-    print "\n Usage- Volume enable dedup/compression on all SVMs:\n python expo_netapp_dedup_checker.py efficiency \n"
+    print "\n Usage- Volume enable dedup/compression on all SVMs:\n python expo_netapp_dedup_checker.py efficiency "
     print "\n Usage- Volume dedup status of specified SVM:\n python expo_netapp_dedup_checker.py status <svm name> "
-    print "\n Usage- Volume enable dedup/compression on specified SVM:\n python expo_netapp_dedup_checker.py efficiency <svm name> \n"
-    print "\n Usage- Volume enable dedup/compression of a single volume on a on specified SVM :\n python expo_netapp_dedup_checker.py dedup <svm name> <volume name> \n "
+    print "\n Usage- Volume enable dedup/compression on specified SVM:\n python expo_netapp_dedup_checker.py efficiency <svm name> "
+    print "\n Usage- Volume enable dedup/compression of a single volume on a on specified SVM:\n python expo_netapp_dedup_checker.py dedup <svm name> <volume name> \n "
     sys.exit (1)
 
 def print_status(x):
@@ -72,7 +72,7 @@ elif len (sys.argv) >= 3 and 'svm' in sys.argv[2] :
 #svms= [sys.argv[2]]
 
 for mysvm in svms:
-  myfiler='fcl02-mgmt.scl1.us.tribalfusion.net'
+  myfiler='fcl02-mgmt.scl1.us.mydomain.net'
   user='dedupuser'
   password='dedup123'
   cmd='/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python/apitest.py'
@@ -109,7 +109,7 @@ for mysvm in svms:
 	    print_status(x)
 	  except:
 		print "\n Error occurred while updating volume '"+key+"', please check manually! \n"
-	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
+	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
    
   elif 'dedup' in sys.argv[1]:      
      print "\n********* Current status of SVM '"+mysvm+"'\n"
@@ -131,12 +131,12 @@ for mysvm in svms:
 	    print_status(x)
      except:
 		print "\n Error occurred while updating volume '"+key[0]+"', please check manually! \n"
-	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
+	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
 
   else:
       print "\n Usage- Volume dedup status on all SVMs:\n python expo_netapp_dedup_checker.py status "
-      print "\n Usage- Volume enable dedup/compression on all SVMs:\n python expo_netapp_dedup_checker.py efficiency \n"
+      print "\n Usage- Volume enable dedup/compression on all SVMs:\n python expo_netapp_dedup_checker.py efficiency "
       print "\n Usage- Volume dedup status of specified SVM:\n python expo_netapp_dedup_checker.py status <svm name> "
-      print "\n Usage- Volume enable dedup/compression on specified SVM:\n python expo_netapp_dedup_checker.py efficiency <svm name> \n"
-      print "\n Usage- Volume enable dedup/compression of a single volume on a on specified SVM :\n python expo_netapp_dedup_checker.py dedup <svm name> <volume name> \n"
+      print "\n Usage- Volume enable dedup/compression on specified SVM:\n python expo_netapp_dedup_checker.py efficiency <svm name> "
+      print "\n Usage- Volume enable dedup/compression of a single volume on a on specified SVM:\n python expo_netapp_dedup_checker.py dedup <svm name> <volume name> \n"
       sys.exit(1)

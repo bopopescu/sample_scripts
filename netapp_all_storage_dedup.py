@@ -73,7 +73,7 @@ elif len (sys.argv) >= 3 and 'svm' in sys.argv[2] :
 #svms= [sys.argv[2]]
 
 for mysvm in svms:
-  myfiler='fcl02-mgmt.scl1.us.tribalfusion.net'
+  myfiler='fcl02-mgmt.scl1.us.mydomain.net'
   user='dedupuser'
   password='dedup123'
   cmd='/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python/apitest.py'
@@ -116,7 +116,7 @@ for mysvm in svms:
 	    print_status(x)
 	  except:
 		print "\n Error occurred while updating volume '"+key+"', please check manually! \n"
-	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
+	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
    
   elif 'dedup' in sys.argv[1]:      
      print "\n********* Current status of SVM '"+mysvm+"'\n"
@@ -144,7 +144,7 @@ for mysvm in svms:
 	    print_status(x)
      except:
 		print "\n Error occurred while updating volume '"+key[0]+"', please check manually! \n"
-	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
+	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
 
   else:
       print "\n Usage- Volume dedup status on all SVMs:\n python expo_netapp_dedup_checker.py status "

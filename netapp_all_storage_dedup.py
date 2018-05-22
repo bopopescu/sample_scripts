@@ -1,12 +1,12 @@
 #########################
 ## 
-## Script helps check/enable dedup status of volumes in SVM used by Expostack Storage As a Service 
+## Script helps check/enable dedup status of volumes in Netapp CDOT SVMs.
 ## 
 ## Author: Suhaib Chishti
 ## 
-## Prerequisites: Please make sure Cinder-Weekly & Manila-Weekly Storage efficiency policies exist on the SVM 
+## Prerequisites: Please make sure Biweekly, Cinder-Weekly & Manila-Weekly Storage efficiency policies exist on the SVM 
 ## 
-## NOTE: Make sure all SVM used by  Expostack Storage As a Service are placed in list 'smvs'
+## NOTE: Any dev SVM volume will have dedup and compression enabled. On prod SVM volumes only dedup will be enabled. 
 ## python /usr/local/bin/expo_netapp_dedup_checker.py help
 ##
 ##  Usage- Volume dedup status on all SVMs: python expo_netapp_dedup_checker.py status 
@@ -14,6 +14,7 @@
 ##  Usage- Volume dedup status of specified SVM: python expo_netapp_dedup_checker.py status <svm name> 
 ##  Usage- Volume enable dedup/compression on specified SVM: python expo_netapp_dedup_checker.py efficiency <svm name> 
 ##  Usage- Volume enable dedup/compression of a single volume on a on specified SVM: python expo_netapp_dedup_checker.py dedup <svm name> <volume name> 
+##
 ########################
 #!/usr/bin/python
 import sys
@@ -66,13 +67,13 @@ def print_status(x):
 #svms=['svm-dev-clones','svm-dev-01','svm-corp-01','svm-prod-01','svm-prod-02','svm-prod-ad','svm-stby-ad']
 #svms=['svm-dev-clones']
 if len (sys.argv) < 3 :
-    svms=['svm-dev-clones','svm-dev-01','svm-corp-01','svm-prod-01','svm-prod-02','svm-prod-ad','svm-stby-ad']
+    svms=['svm-dev-clones','svm-dev-01','svm-corp-01','svm-prod-01','svm-prod-02','svm-prod-ad','svm-stby-ad','svm-prod-saas-01','svm-dev-saas-01']
 elif len (sys.argv) >= 3 and 'svm' in sys.argv[2] :
     svms= [sys.argv[2]]
 #svms= [sys.argv[2]]
 
 for mysvm in svms:
-  myfiler='fcl02-mgmt.scl1.us.mydomain.net'
+  myfiler='fcl02-mgmt.scl1.us.tribalfusion.net'
   user='dedupuser'
   password='dedup123'
   cmd='/usr/local/src/lease_expire/netapp-manageability-sdk-5.3/src/sample/Data_ONTAP/Python/apitest.py'
@@ -94,9 +95,15 @@ for mysvm in svms:
        if 'root' in key or 'true' in value: 
   	  pass
        else:
+          if 'cinder' in key  or 'volume' in key and 'saas' in mysvm:
+              policy='Cinder-Weekly'
+          elif 'share' in key and 'saas' in mysvm:
+              policy='Manila-Weekly'
+          else:
+	      policy='Biweekly'
           dedup_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-enable path /vol/" + key  
           compress_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-set-config  enable-compression true path /vol/" + key  
-          run_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-set-config path /vol/" + key + " policy-name 'Biweekly'" 
+          run_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-set-config path /vol/" + key + " policy-name '"+policy+"'" 
 	  try:
 	    print "\n \n Setting dedup on volume '"+key+"' .................\n"
             os.system(dedup_cmd)
@@ -109,16 +116,22 @@ for mysvm in svms:
 	    print_status(x)
 	  except:
 		print "\n Error occurred while updating volume '"+key+"', please check manually! \n"
-	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
+	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
    
   elif 'dedup' in sys.argv[1]:      
      print "\n********* Current status of SVM '"+mysvm+"'\n"
      figures = print_status(x)
      key= [sys.argv[3]]
      print "\n********* Setting dedup on volume '"+key[0]+"'\n"
+     if 'cinder' in key and 'saas' in mysvm:
+          policy='Cinder-Weekly'
+     elif 'share' in key and 'saas' in mysvm:
+          policy='Manila-Weekly'
+     else:
+	  policy='Biweekly'
      dedup_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-enable path /vol/" + key[0]  
      compress_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-set-config  enable-compression true path /vol/" + key[0] 
-     run_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-set-config path /vol/" + key[0] + " policy-name 'Biweekly'" 
+     run_cmd="python " + cmd + " -v " + mysvm +" "+ myfiler +" "+ user +" "+ password + " sis-set-config path /vol/" + key[0] + " policy-name '"+policy+"'" 
      try:
 	    print "\n \n Setting dedup on volume '"+key[0]+"' .................\n"
             os.system(dedup_cmd)
@@ -131,7 +144,7 @@ for mysvm in svms:
 	    print_status(x)
      except:
 		print "\n Error occurred while updating volume '"+key[0]+"', please check manually! \n"
-	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@mydomain.com")
+	        os.system("'echo Please check volume and run expo_netapp_dedup_checker.py with 'status' switch!' | mailx -s 'Error occurred while setting dedup/compression setting on volume' noc@exponential.com")
 
   else:
       print "\n Usage- Volume dedup status on all SVMs:\n python expo_netapp_dedup_checker.py status "

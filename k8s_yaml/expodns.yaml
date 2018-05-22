@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: expodnsk8s
-        image: expodockerregistry.tf-net.tribalfusion.com/itops/expodns:base
+        image: expodockerregistry.tf-net.mydomain.com/itops/expodns:base
         env:
         - name: ROOT_PASSWORD
           value: BSoniC

@@ -11,6 +11,6 @@ spec:
     spec:
       containers:
       - name: web
-        image: expodockerregistry.tf-net.tribalfusion.com/itops/suhaib_repo:haproxy
+        image: expodockerregistry.tf-net.mydomain.com/itops/suhaib_repo:haproxy
       imagePullSecrets:
       - name: regsecret

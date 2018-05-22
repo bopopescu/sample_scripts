@@ -673,7 +673,7 @@ resources:
             mysql_user="k8s_user"
             mysql_password="exposecret"
             mysql=$(which mysql)
-            mysql_host="vmreports.tf-net.tribalfusion.com"
+            mysql_host="vmreports.tf-net.mydomain.com"
             vrrp_id=$(mysql k8s -u${mysql_user} -p${mysql_password} -h${mysql_host}  -e "select min(vrrp_id) from vrrp where k8s_master_1='';"|grep -v min)
             if [[ $vrrp_id == "NULL" ]]
             then

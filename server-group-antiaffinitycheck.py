@@ -156,7 +156,7 @@ def fix_group_duplicates(server_group_id):
 
 
 if __name__ == '__main__':
-    os.environ["OS_AUTH_URL"] = "http://expostack.tf-net.tribalfusion.com:35357/v3"
+    os.environ["OS_AUTH_URL"] = "http://expostack.tf-net.mydomain.com:35357/v3"
     os.environ["OS_PROJECT_DOMAIN_ID"] = "default"
     os.environ["OS_USER_DOMAIN_ID"] = "default"
     os.environ["OS_PROJECT_NAME"] = "admin"

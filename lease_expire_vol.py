@@ -74,7 +74,7 @@ def notify(receiver,vmname,ipaddress,hours,whattodo):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.tribalfusion.com')
+    s = smtplib.SMTP('mail.mydomain.com')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 

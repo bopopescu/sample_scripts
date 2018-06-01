@@ -1,0 +1,6 @@
+{% if grains['os'] == "CentOS" %}
+docker package:
+    pkg.installed:
+        - name: docker-ce
+{% endif %}
+

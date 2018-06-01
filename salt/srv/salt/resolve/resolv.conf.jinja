@@ -1,0 +1,11 @@
+# modified 9/7/16
+{% if grains['domain'] != "" %}
+domain {{ grains['domain'] }}
+{% else %}
+domain dev.scl1.us.tribalfusion.net
+{% endif %}
+nameserver 204.11.108.93
+nameserver 204.11.108.92
+search vpc.dev.scl1.us.tribalfusion.net dev.scl1.us.tribalfusion.net prod.scl1.us.tribalfusion.net scl1.us.tribalfusion.net tribalfusion.com
+options timeout:3
+options attempts:2

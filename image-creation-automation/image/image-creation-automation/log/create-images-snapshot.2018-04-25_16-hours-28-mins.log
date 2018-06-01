@@ -1,0 +1,87 @@
+Username: samir.chowdhary
+ 
+Remaining space on /var/lib/glance is lesser than 10%
+ 
+Filesystem                                         Size  Used Avail Use% Mounted on
+svm-dev-01-2016-lif:/expo_openstack_controller_01  950G  868G   83G  92% /var/lib/glance
+ 
+Do you wanna continue taking a backup of image of instance ? 
+ 
+Press Y for Yes, N for No 
+Not taking backup of image as per user choice .... 
+ 
+Fetching Project lists ...... 
+ 
+Please choose project for defining visiblity of image to be created .... 
+ 
+Note: To choose multiple projects, use number separated by commans ... 
+ 
+For example: For choosing single project like first project, enter 1 ....
+ 
+For choosing multiple projects, like first three, enter 1,2,3 .....
+ 
+1: 0c80c603f7ab428c9d64c760e1903381   ITOps Production
+2: 378f49890e584afea637e466e5278e3f   demo
+3: 3f77474a67bd4a56bb0d9f68b8cf0adc   service
+4: 53e9335c9ec44b0a8fae00e59a907c61   IT LAB
+5: 5e13d215ccdc492d889e0a7ef19078c5   Engineering Development
+6: 84a1c856482f4eb0b3f6473b6e4d1735   Corporate IT
+7: 8c545e73021a4c4d8c13438f340124c3   ITOps
+8: a523201fb9984f5392cd70f3928e1dfd   Big Data Development
+9: aaaf038fd51d4ca78213bfdad1a6d4ec   Oracle Databases
+10: afebe4cc1ed744f79d315c65823903b4   admin
+11: bd4de5fd011d4a419da3e2068192347e   Web Zones
+12: bef426e614e14bb4b4b23b9d07a6a9df   Engineering Production
+13: ef5df579b1144e67b8d0ff561d46c3a2   Engineering Staging
+ 
+Enter your choice: 
+ 
+| 526a6407-8d8d-4826-aec5-3dba1c98ddfa | vitco-test-instance                                   | 8c545e73021a4c4d8c13438f340124c3 | SHUTOFF | -          | Shutdown    | Dev-SCL1=10.29.50.22                                                      |
+Instance ID: 526a6407-8d8d-4826-aec5-3dba1c98ddfa - Status: Shutdown
+| 526a6407-8d8d-4826-aec5-3dba1c98ddfa | vitco-test-instance                                   | 8c545e73021a4c4d8c13438f340124c3 | SHUTOFF | -          | Shutdown    | Dev-SCL1=10.29.50.22                                                      |
+526a6407-8d8d-4826-aec5-3dba1c98ddfa has been shutdown
+
+Server snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 25% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 50% completeServer snapshotting... 100% complete
+Finished
+Image created: 'TCO.img'
+Command: qemu-img convert -c -p -O qcow2 /var/lib/glance/2e50296d-b25c-484e-97c9-844f905422ee 'TCO.img'
+    (0.00/100%)    (1.00/100%)    (2.00/100%)    (3.00/100%)    (4.00/100%)    (5.00/100%)    (6.00/100%)    (7.00/100%)    (8.00/100%)    (9.00/100%)    (10.00/100%)    (11.00/100%)    (12.00/100%)    (13.00/100%)    (14.00/100%)    (15.00/100%)    (16.00/100%)    (17.00/100%)    (18.00/100%)    (19.00/100%)    (20.00/100%)    (21.00/100%)    (22.00/100%)    (23.00/100%)    (24.00/100%)    (25.00/100%)    (26.00/100%)    (27.00/100%)    (28.00/100%)    (29.00/100%)    (30.00/100%)    (31.00/100%)    (32.00/100%)    (33.00/100%)    (34.00/100%)    (35.00/100%)    (36.00/100%)    (37.00/100%)    (38.00/100%)    (39.00/100%)    (40.00/100%)    (41.00/100%)    (42.00/100%)    (43.00/100%)    (44.00/100%)    (45.00/100%)    (46.00/100%)    (47.00/100%)    (48.00/100%)    (49.00/100%)    (50.00/100%)    (51.00/100%)    (52.00/100%)    (53.00/100%)    (54.00/100%)    (55.00/100%)    (56.00/100%)    (57.00/100%)    (58.00/100%)    (59.00/100%)    (60.00/100%)    (61.00/100%)    (62.00/100%)    (63.00/100%)    (64.00/100%)    (65.00/100%)    (66.00/100%)    (67.00/100%)    (68.00/100%)    (69.00/100%)    (70.00/100%)    (71.00/100%)    (72.00/100%)    (73.00/100%)    (74.00/100%)    (75.00/100%)    (76.00/100%)    (77.00/100%)    (78.00/100%)    (79.00/100%)    (80.00/100%)    (81.00/100%)    (82.01/100%)    (83.01/100%)    (84.01/100%)    (85.01/100%)    (86.01/100%)    (87.01/100%)    (88.01/100%)    (89.01/100%)    (90.01/100%)    (91.01/100%)    (92.01/100%)    (93.01/100%)    (94.01/100%)    (95.01/100%)    (96.01/100%)    (97.01/100%)    (98.01/100%)    (99.01/100%)    (100.00/100%)    (100.00/100%)
+Snapshot successfully compressed
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | 9f0402dea4ad67a93959668fcdfe2ae3     |
+| container_format | bare                                 |
+| created_at       | 2018-04-26T00:05:11Z                 |
+| disk_format      | qcow2                                |
+| id               | 7217251a-333c-4232-b5b0-286710200223 |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | TCO                                  |
+| owner            | 8c545e73021a4c4d8c13438f340124c3     |
+| protected        | False                                |
+| size             | 3652497920                           |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2018-04-26T00:05:36Z                 |
+| virtual_size     | None                                 |
+| visibility       | private                              |
++------------------+--------------------------------------+
+| 7217251a-333c-4232-b5b0-286710200223 | TCO                                                 |
+| 1dc19627-5603-4fa4-b8bc-3bfb6dc6f320 | TCO-New                                             |
+| 53f22af7-fd70-4a02-a575-88a2afa1a8e6 | TCO-TOOL-Image                                      |
+| 2e50296d-b25c-484e-97c9-844f905422ee | TCO.img                                             |
+Image successfully uploaded: 'TCO'
+Temporary snapshot removed: 2e50296d-b25c-484e-97c9-844f905422ee
+Restarting your server: 526a6407-8d8d-4826-aec5-3dba1c98ddfa
+Request to start server 526a6407-8d8d-4826-aec5-3dba1c98ddfa has been accepted.
+Changing visiblity of image to Private
+ 
+Further changing visiblity of image as per project specified ......
+ 
+----------------------------------------------------------------------------------------------------------------
+Changing visiblity of image: 7217251a-333c-4232-b5b0-286710200223
+1dc19627-5603-4fa4-b8bc-3bfb6dc6f320
+53f22af7-fd70-4a02-a575-88a2afa1a8e6 to Project: 8c545e73021a4c4d8c13438f340124c3
+----------------------------------------------------------------------------------------------------------------
+  

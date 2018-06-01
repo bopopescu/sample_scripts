@@ -1,0 +1,10 @@
+{% set openstackCluster = salt['grains.get']('openstack:CLUSTER', '') %}
+
+base:
+  '*':
+    - data
+  'openstack:CLUSTER:{{openstackCluster}}':
+    - match: grain
+    - openstack.{{openstackCluster}}
+
+# vmsalt-head-master:/srv/pillar/top.sls

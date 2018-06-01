@@ -1,0 +1,7 @@
+========================== Authorized Access Notice ===========================
+      This computer system is the property of Exponential Interactive Inc.
+      Activities are actively monitored and unauthorized access or use of
+                      this computer system is prohibited
+===============================================================================
+[{{ grains['id'] }}={{ "=".join(grains['fqdn_ip4']) }}
+ {{ grains['os'] }} {{ grains['osrelease'] }} ({{ grains['num_cpus'] }}x {{ grains['osarch'] }}, {{ "{0:.2f}".format(grains['mem_total']/1024) }} GB) Managed with Salt {{ grains['saltversion'] }}]

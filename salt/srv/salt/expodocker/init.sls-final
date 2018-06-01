@@ -1,0 +1,35 @@
+{% set distribution = salt['grains.get']('os', None ) %}
+{% if distribution == 'CentOS' %}
+/etc/yum.repos.d/expo_docker.repo:
+  file.managed:
+    - source: salt://expodocker/expo_docker.repo
+    - user: root
+    - group: root
+    - mode: 644
+    - order: 1
+    - failhard: True
+docker:
+  pkg.removed:
+    - pkgs:
+      - container-selinux
+      - docker
+      - docker-client
+      - docker-common
+      - docker-forward-journald
+      - docker-selinux
+yum-plugin-versionlock:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+docker-ce:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+    - order: last
+{% endif %}

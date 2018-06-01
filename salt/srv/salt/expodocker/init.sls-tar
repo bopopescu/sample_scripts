@@ -1,0 +1,152 @@
+{% set distribution = salt['grains.get']('os', None ) %}
+{% if distribution == 'CentOS' and grains['fqdn'].startswith('vi') %}
+{% if grains['osrelease'].startswith('7') %}
+olddocker:
+  pkg.removed:
+    - pkgs:
+      - container-selinux
+      - docker
+      - docker-client
+      - docker-common
+      - docker-forward-journald
+      - docker-selinux
+/etc/yum.repos.d/expo_docker.repo:
+  file.managed:
+    - source: salt://expodocker/expo_docker.repo
+    - user: root
+    - group: root
+    - mode: 644
+    - failhard: True
+docker-ce:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+dockercentos7:
+  service.running:
+    - enable: True
+    - reload: True
+    - watch:
+      - pkg: docker-ce
+{% endif %}
+{% if grains['osrelease'].startswith('6') %}
+newdocker:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+    - pkgs:
+      - docker-io
+      - docker-io-devel
+      - docker-io-fish-completion
+      - docker-io-logrotate
+      - docker-io-vim
+      - docker-io-zsh-completion
+rmdocker:
+  pkg.removed:
+    - pkgs:
+      - docker
+dockercentos6:
+  service.running:
+    - name: docker
+    - enable: True
+    - reload: True
+    - watch:
+      - pkg: newdocker
+{% endif %}
+yum-plugin-versionlock:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+ca-certificates:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+  file.managed:
+      - names:
+        - /etc/pki/tls/certs/gdig2.crt
+        - /etc/pki/ca-trust/source/anchors/gdig2.crt
+      - source: salt://expodocker/gdig2.crt
+      - mode: 0644
+      - user: root
+      - group: root
+      - require:
+        - pkg: ca-certificates
+/usr/bin/update-ca-trust:
+  cmd.wait:
+    - watch:
+      - file: /etc/pki/tls/certs/gdig2.crt
+      - file: /etc/pki/ca-trust/source/anchors/gdig2.crt
+{% endif %}
+
+{% set ubuntudistribution = salt['grains.get']('os', None ) %}
+{% if ubuntudistribution == 'Ubuntu' and grains['fqdn'].startswith('vm') %}
+docker-ce-repo:
+  pkgrepo.managed:
+    - humanname: Expo Docker 
+    {% if grains['osrelease'].startswith('14') %}
+    - name: deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable
+    {% elif grains['osrelease'].startswith('16') %}
+    - name: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    {% endif %}
+    - source: salt://expodocker/docker-ce.key
+ubuntuolddocker:
+  pkg.removed:
+    - pkgs:
+      - docker.io
+      - docker-engine
+      - docker
+/var/log/docker-ce-pkg/docker_ubuntu_14.tar:
+  file.managed:
+    - source: salt://expodocker/docker_ubuntu_14.tar
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True
+    - failhard: True
+dockerinstall: 
+  cmd.wait: 
+    - watch:
+      - pkg: docker-ce
+    - cwd: /var/log/docker-ce-pkg
+    - name:  dpkg -i *.deb
+    - shell: /bin/bash
+    - timeout: 300
+ca-certificates:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+  file.managed:
+      - names:
+        - /usr/local/share/ca-certificates/gdig2.crt
+      - source: salt://expodocker/gdig2.crt
+      - mode: 0644
+      - user: root
+      - group: root
+      - require:
+        - pkg: ca-certificates
+/usr/sbin/update-ca-certificates:
+  cmd.wait:
+    - watch:
+      - file: /usr/local/share/ca-certificates/gdig2.crt
+dockerubuntu:
+  service.running:
+    - name: docker
+    - enable: True
+    - reload: True
+    - watch:
+      - pkg: ubuntunewdocker
+{% endif%}

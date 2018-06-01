@@ -1,0 +1,21 @@
+{% set logstashclient = salt['grains.filter_by']({
+    'CentOS': {
+        'script': ('/usr/bin/wget http://vmlogstash-01.dev.scl1.us.tribalfusion.net:8080/expo_logserver/expo_logserver.repo -O /etc/yum.repos.d/expo_logserver.repo && ' +
+                   '/usr/bin/yum update -y rsyslog && ' +
+                   '/bin/cp /etc/rsyslog.conf /etc/rsyslog.conf_orig && ' +
+                   '/usr/bin/wget http://vmlogstash-01.dev.scl1.us.tribalfusion.net:8080/expo_logserver/rsyslog.conf -O /etc/rsyslog.conf && ' +
+                   '/sbin/service rsyslog restart')
+
+    },
+    'Solaris': {
+        'script': ( 
+"HOSTS_LINE='10.29.16.38     vmlogstash-01 vmlogstash-01.dev.scl1.us.tribalfusion.net'; " +
+'FORWARD_LINE=\'*.err;kern.debug;daemon.notice;mail.crit\\t@vmlogstash-01\'; ' +
+'/usr/bin/grep "vmlogstash-01" /etc/hosts || (/usr/bin/cp /etc/hosts /etc/hosts_orig && /usr/bin/echo $HOSTS_LINE >> /etc/hosts); ' +
+'/usr/bin/grep "@vmlogstash-01" /etc/syslog.conf || (/usr/bin/cp /etc/syslog.conf /etc/syslog.conf_orig && /usr/bin/echo  $FORWARD_LINE >> /etc/syslog.conf && /usr/sbin/svcadm refresh svc:/system/system-log); ' 
+                  )
+    }
+},
+grain='os',
+merge=salt['pillar.get']('logstash:lookup'),
+default='default') %}

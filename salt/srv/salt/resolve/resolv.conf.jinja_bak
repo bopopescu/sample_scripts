@@ -1,0 +1,7 @@
+#
+domain scl1.us.tribalfusion.net
+nameserver 204.11.108.93
+nameserver 204.11.108.92
+search scl1.us.tribalfusion.net prod.scl1.us.tribalfusion.net dev.scl1.us.tribalfusion.net prod.ash1.us.tribalfusion.net dev.ash1.us.tribalfusion.net tribalfusion.com
+options timeout:3
+options attempts:2

@@ -1,0 +1,25 @@
+{% set dockerclient = salt['grains.filter_by']({
+    'CentOS': {
+        'script': ('/usr/bin/wget http://vmlogstash-01.dev.scl1.us.tribalfusion.net:8080/expo_docker/expo_docker.repo -O /etc/yum.repos.d/expo_docker.repo && ' +
+                   '/usr/bin/yum remove -y  container-selinux && ' +
+                   '/usr/bin/yum remove -y  docker && ' +
+                   '/usr/bin/yum remove -y  docker-client && ' +
+                   '/usr/bin/yum remove -y  docker-common && ' +
+                   '/usr/bin/yum remove -y  docker-forward-journald && ' +
+                   '/usr/bin/yum remove -y docker-selinux && ' +
+                   '/usr/bin/yum install -y docker-ce && ' +
+                   '/sbin/service docker restart')
+
+    },
+    'Solaris': {
+        'script': ( 
+"HOSTS_LINE='10.29.16.38     vmlogstash-01 vmlogstash-01.dev.scl1.us.tribalfusion.net'; " +
+'FORWARD_LINE=\'*.err;kern.debug;daemon.notice;mail.crit\\t@vmlogstash-01\'; ' +
+'/usr/bin/grep "vmlogstash-01" /etc/hosts || (/usr/bin/cp /etc/hosts /etc/hosts_orig && /usr/bin/echo $HOSTS_LINE >> /etc/hosts); ' +
+'/usr/bin/grep "@vmlogstash-01" /etc/syslog.conf || (/usr/bin/cp /etc/syslog.conf /etc/syslog.conf_orig && /usr/bin/echo  $FORWARD_LINE >> /etc/syslog.conf && /usr/sbin/svcadm refresh svc:/system/system-log); ' 
+                  )
+    }
+},
+grain='os',
+merge=salt['pillar.get']('dockerclient:lookup'),
+default='default') %}

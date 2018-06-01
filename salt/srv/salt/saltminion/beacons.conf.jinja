@@ -1,0 +1,47 @@
+{% set servicecfg = salt['grains.filter_by']({
+    'RedHat': {
+        'ntp': 'ntpd',
+        'ganglia': 'gmond',
+    },
+    'Debian': {
+        'ntp': 'ntp',
+        'ganglia': 'ganglia',
+    },
+}, grain='os_family',merge=salt['pillar.get']('servicecfg:lookup')) %}
+beacons:
+{% if grains['kernel'] == 'Linux' %}
+    inotify:
+       /etc/resolv.conf:
+            mask:
+                - modify
+                - delete
+            interval: 5
+            disable_during_state_run flag: True
+       /etc/motd:
+            mask:
+                - modify
+                - delete
+            interval: 5
+            disable_during_state_run flag: True
+       /etc/ntp.conf:
+            mask:
+                - modify
+                - delete
+            interval: 5
+            disable_during_state_run flag: True
+    service:
+        {{ servicecfg.ntp }}:
+            onchangeonly: True
+        {{ servicecfg.ganglia }}:
+            onchangeonly: True
+{% elif grains['kernel'] == "SunOS" %}
+    jnotify:
+        files:
+            - /etc/resolv.conf
+            - /etc/syslog.conf
+            - /etc/motd
+            - /etc/inet/ntp.conf
+        interval: 5
+        port: 5686
+        disable_during_state_run: True
+{% endif %}

@@ -1,0 +1,25 @@
+{%- set networkNameDEV = "Dev-SCL1" %}
+{%- set networkNamePROD = "Prod-SCL1" %}
+{%- set networkNameORACLE = "Oracle-SCL1" %}
+{%- set networkNameCORPORATE = "Corporate-SCL1" %}
+{%- set physicalDeviceDEV = "vlan2048" %}
+{%- set physicalDevicePROD = "vlan132" %}
+{%- set physicalDeviceORACLE = "eth1" %}
+{%- set physicalDeviceCORPORATE = "vlan2019" %}
+
+{% set ZoneNetworks = {
+    'SCL1-ZONE1':{
+        'Networks': networkNameDEV + ':' + physicalDeviceDEV + ',' + networkNamePROD + ':' + physicalDevicePROD,
+    },
+    'SCL1-ZONE2':{
+        'Networks': networkNameDEV + ':' + physicalDeviceDEV + ',' + networkNamePROD + ':' + physicalDevicePROD,
+    },
+    'SCL1-ZONE3':{
+        'Networks': networkNameDEV + ':' + physicalDeviceDEV + ',' + networkNamePROD + ':' + physicalDevicePROD + ',' + networkNameCORPORATE + ':' + physicalDeviceCORPORATE,
+    },
+    'SCL1-ZONE4':{
+        'Networks': networkNameDEV + ':' + physicalDeviceDEV + ',' + networkNamePROD + ':' + physicalDevicePROD + ',' + networkNameORACLE + ':' + physicalDeviceORACLE,
+    },
+ } %}
+
+{%- set ExpostackNetworks = ZoneNetworks.get(grains.expostack.AVAILABILITY_ZONE, {}).Networks %}

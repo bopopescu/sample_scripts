@@ -1,0 +1,44 @@
+{% if grains['kernel'] == "Linux" %}
+rsyslog package:
+    pkg.installed:
+        - name: rsyslog
+{% endif %}
+
+{% if grains['os'] == 'Solaris' %}
+rsyslog host add:
+    file.append:
+        - name: /etc/hosts
+        - text: '10.29.16.38 vmlogstash-01 vmlogstash-01.dev.scl1.us.tribalfusion.net'
+{% endif %}
+
+rsyslog config:
+{% if grains['os'] == "Ubuntu" %}
+    file.prepend:
+        - name: /etc/rsyslog.d/50-default.conf
+        - text: '*.*    @10.29.16.38:514'
+{% elif grains['os_family'] == "RedHat" or grains['os'] == "Debian" %}
+    file.append:
+        - name: /etc/rsyslog.conf
+        - text: '*.*    @10.29.16.38:514'
+{% elif grains['os'] == 'Solaris' %}
+    file.append:
+        - name: /etc/syslog.conf
+        - text: '*.err;kern.debug;daemon.notice;mail.crit	@vmlogstash-01'
+{% endif %}
+
+rsyslog service:
+{% if grains['kernel'] == "Linux" %}
+    service.running:
+        - name: rsyslog
+        - enable: True
+        - watch:
+            - file: rsyslog config
+        - require:
+            - pkg: rsyslog package
+{% elif grains['os'] == 'Solaris' %}
+    service.running:
+        - name: system-log
+        - enable: True
+        - watch:
+            - file: rsyslog config
+{% endif %}

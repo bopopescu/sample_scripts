@@ -1,0 +1,156 @@
+{% set distribution = salt['grains.get']('os', None ) %}
+{% if distribution == 'CentOS' and grains['fqdn'].startswith('vi') %}
+yum-plugin-versionlock:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+{% if grains['osrelease'].startswith('7') %}
+olddocker:
+  pkg.removed:
+    - pkgs:
+      - container-selinux
+      - docker
+      - docker-client
+      - docker-common
+      - docker-forward-journald
+      - docker-selinux
+/etc/yum.repos.d/expo_docker.repo:
+  file.managed:
+    - source: salt://modules/expodocker/repo/expo_docker.repo
+    - user: root
+    - group: root
+    - mode: 644
+    - failhard: True
+docker-ce:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+dockercentos7:
+  service.running:
+    - name: docker
+    - enable: True
+    - reload: True
+    - watch:
+      - pkg: docker-ce
+{% endif %}
+{% if grains['osrelease'].startswith('6') %}
+newdocker:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+    - pkgs:
+      - docker-io
+      - docker-io-devel
+      - docker-io-fish-completion
+      - docker-io-logrotate
+      - docker-io-vim
+      - docker-io-zsh-completion
+rmdocker:
+  pkg.removed:
+    - pkgs:
+      - docker
+dockercentos6:
+  service.running:
+    - name: docker
+    - enable: True
+    - reload: True
+    - watch:
+      - pkg: newdocker
+{% endif %}
+ca-certificates:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+  file.managed:
+      - names:
+        - /etc/pki/tls/certs/gdig2.crt
+        - /etc/pki/ca-trust/source/anchors/gdig2.crt
+      - source: salt://modules/expodocker/cert/gdig2.crt
+      - mode: 0644
+      - user: root
+      - group: root
+      - require:
+        - pkg: ca-certificates
+/usr/bin/update-ca-trust:
+  cmd.wait:
+    - watch:
+      - file: /etc/pki/tls/certs/gdig2.crt
+      - file: /etc/pki/ca-trust/source/anchors/gdig2.crt
+{% endif %}
+
+{% set ubuntudistribution = salt['grains.get']('os', None ) %}
+{% if ubuntudistribution == 'Ubuntu' and grains['fqdn'].startswith('vm') %}
+/etc/apt/sources.list.d/packages.internal.list:
+  file.managed:
+    - source: salt://modules/expodocker/repo/packages.internal.list
+    - user: root
+    - group: root
+    - mode: 644
+    - failhard: True
+docker-ce-repo:
+  pkgrepo.managed:
+    - humanname: Expo Docker 
+    {% if grains['osrelease'].startswith('14') %}
+    - name: deb http://virepoubuntu14.vpc.dev.scl1.us.tribalfusion.net/ trusty main
+    {% elif grains['osrelease'].startswith('16') %}
+    - name: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    {% endif %}
+    - file: /etc/apt/sources.list.d/packages.internal.list
+    - key_url: salt://expodocker/public.key
+ubuntuolddocker:
+  pkg.removed:
+    - pkgs:
+      - docker.io
+      - docker-engine
+      - docker
+ubuntunewdocker:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+    - pkgs:
+      - docker-ce
+ca-certificates:
+  pkg.installed:
+    - skip_verify: True
+    - skip_suggestions: True
+    - refresh: True
+    - allow_updates: True
+    - hold: False
+  file.managed:
+      - names:
+        - /usr/local/share/ca-certificates/gdig2.crt
+        - /usr/share/ca-certificates/gdig2.crt
+      - makedirs: True
+      - source: salt://modules/expodocker/cert/gdig2.crt
+      - mode: 0644
+      - user: root
+      - group: root
+      - require:
+        - pkg: ca-certificates
+/usr/sbin/update-ca-certificates:
+  cmd.wait:
+    - watch:
+      - file: /usr/local/share/ca-certificates/gdig2.crt
+dockerubuntu:
+  service.running:
+    - name: docker
+    - enable: True
+    - reload: True
+    - watch:
+      - pkg: ubuntunewdocker
+{% endif%}

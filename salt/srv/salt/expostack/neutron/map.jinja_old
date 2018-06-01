@@ -1,0 +1,11 @@
+{%- set linuxZONE = ['SCL1-ZONE1', 'SCL1-ZONE2'] %}
+{%- set windowsZONE = ['SCL1-ZONE3'] %}
+{%- set oracleZONE = ['SCL1-ZONE4'] %}
+{%- set nodeZONE = salt['grains.get']('expostack:AVAILABILITY_ZONE', []) %}
+{% set Networks = salt['grains.filter_by']({
+    'SCL1-ZONE3': {
+        'Networks': "{{networkNameDEV}}:{{physicalDeviceDEV}},{{networkNamePROD}}:{{physicalDevicePROD}},{{networkNameCORPORATE}}:{{physicalDeviceCORPORATE}}",
+    },
+},
+grain='AVAILABILITY_ZONE'
+) %}

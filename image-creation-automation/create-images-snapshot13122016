@@ -1,0 +1,101 @@
+#!/bin/bash
+
+log=create-images-snapshot.$(date +"%F_%H-hours-%M-mins").log
+
+        clear
+
+        false () {
+
+                	echo -e "\nIllegal parameter"
+                	echo -e '\n\nFor usage try: ./create-images-snapshot --help'
+        	}
+
+        banner='========================== Authorized Access Notice ==================================================\nThis script is the property of Exponential Interactive Inc. Any misuse is prohibited.\n======================================================================================================'
+
+        if [ $# -ne 2 ]
+        then
+		option=$1
+
+
+                case ${option} in
+                --help)
+                        echo -e '\nUsage: \n\t./create-images-snapshot instance-id snapshot-name\n\twherein: :\n\t\tinstance-id is instance id of VM \n\t\tsnapshot-name is to be name of snapshot.'
+                        ;;
+                *)
+                        false
+                        ;;
+                esac
+        fi
+
+	if [ $# -eq 2 ]
+	then
+        	version=$(lsb_release -d|awk '{print $2,$3}')
+
+        	if [ "$version" == "Ubuntu 14.04.4" ]
+        	then
+                        echo "You are using: "
+                        echo "-----------------------------------------"
+                        lsb_release -a
+                        echo "------------------------------------------"
+                        echo  "Please make sure, script is executed with root privileges ...... "
+                        id|grep 0
+                        if [ $? -eq 0 ]
+                        then
+				touch $log
+				current_dir=$(pwd)
+				echo " "
+				echo " "
+				echo -e $banner
+				echo " "
+				echo " "
+				
+				echo "Please enter your credentials below to validate ........  "
+				echo " "
+				echo "For example: "
+				echo "Username: firstname.lastname@mydoamin.com"
+				echo " "
+				echo "Please enter your username: "
+				read username
+				name=$(echo $username|cut -d '@' -f1)
+				echo "Please enter password: "
+				read -s password
+
+				cp -p /var/tmp/mynamerc.sh /var/tmp/mynamerc_$name.sh
+
+				echo "export OS_USERNAME="$username"" >> /var/tmp/mynamerc_$name.sh
+				echo "export OS_PASSWORD='${password}'" >> /var/tmp/mynamerc_$name.sh
+				source /var/tmp/mynamerc_$name.sh
+				
+				var=$(nova list| grep ID | cut -d '|' -f2 | cut -d ' ' -f2)
+
+				echo "Verifying credentials ......... "
+				sleep 3
+				echo " "
+				if [ "$var" == "ID" ]
+				then
+       					echo "Credentials Verified ....... "
+				else
+					rm -f /var/tmp/mynamerc_$name.sh
+        				echo "Failed: Could not verify credentials ..... "
+        				echo "Please try again later ..... "
+        				echo "Exiting from script ...... "
+        				exit 1
+				fi		
+
+				echo " "
+				echo " " 
+				echo "Log are being written at $current_dir/$log .... "	
+				$current_dir/run.sh13122016 "$1" "$2" "$name"|tee $current_dir/$log
+				#$current_dir/run.sh "$1" "$2" "$name"|tee $current_dir/$log
+                        else
+                                echo "Logged in user is not root user"
+                                echo "Exiting from script ..... "
+                                exit 1
+                        fi
+        	else
+                	echo "You are not using Ubuntu 14.04.3"
+                	echo "This script is custome build for only Ubuntu 14.04.3"
+                	echo "Exiting script ......... "
+                	exit 1
+        	fi
+	fi

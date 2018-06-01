@@ -1,0 +1,23 @@
+
+{% set ntp = salt['grains.filter_by']({
+    'RedHat': {
+        'pkgs': ['ntp'],
+        'file': '/etc/ntp.conf',
+        'service': 'ntpd',
+        'driftfile': '/var/lib/ntp/drift',
+    },
+    'Debian': {
+        'pkgs': ['ntp'],
+        'file': '/etc/ntp.conf',
+        'service': 'ntp',
+        'driftfile': '/var/lib/ntp/drift',
+    },
+    'Solaris': {
+        'pkgs': ['SUNWntpr', 'SUNWntpu'],
+        'file': '/etc/inet/ntp.conf',
+        'service': 'network/ntp',
+        'driftfile': '/var/ntp/ntp.drift',
+    },
+}, merge=salt['pillar.get']('ntp:lookup')) %}
+
+# vmsalt-head-master:/srv/salt/ntp/map.jinja

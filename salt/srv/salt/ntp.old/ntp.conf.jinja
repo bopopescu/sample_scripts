@@ -1,0 +1,17 @@
+# ntp.conf: Managed by Salt
+#
+# Keep ntpd from panicking in the event of a large clock skew
+# when a VM guest is suspended and resumed.
+tinker panic 0
+
+# Permit time synchronization with our time source, but do not
+# permit the source to query or modify the service on this system.
+restrict default nomodify notrap nopeer noquery
+restrict -6 default nomodify notrap nopeer noquery
+restrict 127.0.0.1
+restrict -6 ::1
+
+server 204.11.108.93
+server 204.11.108.92
+
+# Driftfile

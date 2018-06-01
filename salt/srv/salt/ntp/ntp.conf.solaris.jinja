@@ -1,0 +1,3 @@
+{% for ns in pillar['ntpservers'] -%}
+server {{ ns }}
+{% endfor %}

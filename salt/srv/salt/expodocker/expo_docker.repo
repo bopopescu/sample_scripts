@@ -1,0 +1,5 @@
+[expo_docker]
+name=Exponential CentOS 7.x - local packages for docker etc
+baseurl=http://vmlogstash-01.dev.scl1.us.tribalfusion.net:8080/expo_docker
+enabled=1
+gpgcheck=0

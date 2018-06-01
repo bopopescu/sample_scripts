@@ -1,0 +1,8 @@
+{% set cfg = salt['grains.filter_by']({
+    'Linux': {
+        'fstab_file': '/etc/fstab',
+    },
+    'SunOS': {
+        'fstab_file': '/etc/vfstab',
+    },
+}, grain='kernel',merge=salt['pillar.get']('cfg:lookup')) %}

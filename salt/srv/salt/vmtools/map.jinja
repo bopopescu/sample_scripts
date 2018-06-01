@@ -1,0 +1,23 @@
+
+{% set vmtools = salt['grains.filter_by']({
+    'default': {
+        'script': '/etc/init.d/vmware-tools',
+    },
+    'CentOS': {
+        'script': '/etc/vmware-tools/services.sh',
+    },
+    'Solaris': {
+        'script': '/etc/init.d/vmware-tools',
+    },
+},
+grain='os',
+merge=salt['pillar.get']('vmtools:lookup'),
+default='default') %}
+
+# the default grains lookup to 'os_family' was not working for Oracle E Linux
+# since it uses the same path as Solaris to the vmware-tools script, but shows
+# up as RedHat as it's defined os_family. What to do? What to do?
+# this now uses the 'os' grain instead to correctly target a OEL host's tools
+# script in the correct path. here I just keep OEL as default, but you can
+# define one later
+# vmsalt-head-master:/srv/salt/vmtools/map.jinja

@@ -1,0 +1,7 @@
+base:
+  '*':
+    - data
+  'G@expostack:SCL1:staging_cluster'
+    - expostack
+
+# vmsalt-head-master:/srv/pillar/top.sls

@@ -1,0 +1,364 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon.exceptions Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The horizon Module" href="horizon.html" />
+    <link rel="prev" title="The horizon.messages Module" href="horizon.messages.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-horizon-exceptions-module">
+<h1>The <a class="reference internal" href="../../ref/exceptions.html#module-horizon.exceptions" title="horizon.exceptions"><tt class="xref py py-mod docutils literal"><span class="pre">horizon.exceptions</span></tt></a> Module<a class="headerlink" href="#the-horizon-exceptions-module" title="Permalink to this headline">¶</a></h1>
+<p>Exceptions raised by the Horizon code and the machinery for handling them.</p>
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">AlreadyExists</tt><big>(</big><em>name</em>, <em>resource_type</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#AlreadyExists"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Exception to be raised when trying to create an API resource which
+already exists.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">ConfigurationError</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#ConfigurationError"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Exception to be raised when invalid settings have been provided.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">Conflict</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#Conflict"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Generic error to replace all &#8220;Conflict&#8221;-type API errors.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">status_code</tt><em class="property"> = 409</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">HandledException</tt><big>(</big><em>wrapped</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#HandledException"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Used internally to track exceptions that have gone through
+<a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.handle" title="horizon.exceptions.handle"><tt class="xref py py-func docutils literal"><span class="pre">horizon.exceptions.handle()</span></tt></a> more than once.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">HorizonException</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#HorizonException"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>Base exception class for distinguishing our own exception classes.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">HorizonReporterFilter</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#HorizonReporterFilter"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.debug.SafeExceptionReporterFilter</span></tt></p>
+<p>Error report filter that&#8217;s always active, even in DEBUG mode.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get_traceback_frame_variables</tt><big>(</big><em>request</em>, <em>tb_frame</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#HorizonReporterFilter.get_traceback_frame_variables"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Replaces the values of variables marked as sensitive with
+stars (<strong>*****</strong>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_active</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#HorizonReporterFilter.is_active"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">Http302</tt><big>(</big><em>location</em>, <em>message=None</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#Http302"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Error class which can be raised from within a handler to cause an
+early bailout and redirect at the middleware level.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">status_code</tt><em class="property"> = 302</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">NotAuthenticated</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#NotAuthenticated"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Raised when a user is trying to make requests and they are not logged
+in.</p>
+<p>The included <a class="reference internal" href="../../ref/middleware.html#horizon.middleware.HorizonMiddleware" title="horizon.middleware.HorizonMiddleware"><tt class="xref py py-class docutils literal"><span class="pre">HorizonMiddleware</span></tt></a> catches
+<tt class="docutils literal"><span class="pre">NotAuthenticated</span></tt> and handles it gracefully by displaying an error
+message and redirecting the user to a login page.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">status_code</tt><em class="property"> = 403</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">NotAuthorized</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#NotAuthorized"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Raised whenever a user attempts to access a resource which they do not
+have permission-based access to (such as when failing the
+<a class="reference internal" href="../../ref/decorators.html#horizon.decorators.require_perms" title="horizon.decorators.require_perms"><tt class="xref py py-func docutils literal"><span class="pre">require_perms()</span></tt></a> decorator).</p>
+<p>The included <a class="reference internal" href="../../ref/middleware.html#horizon.middleware.HorizonMiddleware" title="horizon.middleware.HorizonMiddleware"><tt class="xref py py-class docutils literal"><span class="pre">HorizonMiddleware</span></tt></a> catches
+<tt class="docutils literal"><span class="pre">NotAuthorized</span></tt> and handles it gracefully by displaying an error
+message and redirecting the user to a login page.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">status_code</tt><em class="property"> = 401</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">NotAvailable</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#NotAvailable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Exception to be raised when something is not available.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">NotFound</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#NotFound"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Generic error to replace all &#8220;Not Found&#8221;-type API errors.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">status_code</tt><em class="property"> = 404</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">RecoverableError</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#RecoverableError"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Generic error to replace any &#8220;Recoverable&#8221;-type API errors.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">status_code</tt><em class="property"> = 100</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">ServiceCatalogException</tt><big>(</big><em>service_name</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#ServiceCatalogException"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Raised when a requested service is not available in the
+<tt class="docutils literal"><span class="pre">ServiceCatalog</span></tt> returned by Keystone.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">WorkflowError</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#WorkflowError"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Exception to be raised when something goes wrong in a workflow.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt>
+<em class="property">exception </em><tt class="descclassname">horizon.exceptions.</tt><tt class="descname">WorkflowValidationError</tt><a class="reference internal" href="../../_modules/horizon/exceptions.html#WorkflowValidationError"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/exceptions.html#horizon.exceptions.HorizonException" title="horizon.exceptions.HorizonException"><tt class="xref py py-class docutils literal"><span class="pre">horizon.exceptions.HorizonException</span></tt></a></p>
+<p>Exception raised during workflow validation if required data is missing,
+or existing data is not valid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.exceptions.</tt><tt class="descname">check_message</tt><big>(</big><em>keywords</em>, <em>message</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#check_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Checks an exception for given keywords and raises a new <tt class="docutils literal"><span class="pre">ActionError</span></tt>
+with the desired message if the keywords are found. This allows selective
+control over API error messages.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.exceptions.</tt><tt class="descname">error_color</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#error_color"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.exceptions.</tt><tt class="descname">handle</tt><big>(</big><em>request</em>, <em>message=None</em>, <em>redirect=None</em>, <em>ignore=False</em>, <em>escalate=False</em>, <em>log_level=None</em>, <em>force_log=None</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Centralized error handling for Horizon.</p>
+<p>Because Horizon consumes so many different APIs with completely
+different <tt class="docutils literal"><span class="pre">Exception</span></tt> types, it&#8217;s necessary to have a centralized
+place for handling exceptions which may be raised.</p>
+<p>Exceptions are roughly divided into 3 types:</p>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">UNAUTHORIZED</span></tt>: Errors resulting from authentication or authorization
+problems. These result in being logged out and sent to the login screen.</li>
+<li><tt class="docutils literal"><span class="pre">NOT_FOUND</span></tt>: Errors resulting from objects which could not be
+located via the API. These generally result in a user-facing error
+message, but are otherwise returned to the normal code flow. Optionally
+a redirect value may be passed to the error handler so users are
+returned to a different view than the one requested in addition to the
+error message.</li>
+<li>RECOVERABLE: Generic API errors which generate a user-facing message
+but drop directly back to the regular code flow.</li>
+</ol>
+<p>All other exceptions bubble the stack as normal unless the <tt class="docutils literal"><span class="pre">ignore</span></tt>
+argument is passed in as <tt class="docutils literal"><span class="pre">True</span></tt>, in which case only unrecognized
+errors are bubbled.</p>
+<p>If the exception is not re-raised, an appropriate wrapper exception
+class indicating the type of exception that was encountered will be
+returned.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.exceptions.</tt><tt class="descname">handle_notfound</tt><big>(</big><em>request</em>, <em>message</em>, <em>redirect</em>, <em>ignore</em>, <em>escalate</em>, <em>handled</em>, <em>force_silence</em>, <em>force_log</em>, <em>log_method</em>, <em>log_entry</em>, <em>log_level</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#handle_notfound"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.exceptions.</tt><tt class="descname">handle_recoverable</tt><big>(</big><em>request</em>, <em>message</em>, <em>redirect</em>, <em>ignore</em>, <em>escalate</em>, <em>handled</em>, <em>force_silence</em>, <em>force_log</em>, <em>log_method</em>, <em>log_entry</em>, <em>log_level</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#handle_recoverable"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.exceptions.</tt><tt class="descname">handle_unauthorized</tt><big>(</big><em>request</em>, <em>message</em>, <em>redirect</em>, <em>ignore</em>, <em>escalate</em>, <em>handled</em>, <em>force_silence</em>, <em>force_log</em>, <em>log_method</em>, <em>log_entry</em>, <em>log_level</em><big>)</big><a class="reference internal" href="../../_modules/horizon/exceptions.html#handle_unauthorized"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.messages.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon.messages</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/horizon/horizon.exceptions.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.html" title="The horizon Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.messages.html" title="The horizon.messages Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

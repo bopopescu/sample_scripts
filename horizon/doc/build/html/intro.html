@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Horizon Basics &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="index.html" />
+    <link rel="next" title="Quickstart" href="quickstart.html" />
+    <link rel="prev" title="Customizing Horizon" href="topics/customizing.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="horizon-basics">
+<h1>Horizon Basics<a class="headerlink" href="#horizon-basics" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="values">
+<h2>Values<a class="headerlink" href="#values" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>&#8220;Think simple&#8221; as my old master used to say - meaning reduce
+the whole of its parts into the simplest terms, getting back
+to first principles.</p>
+<p class="attribution">&mdash;Frank Lloyd Wright</p>
+</div></blockquote>
+<p>Horizon holds several key values at the core of its design and architecture:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Core Support: Out-of-the-box support for all core OpenStack projects.</li>
+<li>Extensible: Anyone can add a new component as a &#8220;first-class citizen&#8221;.</li>
+<li>Manageable: The core codebase should be simple and easy-to-navigate.</li>
+<li>Consistent: Visual and interaction paradigms are maintained throughout.</li>
+<li>Stable: A reliable API with an emphasis on backwards-compatibility.</li>
+<li>Usable: Providing an <em>awesome</em> interface that people <em>want</em> to use.</li>
+</ul>
+</div></blockquote>
+<p>The only way to attain and uphold those ideals is to make it <em>easy</em> for
+developers to implement those values.</p>
+</div>
+<div class="section" id="history">
+<h2>History<a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
+<p>Horizon started life as a single app to manage OpenStack&#8217;s compute project.
+As such, all it needed was a set of views, templates, and API calls.</p>
+<p>From there it grew to support multiple OpenStack projects and APIs gradually,
+arranged rigidly into &#8220;dash&#8221; and &#8220;syspanel&#8221; groupings.</p>
+<p>During the &#8220;Diablo&#8221; release cycle an initial plugin system was added using
+signals to hook in additional URL patterns and add links into the &#8220;dash&#8221;
+and &#8220;syspanel&#8221; navigation.</p>
+<p>This incremental growth served the goal of &#8220;Core Support&#8221; phenomenally, but
+left &#8220;Extensible&#8221; and &#8220;Manageable&#8221; behind. And while the other key values took
+shape of their own accord, it was time to re-architect for an extensible,
+modular future.</p>
+</div>
+<div class="section" id="the-current-architecture-how-it-meets-our-values">
+<h2>The Current Architecture &amp; How It Meets Our Values<a class="headerlink" href="#the-current-architecture-how-it-meets-our-values" title="Permalink to this headline">¶</a></h2>
+<p>At its core, <strong>Horizon should be a registration pattern for
+applications to hook into</strong>. Here&#8217;s what that means and how it is
+implemented in terms of our values:</p>
+<div class="section" id="core-support">
+<h3>Core Support<a class="headerlink" href="#core-support" title="Permalink to this headline">¶</a></h3>
+<p>Horizon ships with three central dashboards, a &#8220;User Dashboard&#8221;, a
+&#8220;System Dashboard&#8221;, and a &#8220;Settings&#8221; dashboard. Between these three they
+cover the core OpenStack applications and deliver on Core Support.</p>
+<p>The Horizon application also ships with a set of API abstractions
+for the core OpenStack projects in order to provide a consistent, stable set
+of reusable methods for developers. Using these abstractions, developers
+working on Horizon don&#8217;t need to be intimately familiar with the APIs of
+each OpenStack project.</p>
+</div>
+<div class="section" id="extensible">
+<h3>Extensible<a class="headerlink" href="#extensible" title="Permalink to this headline">¶</a></h3>
+<p>A Horizon dashboard application is based around the <a class="reference internal" href="ref/horizon.html#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a>
+class that provides a consistent API and set of capabilities for both
+core OpenStack dashboard apps shipped with Horizon and equally for third-party
+apps. The <a class="reference internal" href="ref/horizon.html#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> class is treated as a top-level
+navigation item.</p>
+<p>Should a developer wish to provide functionality within an existing dashboard
+(e.g. adding a monitoring panel to the user dashboard) the simple registration
+pattern makes it possible to write an app which hooks into other dashboards
+just as easily as creating a new dashboard. All you have to do is import the
+dashboard you wish to modify.</p>
+</div>
+<div class="section" id="manageable">
+<h3>Manageable<a class="headerlink" href="#manageable" title="Permalink to this headline">¶</a></h3>
+<p>Within the application, there is a simple method for registering a
+<a class="reference internal" href="ref/horizon.html#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> (sub-navigation items). Each panel contains the
+necessary logic (views, forms, tests, etc.) for that interface. This granular
+breakdown prevents files (such as <tt class="docutils literal"><span class="pre">api.py</span></tt>) from becoming thousands of
+lines long and makes code easy to find by correlating it directly to the
+navigation.</p>
+</div>
+<div class="section" id="consistent">
+<h3>Consistent<a class="headerlink" href="#consistent" title="Permalink to this headline">¶</a></h3>
+<p>By providing the necessary core classes to build from, as well as a
+solid set of reusable templates and additional tools (base form classes,
+base widget classes, template tags, and perhaps even class-based views)
+we can maintain consistency across applications.</p>
+</div>
+<div class="section" id="stable">
+<h3>Stable<a class="headerlink" href="#stable" title="Permalink to this headline">¶</a></h3>
+<p>By architecting around these core classes and reusable components we
+create an implicit contract that changes to these components will be
+made in the most backwards-compatible ways whenever possible.</p>
+</div>
+<div class="section" id="usable">
+<h3>Usable<a class="headerlink" href="#usable" title="Permalink to this headline">¶</a></h3>
+<p>Ultimately that&#8217;s up to each and every developer that touches the code,
+but if we get all the other goals out of the way then we are free to focus
+on the best possible experience.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="quickstart.html"><em>Quickstart</em></a></dt>
+<dd>A short guide to getting started with using Horizon.</dd>
+<dt><a class="reference internal" href="faq.html"><em>Frequently Asked Questions</em></a></dt>
+<dd>Common questions and answers.</dd>
+<dt><a class="reference internal" href="glossary.html"><em>Glossary</em></a></dt>
+<dd>Common terms and their definitions.</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Horizon Basics</a><ul>
+<li><a class="reference internal" href="#values">Values</a></li>
+<li><a class="reference internal" href="#history">History</a></li>
+<li><a class="reference internal" href="#the-current-architecture-how-it-meets-our-values">The Current Architecture &amp; How It Meets Our Values</a><ul>
+<li><a class="reference internal" href="#core-support">Core Support</a></li>
+<li><a class="reference internal" href="#extensible">Extensible</a></li>
+<li><a class="reference internal" href="#manageable">Manageable</a></li>
+<li><a class="reference internal" href="#consistent">Consistent</a></li>
+<li><a class="reference internal" href="#stable">Stable</a></li>
+<li><a class="reference internal" href="#usable">Usable</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="topics/customizing.html"
+                                  title="previous chapter">Customizing Horizon</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="quickstart.html"
+                                  title="next chapter">Quickstart</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/intro.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="quickstart.html" title="Quickstart"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="topics/customizing.html" title="Customizing Horizon"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

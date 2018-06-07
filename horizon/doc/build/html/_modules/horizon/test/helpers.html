@@ -1,0 +1,489 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>horizon.test.helpers &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="horizon" href="../../horizon.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for horizon.test.helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">django</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth.middleware</span> <span class="kn">import</span> <span class="n">AuthenticationMiddleware</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Permission</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.contrib.messages.storage</span> <span class="kn">import</span> <span class="n">default_storage</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.contrib.sessions.backends.base</span> <span class="kn">import</span> <span class="n">SessionBase</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.core.handlers</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">test</span> <span class="k">as</span> <span class="n">django_test</span>
+<span class="kn">from</span> <span class="nn">django.test.client</span> <span class="kn">import</span> <span class="n">RequestFactory</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">testcases</span>
+<span class="kn">from</span> <span class="nn">django.utils.encoding</span> <span class="kn">import</span> <span class="n">force_text</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">unittest</span>
+
+<span class="k">if</span> <span class="n">django</span><span class="o">.</span><span class="n">VERSION</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">LiveServerTestCase</span>  <span class="c1"># noqa</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">django.contrib.staticfiles.testing</span> \
+            <span class="kn">import</span> <span class="n">StaticLiveServerTestCase</span> <span class="k">as</span> <span class="n">LiveServerTestCase</span>  <span class="c1"># noqa</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">selenium.webdriver.support</span> <span class="kn">import</span> <span class="n">ui</span> <span class="k">as</span> <span class="n">selenium_ui</span>
+    <span class="kn">import</span> <span class="nn">xvfbwrapper</span>  <span class="c1"># Only needed when running the Selenium tests headless</span>
+
+    <span class="kn">from</span> <span class="nn">horizon.test.webdriver</span> <span class="kn">import</span> <span class="n">WebDriver</span>  <span class="c1"># noqa</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="c1"># NOTE(saschpe): Several distribution can&#39;t ship selenium due to its</span>
+    <span class="c1"># non-free license. So they have to patch it out of test-requirements.txt</span>
+    <span class="c1"># Avoid import failure and force not running selenium tests.</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;{0}, force WITH_SELENIUM=False&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;WITH_SELENIUM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+
+<span class="kn">from</span> <span class="nn">mox3</span> <span class="kn">import</span> <span class="n">mox</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">middleware</span>
+
+
+<span class="c1"># Makes output of failing mox tests much easier to read.</span>
+<span class="n">wsgi</span><span class="o">.</span><span class="n">WSGIRequest</span><span class="o">.</span><span class="n">__repr__</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;django.http.HttpRequest&#39;&gt;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">SessionStore</span><span class="p">(</span><span class="n">SessionBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dict like object for simulating sessions in unittests.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modified</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_session_key</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modified</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session_key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modified</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">cycle_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">clear_expired</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">RequestFactoryWithMessages</span><span class="p">(</span><span class="n">RequestFactory</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RequestFactoryWithMessages</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">SessionStore</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">_messages</span> <span class="o">=</span> <span class="n">default_storage</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span>
+
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RequestFactoryWithMessages</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">SessionStore</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">_messages</span> <span class="o">=</span> <span class="n">default_storage</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span>
+
+
+<span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SKIP_UNITTESTS&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                 <span class="s2">&quot;The SKIP_UNITTESTS env variable is set.&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="TestCase"><a class="viewcode-back" href="../../../ref/test.html#horizon.test.helpers.TestCase">[docs]</a><span class="k">class</span> <span class="nc">TestCase</span><span class="p">(</span><span class="n">django_test</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Specialized base test case class for Horizon which gives access to</span>
+<span class="sd">    numerous additional features:</span>
+
+<span class="sd">      * The ``mox`` mocking framework via ``self.mox``.</span>
+<span class="sd">      * A ``RequestFactory`` class which supports Django&#39;s ``contrib.messages``</span>
+<span class="sd">        framework via ``self.factory``.</span>
+<span class="sd">      * A ready-to-go request object via ``self.request``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mox</span> <span class="o">=</span> <span class="n">mox</span><span class="o">.</span><span class="n">Mox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_test_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_factory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_user</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_request</span><span class="p">()</span>
+        <span class="n">middleware</span><span class="o">.</span><span class="n">HorizonMiddleware</span><span class="p">()</span><span class="o">.</span><span class="n">process_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">AuthenticationMiddleware</span><span class="p">()</span><span class="o">.</span><span class="n">process_request</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HORIZON_TEST_RUN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;True&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_setup_test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_setup_factory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">RequestFactoryWithMessages</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_setup_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_setup_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpRequest</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_session</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">tearDown</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">UnsetStubs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">VerifyAll</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HORIZON_TEST_RUN&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">set_permissions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">permissions</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">perm_ids</span> <span class="o">=</span> <span class="n">Permission</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">user_permissions</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="o">*</span><span class="n">perm_ids</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">permissions</span><span class="p">:</span>
+            <span class="n">ct</span><span class="p">,</span> <span class="n">create</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                           <span class="n">app_label</span><span class="o">=</span><span class="s1">&#39;horizon&#39;</span><span class="p">)</span>
+            <span class="n">perm</span><span class="p">,</span> <span class="n">create</span> <span class="o">=</span> <span class="n">Permission</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">codename</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                            <span class="n">content_type</span><span class="o">=</span><span class="n">ct</span><span class="p">,</span>
+                                                            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">user_permissions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;_perm_cache&quot;</span><span class="p">):</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">_perm_cache</span>
+
+<div class="viewcode-block" id="TestCase.assertNoMessages"><a class="viewcode-back" href="../../../ref/test.html#horizon.test.helpers.TestCase.assertNoMessages">[docs]</a>    <span class="k">def</span> <span class="nf">assertNoMessages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Asserts that no messages have been attached by the</span>
+<span class="sd">        ``contrib.messages`` framework.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertMessageCount</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCase.assertMessageCount"><a class="viewcode-back" href="../../../ref/test.html#horizon.test.helpers.TestCase.assertMessageCount">[docs]</a>    <span class="k">def</span> <span class="nf">assertMessageCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Asserts that the specified number of messages have been attached</span>
+<span class="sd">        for various message types. Usage would look like</span>
+<span class="sd">        ``self.assertMessageCount(success=1)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp_req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;wsgi.input&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">})</span>
+        <span class="n">temp_req</span><span class="o">.</span><span class="n">COOKIES</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">cookies</span>
+        <span class="n">storage</span> <span class="o">=</span> <span class="n">default_storage</span><span class="p">(</span><span class="n">temp_req</span><span class="p">)</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># To gain early access to the messages we have to decode the</span>
+            <span class="c1"># cookie on the test client.</span>
+            <span class="k">if</span> <span class="s1">&#39;messages&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">cookies</span><span class="p">:</span>
+                <span class="n">message_cookie</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">cookies</span><span class="p">[</span><span class="s1">&#39;messages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">messages</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">_decode</span><span class="p">(</span><span class="n">message_cookie</span><span class="p">)</span>
+        <span class="c1"># Check for messages in the context</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;context&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;messages&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">context</span><span class="p">:</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span>
+        <span class="c1"># Check for messages attached to the request on a TemplateResponse</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;_request&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span>
+                                                       <span class="s2">&quot;_messages&quot;</span><span class="p">):</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">_request</span><span class="o">.</span><span class="n">_messages</span><span class="o">.</span><span class="n">_queued_messages</span>
+
+        <span class="c1"># If we don&#39;t have messages and we don&#39;t expect messages, we&#39;re done.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># If we expected messages and have none, that&#39;s a problem.</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Messages were expected, but none were set.&quot;</span>
+            <span class="k">assert</span> <span class="mi">0</span> <span class="o">==</span> <span class="nb">sum</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">error_msg</span>
+
+        <span class="c1"># Otherwise, make sure we got the expected messages.</span>
+        <span class="k">for</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">msgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">force_text</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">messages</span> <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">tags</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">msgs</span><span class="p">)</span> <span class="o">==</span> <span class="n">count</span><span class="p">,</span> \
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> messages not as expected: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg_type</span><span class="o">.</span><span class="n">title</span><span class="p">(),</span>
+                                                     <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msgs</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">assertNotContains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                          <span class="n">msg_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">html</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="c1"># Prior to Django 1.7 assertContains and assertNotContains behaved</span>
+        <span class="c1"># differently regarding response&#39;s &#39;streaming&#39; flag</span>
+        <span class="k">if</span> <span class="n">django</span><span class="o">.</span><span class="n">VERSION</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assertNotContains</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span>
+                                           <span class="n">msg_prefix</span><span class="p">,</span> <span class="n">html</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">assertNotContains</span><span class="p">(</span>
+                <span class="n">response</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span> <span class="n">msg_prefix</span><span class="p">,</span> <span class="n">html</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_assertNotContains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                           <span class="n">msg_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">html</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Asserts that a response indicates that some content was retrieved</span>
+<span class="sd">        successfully, (i.e., the HTTP status code was as expected), and that</span>
+<span class="sd">        ``text`` doesn&#39;t occurs in the content of the response.</span>
+
+<span class="sd">        This is an override of django_test.TestCase.assertNotContains method,</span>
+<span class="sd">        which is able to work with StreamingHttpResponse. Should be called</span>
+<span class="sd">        for Django versions prior to 1.7.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If the response supports deferred rendering and hasn&#39;t been rendered</span>
+        <span class="c1"># yet, then ensure that it does get rendered before proceeding further.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s1">&#39;render&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">render</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_rendered</span><span class="p">):</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">msg_prefix</span><span class="p">:</span>
+            <span class="n">msg_prefix</span> <span class="o">+=</span> <span class="s2">&quot;: &quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status_code</span><span class="p">,</span>
+            <span class="n">msg_prefix</span> <span class="o">+</span> <span class="s2">&quot;Couldn&#39;t retrieve content: Response code was </span><span class="si">%d</span><span class="s2">&quot;</span>
+            <span class="s2">&quot; (expected </span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status_code</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s1">&#39;streaming&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">b</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">streaming_content</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">or</span> <span class="n">html</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">_charset</span><span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">_charset</span><span class="p">)</span>
+            <span class="n">text_repr</span> <span class="o">=</span> <span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">text</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text_repr</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">html</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">testcases</span><span class="o">.</span><span class="n">assert_and_parse_html</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;Response</span><span class="se">\&#39;</span><span class="s1">s content is not valid HTML:&#39;</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">testcases</span><span class="o">.</span><span class="n">assert_and_parse_html</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;Second argument is not valid HTML:&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">content</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">msg_prefix</span> <span class="o">+</span> <span class="s2">&quot;Response should not contain </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">text_repr</span><span class="p">)</span>
+
+</div>
+<span class="nd">@unittest.skipUnless</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WITH_SELENIUM&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                     <span class="s2">&quot;The WITH_SELENIUM env variable is not set.&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SeleniumTestCase</span><span class="p">(</span><span class="n">LiveServerTestCase</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WITH_SELENIUM&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Start a virtual display server for running the tests headless.</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SELENIUM_HEADLESS&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">vdisplay</span> <span class="o">=</span> <span class="n">xvfbwrapper</span><span class="o">.</span><span class="n">Xvfb</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">1280</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">720</span><span class="p">)</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">vdisplay</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">selenium</span> <span class="o">=</span> <span class="n">WebDriver</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SeleniumTestCase</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">setUpClass</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WITH_SELENIUM&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">selenium</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s1">&#39;vdisplay&#39;</span><span class="p">):</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">vdisplay</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SeleniumTestCase</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">tearDownClass</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">setdefaulttimeout</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span><span class="o">.</span><span class="n">implicitly_wait</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ui</span> <span class="o">=</span> <span class="n">selenium_ui</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SeleniumTestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">JasmineTests</span><span class="p">(</span><span class="n">SeleniumTestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper class which allows you to create a simple Jasmine test running</span>
+<span class="sd">    through Selenium</span>
+
+<span class="sd">    To run a jasmine test suite create a class which extends JasmineTests in</span>
+<span class="sd">    the :file:`horizon/test/jasmine/jasmine_tests.py` and define two class</span>
+<span class="sd">    attributes</span>
+
+<span class="sd">    .. attribute:: sources</span>
+
+<span class="sd">        A list of JS source files (the {{ STATIC_URL }} will be added</span>
+<span class="sd">        automatically, these are the source files tested</span>
+
+<span class="sd">    .. attribute:: specs</span>
+
+<span class="sd">        A list of Jasmine JS spec files (the {{ STATIC_URL }} will be added</span>
+<span class="sd">        automatically</span>
+
+<span class="sd">    .. attribute:: template_name</span>
+
+<span class="sd">        A template which will contain the html needed by the test,</span>
+<span class="sd">        this attribute is optional, if it is not specified the default template</span>
+<span class="sd">        will be used. The template, if specified, must extends</span>
+<span class="sd">        :file:`horizon/jasmine/jasmine.html` and insert the html in a block</span>
+<span class="sd">        which name must be content</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">specs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">run_jasmine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">live_server_url</span><span class="p">,</span>
+                        <span class="s2">&quot;/jasmine/&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+
+        <span class="n">wait</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">WebDriverWait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selenium</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">jasmine_done</span><span class="p">(</span><span class="n">driver</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">find_element_by_class_name</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">return</span> <span class="s2">&quot;finished&quot;</span> <span class="ow">in</span> <span class="n">text</span>
+
+        <span class="n">wait</span><span class="o">.</span><span class="n">until</span><span class="p">(</span><span class="n">jasmine_done</span><span class="p">)</span>
+        <span class="n">failures</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">selenium</span><span class="o">.</span><span class="n">find_elements_by_css_selector</span><span class="p">(</span><span class="s2">&quot;.spec-detail.failed&quot;</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">failure</span> <span class="ow">in</span> <span class="n">failures</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">failure</span><span class="o">.</span><span class="n">find_element_by_class_name</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">failure</span><span class="o">.</span><span class="n">find_element_by_class_name</span><span class="p">(</span><span class="s2">&quot;stack-trace&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="p">[],</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span> <span class="o">==</span> <span class="n">JasmineTests</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_jasmine</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../horizon.html" accesskey="U">horizon</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

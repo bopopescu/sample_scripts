@@ -1,0 +1,389 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.admin.volumes.volume_types.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.admin.volumes.volume_types.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">ValidationError</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">cinder</span>
+
+
+<div class="viewcode-block" id="CreateVolumeType"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateVolumeType">[docs]</a><span class="k">class</span> <span class="nc">CreateVolumeType</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">vol_type_description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateVolumeType.clean_name"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateVolumeType.clean_name">[docs]</a>    <span class="k">def</span> <span class="nf">clean_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cleaned_name</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume type name can not be empty.&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">cleaned_name</span>
+</div>
+<div class="viewcode-block" id="CreateVolumeType.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateVolumeType.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Remove any new lines in the public key</span>
+            <span class="n">volume_type</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_type_create</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;vol_type_description&#39;</span><span class="p">])</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully created volume type: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+                             <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">volume_type</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">==</span> <span class="mi">409</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume type name &quot;</span><span class="si">%s</span><span class="s1">&quot; already &#39;</span>
+                        <span class="s1">&#39;exists.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:admin:volumes:index&quot;</span><span class="p">)</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                  <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create volume type.&#39;</span><span class="p">),</span>
+                                  <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateQosSpec"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateQosSpec">[docs]</a><span class="k">class</span> <span class="nc">CreateQosSpec</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">consumer</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Consumer&quot;</span><span class="p">),</span>
+                                 <span class="n">choices</span><span class="o">=</span><span class="n">cinder</span><span class="o">.</span><span class="n">CONSUMER_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateQosSpec.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateQosSpec.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">qos_spec</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">qos_spec_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                              <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                              <span class="p">{</span><span class="s1">&#39;consumer&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;consumer&#39;</span><span class="p">]})</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully created QoS Spec: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+                             <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">qos_spec</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:admin:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create QoS Spec.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateVolumeTypeEncryption"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateVolumeTypeEncryption">[docs]</a><span class="k">class</span> <span class="nc">CreateVolumeTypeEncryption</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span>
+                                                         <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+    <span class="n">provider</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Provider&quot;</span><span class="p">))</span>
+    <span class="n">control_location</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Control Location&quot;</span><span class="p">),</span>
+                                         <span class="n">choices</span><span class="o">=</span><span class="p">((</span><span class="s1">&#39;front-end&#39;</span><span class="p">,</span>
+                                                   <span class="n">_</span><span class="p">(</span><span class="s1">&#39;front-end&#39;</span><span class="p">)),</span>
+                                                  <span class="p">(</span><span class="s1">&#39;back-end&#39;</span><span class="p">,</span>
+                                                   <span class="n">_</span><span class="p">(</span><span class="s1">&#39;back-end&#39;</span><span class="p">)))</span>
+                                         <span class="p">)</span>
+    <span class="n">cipher</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Cipher&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">key_size</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Key Size (bits)&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">volume_type_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+<div class="viewcode-block" id="CreateVolumeTypeEncryption.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.CreateVolumeTypeEncryption.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Set Cipher to None if empty</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cipher&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="s1">u&#39;&#39;</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cipher&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+
+            <span class="c1"># Create encyrption for the volume type</span>
+            <span class="n">volume_type</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span>\
+                <span class="n">volume_encryption_type_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                              <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_type_id&#39;</span><span class="p">],</span>
+                                              <span class="n">data</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully created encryption for &#39;</span>
+                                        <span class="s1">&#39;volume type: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">volume_type</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:admin:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create encrypted volume type.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ManageQosSpecAssociation"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.ManageQosSpecAssociation">[docs]</a><span class="k">class</span> <span class="nc">ManageQosSpecAssociation</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">qos_spec_choice</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;QoS Spec to be associated&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose associated QoS Spec.&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ManageQosSpecAssociation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                       <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">qos_spec_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;qos_spec_choice&#39;</span><span class="p">]</span>
+        <span class="n">qos_spec_field</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">populate_qos_spec_choices</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ManageQosSpecAssociation.populate_qos_spec_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.ManageQosSpecAssociation.populate_qos_spec_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_qos_spec_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># populate qos spec list box</span>
+        <span class="n">qos_specs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s2">&quot;qos_specs&quot;</span><span class="p">]</span>
+        <span class="n">current_qos_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s2">&quot;cur_qos_spec_id&quot;</span><span class="p">]</span>
+        <span class="n">qos_spec_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">qos_spec</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                         <span class="k">for</span> <span class="n">qos_spec</span> <span class="ow">in</span> <span class="n">qos_specs</span>
+                         <span class="k">if</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">id</span> <span class="o">!=</span> <span class="n">current_qos_spec</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">current_qos_spec</span><span class="p">:</span>
+            <span class="c1"># used to remove the current spec</span>
+            <span class="n">qos_spec_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;-1&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;None (removes spec)&quot;</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">qos_spec_list</span><span class="p">:</span>
+            <span class="n">qos_spec_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select a new QoS spec&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qos_spec_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No new QoS spec available&quot;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">qos_spec_list</span>
+</div>
+<div class="viewcode-block" id="ManageQosSpecAssociation.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.ManageQosSpecAssociation.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">vol_type_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;type_id&#39;</span><span class="p">]</span>
+        <span class="n">new_qos_spec_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;qos_spec_choice&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Update QOS Spec association information</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># NOTE - volume types can only be associated with</span>
+            <span class="c1">#        ONE QOS Spec at a time</span>
+
+            <span class="c1"># first we need to un-associate the current QOS Spec, if it exists</span>
+            <span class="n">cur_qos_spec_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;cur_qos_spec_id&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">cur_qos_spec_id</span><span class="p">:</span>
+                <span class="n">qos_spec</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">qos_spec_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                               <span class="n">cur_qos_spec_id</span><span class="p">)</span>
+                <span class="n">cinder</span><span class="o">.</span><span class="n">qos_spec_disassociate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                             <span class="n">qos_spec</span><span class="p">,</span>
+                                             <span class="n">vol_type_id</span><span class="p">)</span>
+
+            <span class="c1"># now associate with new QOS Spec, if user wants one associated</span>
+            <span class="k">if</span> <span class="n">new_qos_spec_id</span> <span class="o">!=</span> <span class="s1">&#39;-1&#39;</span><span class="p">:</span>
+                <span class="n">qos_spec</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">qos_spec_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                               <span class="n">new_qos_spec_id</span><span class="p">)</span>
+
+                <span class="n">cinder</span><span class="o">.</span><span class="n">qos_spec_associate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                          <span class="n">qos_spec</span><span class="p">,</span>
+                                          <span class="n">vol_type_id</span><span class="p">)</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully updated QoS Spec association.&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:admin:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Error updating QoS Spec association.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="EditQosSpecConsumer"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.EditQosSpecConsumer">[docs]</a><span class="k">class</span> <span class="nc">EditQosSpecConsumer</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">consumer_choice</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;QoS Spec Consumer&quot;</span><span class="p">),</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">cinder</span><span class="o">.</span><span class="n">CONSUMER_CHOICES</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose consumer for this QoS Spec.&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EditQosSpecConsumer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">consumer_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;consumer_choice&#39;</span><span class="p">]</span>
+        <span class="n">qos_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s2">&quot;qos_spec&quot;</span><span class="p">]</span>
+        <span class="n">consumer_field</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">consumer</span>
+
+<div class="viewcode-block" id="EditQosSpecConsumer.clean_consumer_choice"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.EditQosSpecConsumer.clean_consumer_choice">[docs]</a>    <span class="k">def</span> <span class="nf">clean_consumer_choice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ensure that new consumer isn&#39;t the same as current consumer</span>
+        <span class="n">qos_spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;qos_spec&#39;</span><span class="p">]</span>
+        <span class="n">cleaned_new_consumer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;consumer_choice&#39;</span><span class="p">)</span>
+        <span class="n">old_consumer</span> <span class="o">=</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">consumer</span>
+
+        <span class="k">if</span> <span class="n">cleaned_new_consumer</span> <span class="o">==</span> <span class="n">old_consumer</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="s1">&#39;QoS Spec consumer value must be different than &#39;</span>
+                  <span class="s1">&#39;the current consumer value.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cleaned_new_consumer</span>
+</div>
+<div class="viewcode-block" id="EditQosSpecConsumer.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.EditQosSpecConsumer.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">qos_spec_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;qos_spec_id&#39;</span><span class="p">]</span>
+        <span class="n">new_consumer</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;consumer_choice&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Update QOS Spec consumer information</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">qos_spec_set_keys</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                     <span class="n">qos_spec_id</span><span class="p">,</span>
+                                     <span class="p">{</span><span class="s1">&#39;consumer&#39;</span><span class="p">:</span> <span class="n">new_consumer</span><span class="p">})</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully modified QoS Spec consumer.&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:admin:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Error editing QoS Spec consumer.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="EditVolumeType"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.EditVolumeType">[docs]</a><span class="k">class</span> <span class="nc">EditVolumeType</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+                                  <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EditVolumeType.clean_name"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.EditVolumeType.clean_name">[docs]</a>    <span class="k">def</span> <span class="nf">clean_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cleaned_name</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;New name cannot be empty.&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">cleaned_name</span>
+</div>
+<div class="viewcode-block" id="EditVolumeType.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html#openstack_dashboard.dashboards.admin.volumes.volume_types.forms.EditVolumeType.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">volume_type_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">volume_type_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                      <span class="n">volume_type_id</span><span class="p">,</span>
+                                      <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                      <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">])</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully updated volume type.&#39;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:admin:volumes:index&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ex</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">409</span><span class="p">:</span>
+                <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;New name conflicts with another &#39;</span>
+                                  <span class="s1">&#39;volume type.&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to update volume type.&#39;</span><span class="p">)</span>
+
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">error_message</span><span class="p">,</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

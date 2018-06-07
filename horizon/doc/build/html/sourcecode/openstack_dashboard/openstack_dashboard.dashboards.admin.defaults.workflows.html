@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.admin.defaults.workflows Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.admin.defaults.panel Module" href="openstack_dashboard.dashboards.admin.defaults.panel.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.admin.defaults.tables Module" href="openstack_dashboard.dashboards.admin.defaults.tables.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-admin-defaults-workflows-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.defaults.workflows</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-admin-defaults-workflows-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.defaults.workflows.</tt><tt class="descname">UpdateDefaultQuotas</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/defaults/workflows.html#UpdateDefaultQuotas"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.defaults.workflows.UpdateDefaultQuotasStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba825810&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a8510&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/defaults/workflows.html#UpdateDefaultQuotas.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a8c90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_default_quotas'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba825a10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:admin:defaults:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.defaults.workflows.</tt><tt class="descname">UpdateDefaultQuotasAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/defaults/workflows.html#UpdateDefaultQuotasAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3ba8a99d0&gt;), ('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734c90&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734110&gt;), ('key_pairs', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734490&gt;), ('injected_file_path_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734150&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3ba7343d0&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3ba7342d0&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734050&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734a50&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734250&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3bac16910&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3bac16610&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3ba8a8ad0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3ba8a99d0&gt;), ('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734c90&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734110&gt;), ('key_pairs', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734490&gt;), ('injected_file_path_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734150&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3ba7343d0&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3ba7342d0&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734050&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734a50&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3ba734250&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3bac16910&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3bac16610&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3ba8a8ad0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a8e90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">ifcb_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a9150&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">ifpb_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a9250&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a8290&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba8a8150&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_default_quotas'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.defaults.workflows.</tt><tt class="descname">UpdateDefaultQuotasStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/defaults/workflows.html#UpdateDefaultQuotasStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateDefaultQuotasAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('metadata_items', 'cores', 'instances', 'injected_files', 'injected_file_content_bytes', 'ram', 'floating_ips', 'fixed_ips', 'security_groups', 'security_group_rules', 'volumes', 'snapshots', 'gigabytes', 'network', 'subnet', 'port', 'router', 'floatingip', 'security_group', 'security_group_rule', 'key_pairs', 'injected_file_path_bytes')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.admin.defaults.tables.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.defaults.tables</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.admin.defaults.panel.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.defaults.panel</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.defaults.workflows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.admin.defaults.panel.html" title="The openstack_dashboard.dashboards.admin.defaults.panel Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.admin.defaults.tables.html" title="The openstack_dashboard.dashboards.admin.defaults.tables Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

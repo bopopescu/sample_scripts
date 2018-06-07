@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.firewalls.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.firewalls.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#    Copyright 2013, Big Switch Networks, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.firewalls</span> \
+    <span class="kn">import</span> <span class="n">forms</span> <span class="k">as</span> <span class="n">fw_forms</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.firewalls</span> \
+    <span class="kn">import</span> <span class="n">tabs</span> <span class="k">as</span> <span class="n">fw_tabs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.firewalls</span> \
+    <span class="kn">import</span> <span class="n">workflows</span> <span class="k">as</span> <span class="n">fw_workflows</span>
+
+<span class="n">AddRouterToFirewall</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">AddRouterToFirewall</span>
+<span class="n">InsertRuleToPolicy</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">InsertRuleToPolicy</span>
+<span class="n">RemoveRouterFromFirewall</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">RemoveRouterFromFirewall</span>
+<span class="n">RemoveRuleFromPolicy</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">RemoveRuleFromPolicy</span>
+<span class="n">UpdateFirewall</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">UpdateFirewall</span>
+<span class="n">UpdatePolicy</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">UpdatePolicy</span>
+<span class="n">UpdateRule</span> <span class="o">=</span> <span class="n">fw_forms</span><span class="o">.</span><span class="n">UpdateRule</span>
+
+<span class="n">FirewallDetailsTabs</span> <span class="o">=</span> <span class="n">fw_tabs</span><span class="o">.</span><span class="n">FirewallDetailsTabs</span>
+<span class="n">FirewallTabs</span> <span class="o">=</span> <span class="n">fw_tabs</span><span class="o">.</span><span class="n">FirewallTabs</span>
+<span class="n">PolicyDetailsTabs</span> <span class="o">=</span> <span class="n">fw_tabs</span><span class="o">.</span><span class="n">PolicyDetailsTabs</span>
+<span class="n">RuleDetailsTabs</span> <span class="o">=</span> <span class="n">fw_tabs</span><span class="o">.</span><span class="n">RuleDetailsTabs</span>
+
+<span class="n">AddFirewall</span> <span class="o">=</span> <span class="n">fw_workflows</span><span class="o">.</span><span class="n">AddFirewall</span>
+<span class="n">AddPolicy</span> <span class="o">=</span> <span class="n">fw_workflows</span><span class="o">.</span><span class="n">AddPolicy</span>
+<span class="n">AddRule</span> <span class="o">=</span> <span class="n">fw_workflows</span><span class="o">.</span><span class="n">AddRule</span>
+
+
+<div class="viewcode-block" id="IndexView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.IndexView">[docs]</a><span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabbedTableView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">FirewallTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/firewalls/details_tabs.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Firewalls&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddRuleView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.AddRuleView">[docs]</a><span class="k">class</span> <span class="nc">AddRuleView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">AddRule</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/addrule.html&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New Rule&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddPolicyView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.AddPolicyView">[docs]</a><span class="k">class</span> <span class="nc">AddPolicyView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">AddPolicy</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/addpolicy.html&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New Policy&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddFirewallView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.AddFirewallView">[docs]</a><span class="k">class</span> <span class="nc">AddFirewallView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">AddFirewall</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/addfirewall.html&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New Firewall&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddFirewallView.get_workflow"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.AddFirewallView.get_workflow">[docs]</a>    <span class="k">def</span> <span class="nf">get_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_extension_supported</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                              <span class="s1">&#39;fwaasrouterinsertion&#39;</span><span class="p">):</span>
+            <span class="n">AddFirewall</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">fw_workflows</span><span class="o">.</span><span class="n">SelectRoutersStep</span><span class="p">)</span>
+        <span class="n">workflow</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddFirewallView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_workflow</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">workflow</span>
+
+</div></div>
+<div class="viewcode-block" id="FireWallDetailTabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.FireWallDetailTabs">[docs]</a><span class="k">class</span> <span class="nc">FireWallDetailTabs</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/firewalls/details_tabs.html&#39;</span>
+
+</div>
+<div class="viewcode-block" id="RuleDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RuleDetailsView">[docs]</a><span class="k">class</span> <span class="nc">RuleDetailsView</span><span class="p">(</span><span class="n">FireWallDetailTabs</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="p">(</span><span class="n">RuleDetailsTabs</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Firewall Rule Details&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="PolicyDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.PolicyDetailsView">[docs]</a><span class="k">class</span> <span class="nc">PolicyDetailsView</span><span class="p">(</span><span class="n">FireWallDetailTabs</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="p">(</span><span class="n">PolicyDetailsTabs</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Firewall Policy Details&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FirewallDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.FirewallDetailsView">[docs]</a><span class="k">class</span> <span class="nc">FirewallDetailsView</span><span class="p">(</span><span class="n">FireWallDetailTabs</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="p">(</span><span class="n">FirewallDetailsTabs</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Firewall Details&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="UpdateRuleView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdateRuleView">[docs]</a><span class="k">class</span> <span class="nc">UpdateRuleView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">UpdateRule</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_rule_form&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/updaterule.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;rule&#39;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Rule&quot;</span><span class="p">)</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:updaterule&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:firewalls:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Rule {{ name }}&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateRuleView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdateRuleView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateRuleView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;rule_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rule_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rule_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name_or_id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">rule_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;rule_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">fwaas</span><span class="o">.</span><span class="n">rule_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">rule_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">rule</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve rule details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateRuleView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdateRuleView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="n">protocol</span> <span class="o">=</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;protocol&#39;</span><span class="p">]</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;protocol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">protocol</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">if</span> <span class="n">protocol</span> <span class="k">else</span> <span class="s1">&#39;ANY&#39;</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdatePolicyView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdatePolicyView">[docs]</a><span class="k">class</span> <span class="nc">UpdatePolicyView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">UpdatePolicy</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_policy_form&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/updatepolicy.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;policy&#39;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Policy&quot;</span><span class="p">)</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:updatepolicy&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:firewalls:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Policy {{ name }}&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdatePolicyView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdatePolicyView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdatePolicyView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;policy_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name_or_id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">policy_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">policy</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">fwaas</span><span class="o">.</span><span class="n">policy_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">policy_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">policy</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve policy details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdatePolicyView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdatePolicyView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateFirewallView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdateFirewallView">[docs]</a><span class="k">class</span> <span class="nc">UpdateFirewallView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">UpdateFirewall</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_firewall_form&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/updatefirewall.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;firewall&#39;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Firewall&quot;</span><span class="p">)</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:updatefirewall&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:firewalls:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Firewall {{ name }}&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateFirewallView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdateFirewallView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateFirewallView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;firewall_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;firewall_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;firewall_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">firewall_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;firewall_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">firewall</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">fwaas</span><span class="o">.</span><span class="n">firewall_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                              <span class="n">firewall_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">firewall</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve firewall details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateFirewallView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.UpdateFirewallView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">firewall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">firewall</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="InsertRuleToPolicyView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.InsertRuleToPolicyView">[docs]</a><span class="k">class</span> <span class="nc">InsertRuleToPolicyView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">InsertRuleToPolicy</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_policy_form&quot;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Insert Rule into Policy&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/insert_rule_to_policy.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;policy&#39;</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:insertrule&quot;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:firewalls:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Insert Rule to Policy&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InsertRuleToPolicyView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.InsertRuleToPolicyView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InsertRuleToPolicyView</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;policy_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name_or_id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">policy_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">policy</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">fwaas</span><span class="o">.</span><span class="n">policy_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">policy_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">policy</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve policy details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InsertRuleToPolicyView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.InsertRuleToPolicyView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="RemoveRuleFromPolicyView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RemoveRuleFromPolicyView">[docs]</a><span class="k">class</span> <span class="nc">RemoveRuleFromPolicyView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">RemoveRuleFromPolicy</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_policy_form&quot;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remove Rule from Policy&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/remove_rule_from_policy.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;policy&#39;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:removerule&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:firewalls:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remove Rule from Policy&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RemoveRuleFromPolicyView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RemoveRuleFromPolicyView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RemoveRuleFromPolicyView</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;policy_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name_or_id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">policy_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">policy</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">fwaas</span><span class="o">.</span><span class="n">policy_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">policy_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">policy</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve policy details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RemoveRuleFromPolicyView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RemoveRuleFromPolicyView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">policy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;policy_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="RouterCommonView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RouterCommonView">[docs]</a><span class="k">class</span> <span class="nc">RouterCommonView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_firewall_form&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;firewall&#39;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:firewalls:index&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RouterCommonView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RouterCommonView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RouterCommonView</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;firewall_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;firewall_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;firewall_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">name_or_id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">firewall_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;firewall_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">firewall</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">fwaas</span><span class="o">.</span><span class="n">firewall_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">firewall_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">firewall</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve firewall details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RouterCommonView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RouterCommonView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">firewall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">firewall</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="AddRouterToFirewallView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.AddRouterToFirewallView">[docs]</a><span class="k">class</span> <span class="nc">AddRouterToFirewallView</span><span class="p">(</span><span class="n">RouterCommonView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">AddRouterToFirewall</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add Router to Firewall&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/add_router_to_firewall.html&quot;</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:addrouter&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add Router to Firewall&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="RemoveRouterFromFirewallView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.views.html#openstack_dashboard.dashboards.project.firewalls.views.RemoveRouterFromFirewallView">[docs]</a><span class="k">class</span> <span class="nc">RemoveRouterFromFirewallView</span><span class="p">(</span><span class="n">RouterCommonView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">RemoveRouterFromFirewall</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remove Router from Firewall&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/firewalls/remove_router_from_firewall.html&quot;</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:firewalls:removerouter&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remove Router from Firewall&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

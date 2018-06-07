@@ -1,0 +1,684 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.firewalls.workflows Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.firewalls.panel Module" href="openstack_dashboard.dashboards.project.firewalls.panel.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.firewalls.tables Module" href="openstack_dashboard.dashboards.project.firewalls.tables.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-firewalls-workflows-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.workflows</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-firewalls-workflows-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddFirewall</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddFirewall"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.workflows.AddFirewallStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e045d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e04550&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddFirewall.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddFirewall.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e04510&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addfirewall'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e04590&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddFirewallAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddFirewallAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b6dedb90&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b6deddd0&gt;), ('firewall_policy_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6dedf50&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6e04150&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b6dedb90&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b6deddd0&gt;), ('firewall_policy_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6dedf50&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6e04150&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e042d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e04290&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e044d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addfirewallaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddFirewallStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddFirewallStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddFirewallAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddFirewallStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('name', 'firewall_policy_id', 'description', 'admin_state_up')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddPolicy</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.workflows.AddPolicyStep'&gt;, &lt;class 'openstack_dashboard.dashboards.project.firewalls.workflows.SelectRulesStep'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6dedad0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6deda50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddPolicy.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddPolicy.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6deda10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addpolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6deda90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddPolicyAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddPolicyAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b6e2bad0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b6e2be10&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e0e050&gt;), ('audited', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e0e3d0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b6e2bad0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b6e2be10&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e0e050&gt;), ('audited', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e0e3d0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6ded710&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6ded6d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6ded990&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addpolicyaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddPolicyStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddPolicyStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddPolicyAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddPolicyStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('name', 'description', 'shared', 'audited')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddRule</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddRule"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.workflows.AddRuleStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e44a10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a44e90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddRule.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddRule.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a44950&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addrule'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a443d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddRuleAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddRuleAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b6e71ed0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b6e710d0&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6e3cd50&gt;), ('action', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6e3ce50&gt;), ('source_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b6e3c950&gt;), ('destination_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b6e3cb50&gt;), ('source_port', &lt;django.forms.fields.CharField object at 0x7ff3b6e3c9d0&gt;), ('destination_port', &lt;django.forms.fields.CharField object at 0x7ff3b6e3c4d0&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e3c0d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e3c150&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b6e71ed0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b6e710d0&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6e3cd50&gt;), ('action', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6e3ce50&gt;), ('source_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b6e3c950&gt;), ('destination_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b6e3cb50&gt;), ('source_port', &lt;django.forms.fields.CharField object at 0x7ff3b6e3c9d0&gt;), ('destination_port', &lt;django.forms.fields.CharField object at 0x7ff3b6e3c4d0&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e3c0d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b6e3c150&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e5b610&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e3c110&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e231d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addruleaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">AddRuleStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddRuleStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddRuleAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#AddRuleStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('name', 'description', 'protocol', 'action', 'source_ip_address', 'source_port', 'destination_ip_address', 'destination_port', 'enabled', 'shared')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">SelectRoutersAction</tt><big>(</big><em>request</em>, <em>context</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRoutersAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('router', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b7310fd0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('router', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b7310fd0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b72d1a90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7310d10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_router_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRoutersAction.populate_router_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e2ba10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'selectroutersaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">SelectRoutersStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRoutersStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">SelectRoutersAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRoutersStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('router_ids', 'all_routers_selected', 'Select No Routers')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/firewalls/_update_routers.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">SelectRulesAction</tt><big>(</big><em>request</em>, <em>context</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRulesAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('rule', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b6e44050&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('rule', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b6e44050&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e44890&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b6e44190&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_rule_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRulesAction.populate_rule_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7310b90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'selectrulesaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.workflows.</tt><tt class="descname">SelectRulesStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRulesStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">SelectRulesAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/workflows.html#SelectRulesStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('firewall_rules',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/firewalls/_update_rules.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.firewalls.tables.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.tables</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.firewalls.panel.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.panel</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.workflows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.firewalls.panel.html" title="The openstack_dashboard.dashboards.project.firewalls.panel Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.firewalls.tables.html" title="The openstack_dashboard.dashboards.project.firewalls.tables Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

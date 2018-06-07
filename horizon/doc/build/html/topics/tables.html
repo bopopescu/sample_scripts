@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DataTables Topic Guide &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Horizon Policy Enforcement (RBAC: Role Based Access Control)" href="policy.html" />
+    <link rel="prev" title="Workflows Topic Guide" href="workflows.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="datatables-topic-guide">
+<h1>DataTables Topic Guide<a class="headerlink" href="#datatables-topic-guide" title="Permalink to this headline">¶</a></h1>
+<p>Horizon provides the <a class="reference internal" href="../ref/tables.html#module-horizon.tables" title="horizon.tables"><tt class="xref py py-mod docutils literal"><span class="pre">horizon.tables</span></tt></a> module to provide
+a convenient, reusable API for building data-driven displays and interfaces.
+The core components of this API fall into three categories: <tt class="docutils literal"><span class="pre">DataTables</span></tt>,
+<tt class="docutils literal"><span class="pre">Actions</span></tt>, and <tt class="docutils literal"><span class="pre">Class-based</span> <span class="pre">Views</span></tt>.</p>
+<blockquote>
+<div><div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For a detailed API information check out the <a class="reference internal" href="../ref/tables.html"><em>DataTables Reference
+Guide</em></a>.</p>
+</div>
+</div></blockquote>
+<div class="section" id="tables">
+<h2>Tables<a class="headerlink" href="#tables" title="Permalink to this headline">¶</a></h2>
+<p>The majority of interface in a dashboard-style interface ends up being
+tabular displays of the various resources the dashboard interacts with.
+The <a class="reference internal" href="../ref/tables.html#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> class exists so you don&#8217;t have to
+reinvent the wheel each time.</p>
+<div class="section" id="creating-your-own-tables">
+<h3>Creating your own tables<a class="headerlink" href="#creating-your-own-tables" title="Permalink to this headline">¶</a></h3>
+<p>Creating a table is fairly simple:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Create a subclass of <a class="reference internal" href="../ref/tables.html#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a>.</li>
+<li>Define columns on it using <a class="reference internal" href="../ref/tables.html#horizon.tables.Column" title="horizon.tables.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a>.</li>
+<li>Create an inner <tt class="docutils literal"><span class="pre">Meta</span></tt> class to contain the special options for
+this table.</li>
+<li>Define any actions for the table, and add them to
+<a class="reference internal" href="../ref/tables.html#horizon.tables.DataTableOptions.table_actions" title="horizon.tables.DataTableOptions.table_actions"><tt class="xref py py-attr docutils literal"><span class="pre">table_actions</span></tt></a> or
+<a class="reference internal" href="../ref/tables.html#horizon.tables.DataTableOptions.row_actions" title="horizon.tables.DataTableOptions.row_actions"><tt class="xref py py-attr docutils literal"><span class="pre">row_actions</span></tt></a>.</li>
+</ol>
+</div></blockquote>
+<p>Examples of this can be found in any of the <tt class="docutils literal"><span class="pre">tables.py</span></tt> modules included
+in the reference modules under <tt class="docutils literal"><span class="pre">horizon.dashboards</span></tt>.</p>
+</div>
+<div class="section" id="connecting-a-table-to-a-view">
+<h3>Connecting a table to a view<a class="headerlink" href="#connecting-a-table-to-a-view" title="Permalink to this headline">¶</a></h3>
+<p>Once you&#8217;ve got your table set up the way you like it, the next step is to
+wire it up to a view. To make this as easy as possible Horizon provides the
+<a class="reference internal" href="../ref/tables.html#horizon.tables.DataTableView" title="horizon.tables.DataTableView"><tt class="xref py py-class docutils literal"><span class="pre">DataTableView</span></tt></a> class-based view which can be subclassed
+to display your table with just a couple lines of code. At its simplest, it
+looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">.tables</span> <span class="kn">import</span> <span class="n">MyTable</span>
+
+
+<span class="k">class</span> <span class="nc">MyTableView</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTableView</span><span class="p">):</span>
+    <span class="n">table_class</span> <span class="o">=</span> <span class="n">MyTable</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;my_app/my_table_view.html&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">my_api</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In the template you would just need to include the following to render the
+table:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{{</span> <span class="n">table</span><span class="o">.</span><span class="n">render</span> <span class="p">}}</span>
+</pre></div>
+</div>
+<p>That&#8217;s it! Easy, right?</p>
+</div>
+</div>
+<div class="section" id="actions">
+<h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline">¶</a></h2>
+<p>Actions comprise any manipulations that might happen on the data in the table
+or the table itself. For example, this may be the standard object CRUD, linking
+to related views based on the object&#8217;s id, filtering the data in the table,
+or fetching updated data when appropriate.</p>
+<div class="section" id="when-actions-get-run">
+<h3>When actions get run<a class="headerlink" href="#when-actions-get-run" title="Permalink to this headline">¶</a></h3>
+<p>There are two points in the request-response cycle in which actions can
+take place; prior to data being loaded into the table, and after the data
+is loaded. When you&#8217;re using one of the pre-built class-based views for
+working with your tables the pseudo-workflow looks like this:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>The request enters view.</li>
+<li>The table class is instantiated without data.</li>
+<li>Any &#8220;preemptive&#8221; actions are checked to see if they should run.</li>
+<li>Data is fetched and loaded into the table.</li>
+<li>All other actions are checked to see if they should run.</li>
+<li>If none of the actions have caused an early exit from the view,
+the standard response from the view is returned (usually the
+rendered table).</li>
+</ol>
+</div></blockquote>
+<p>The benefit of the multi-step table instantiation is that you can use
+preemptive actions which don&#8217;t need access to the entire collection of data
+to save yourself on processing overhead, API calls, etc.</p>
+</div>
+<div class="section" id="basic-actions">
+<h3>Basic actions<a class="headerlink" href="#basic-actions" title="Permalink to this headline">¶</a></h3>
+<p>At their simplest, there are three types of actions: actions which act on the
+data in the table, actions which link to related resources, and actions that
+alter which data is displayed. These correspond to
+<a class="reference internal" href="../ref/tables.html#horizon.tables.Action" title="horizon.tables.Action"><tt class="xref py py-class docutils literal"><span class="pre">Action</span></tt></a>, <a class="reference internal" href="../ref/tables.html#horizon.tables.LinkAction" title="horizon.tables.LinkAction"><tt class="xref py py-class docutils literal"><span class="pre">LinkAction</span></tt></a>, and
+<a class="reference internal" href="../ref/tables.html#horizon.tables.FilterAction" title="horizon.tables.FilterAction"><tt class="xref py py-class docutils literal"><span class="pre">FilterAction</span></tt></a>.</p>
+<p>Writing your own actions generally starts with subclassing one of those
+action classes and customizing the designated attributes and methods.</p>
+</div>
+<div class="section" id="shortcut-actions">
+<h3>Shortcut actions<a class="headerlink" href="#shortcut-actions" title="Permalink to this headline">¶</a></h3>
+<p>There are several common tasks for which Horizon provides pre-built shortcut
+classes. These include <a class="reference internal" href="../ref/tables.html#horizon.tables.BatchAction" title="horizon.tables.BatchAction"><tt class="xref py py-class docutils literal"><span class="pre">BatchAction</span></tt></a>, and
+<a class="reference internal" href="../ref/tables.html#horizon.tables.DeleteAction" title="horizon.tables.DeleteAction"><tt class="xref py py-class docutils literal"><span class="pre">DeleteAction</span></tt></a>. Each of these abstracts away nearly
+all of the boilerplate associated with writing these types of actions and
+provides consistent error handling, logging, and user-facing interaction.</p>
+<p>It is worth noting that <tt class="docutils literal"><span class="pre">BatchAction</span></tt> and <tt class="docutils literal"><span class="pre">DeleteAction</span></tt> are extensions
+of the standard <tt class="docutils literal"><span class="pre">Action</span></tt> class. Some <tt class="docutils literal"><span class="pre">BatchAction</span></tt> or <tt class="docutils literal"><span class="pre">DeleteAction</span></tt>
+classes may cause some unrecoverable results, like deleted images or
+unrecoverable instances. It may be helpful to specify specific help_text to
+explain the concern to the user, such as &#8220;Deleted images are not recoverable&#8221;.</p>
+</div>
+<div class="section" id="preemptive-actions">
+<h3>Preemptive actions<a class="headerlink" href="#preemptive-actions" title="Permalink to this headline">¶</a></h3>
+<p>Action classes which have their <a class="reference internal" href="../ref/tables.html#horizon.tables.Action.preempt" title="horizon.tables.Action.preempt"><tt class="xref py py-attr docutils literal"><span class="pre">preempt</span></tt></a>
+attribute set to <tt class="docutils literal"><span class="pre">True</span></tt> will be evaluated before any data is loaded into
+the table. As such, you must be careful not to rely on any table methods that
+require data, such as <a class="reference internal" href="../ref/tables.html#horizon.tables.DataTable.get_object_display" title="horizon.tables.DataTable.get_object_display"><tt class="xref py py-meth docutils literal"><span class="pre">get_object_display()</span></tt></a> or
+<a class="reference internal" href="../ref/tables.html#horizon.tables.DataTable.get_object_by_id" title="horizon.tables.DataTable.get_object_by_id"><tt class="xref py py-meth docutils literal"><span class="pre">get_object_by_id()</span></tt></a>. The advantage of preemptive
+actions is that you can avoid having to do all the processing, API calls, etc.
+associated with loading data into the table for actions which don&#8217;t require
+access to that information.</p>
+</div>
+<div class="section" id="policy-checks-on-actions">
+<h3>Policy checks on actions<a class="headerlink" href="#policy-checks-on-actions" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="../ref/tables.html#horizon.tables.Action.policy_rules" title="horizon.tables.Action.policy_rules"><tt class="xref py py-attr docutils literal"><span class="pre">policy_rules</span></tt></a> attribute, when set, will
+validate access to the action using the policy rules specified.  The attribute
+is a list of scope/rule pairs.  Where the scope is the service type defining
+the rule and the rule is a rule from the corresponding service policy.json
+file.  The format of <a class="reference internal" href="../ref/tables.html#horizon.tables.Action.policy_rules" title="horizon.tables.Action.policy_rules"><tt class="xref py py-attr docutils literal"><span class="pre">horizon.tables.Action.policy_rules</span></tt></a> looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:get_user&quot;</span><span class="p">),)</span>
+</pre></div>
+</div>
+<p>Multiple checks can be made for the same action by merely adding more tuples
+to the list.  The policy check will use information stored in the session
+about the user and the result of
+<tt class="xref py py-meth docutils literal"><span class="pre">get_policy_target()</span></tt> (which can be overridden in
+the derived action class) to determine if the user
+can execute the action.  If the user does not have access to the action, the
+action is not added to the table.</p>
+<p>If <a class="reference internal" href="../ref/tables.html#horizon.tables.Action.policy_rules" title="horizon.tables.Action.policy_rules"><tt class="xref py py-attr docutils literal"><span class="pre">policy_rules</span></tt></a> is not set, no policy checks
+will be made to determine if the action should be visible and will be
+displayed solely based on the result of
+<tt class="xref py py-meth docutils literal"><span class="pre">allowed()</span></tt>.</p>
+<p>For more information on policy based Role Based Access Control see:
+<a class="reference internal" href="policy.html"><em>Horizon Policy Enforcement (RBAC: Role Based Access Control)</em></a>.</p>
+</div>
+</div>
+<div class="section" id="table-cell-filters-decorators">
+<h2>Table Cell filters (decorators)<a class="headerlink" href="#table-cell-filters-decorators" title="Permalink to this headline">¶</a></h2>
+<p>DataTable displays lists of objects in rows and object attributes in cell.
+How should we proceed, if we want to decorate some column, e.g. if we have
+column <tt class="docutils literal"><span class="pre">memory</span></tt> which returns a number e.g. 1024, and we want to show
+something like 1024.00 GB inside table?</p>
+<div class="section" id="decorator-pattern">
+<h3>Decorator pattern<a class="headerlink" href="#decorator-pattern" title="Permalink to this headline">¶</a></h3>
+<p>The clear anti-pattern is defining the new attributes on object like
+<tt class="docutils literal"><span class="pre">ram_float_format_2_gb</span></tt> or to tweak a DataTable in any way for displaying
+purposes.</p>
+<p>The cleanest way is to use <tt class="docutils literal"><span class="pre">filters</span></tt>. Filters are decorators, following GOF
+<tt class="docutils literal"><span class="pre">Decorator</span> <span class="pre">pattern</span></tt>. This way <tt class="docutils literal"><span class="pre">DataTable</span> <span class="pre">logic</span></tt> and <tt class="docutils literal"><span class="pre">displayed</span> <span class="pre">object</span>
+<span class="pre">logic</span></tt> are correctly separated from <tt class="docutils literal"><span class="pre">presentation</span> <span class="pre">logic</span></tt> of the object
+inside of the various tables. And therefore the filters are reusable in all
+tables.</p>
+</div>
+<div class="section" id="filter-function">
+<h3>Filter function<a class="headerlink" href="#filter-function" title="Permalink to this headline">¶</a></h3>
+<p>Horizon DatablesTable takes a tuple of pointers to filter functions
+or anonymous lambda functions. When displaying a <tt class="docutils literal"><span class="pre">Cell</span></tt>, <tt class="docutils literal"><span class="pre">DataTable</span></tt>
+takes <tt class="docutils literal"><span class="pre">Column</span></tt> filter functions from left to right, using the returned value
+of the previous function as a parameter of the following function. Then
+displaying the returned value of the last filter function.</p>
+<p>A valid filter function takes one parameter and returns the decorated value.
+So e.g. these are valid filter functions</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Filter function.</span>
+<span class="k">def</span> <span class="nf">add_unit</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+  <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; GB&quot;</span>
+
+<span class="c1"># Or filter lambda function.</span>
+<span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; GB&quot;</span>
+
+<span class="c1"># This is also a valid definition of course, although for the change of the</span>
+<span class="c1"># unit parameter, function has to be wrapped by lambda</span>
+<span class="c1"># (e.g. floatformat function example below).</span>
+<span class="k">def</span> <span class="nf">add_unit</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GB&quot;</span><span class="p">):</span>
+  <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">unit</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-filters-in-datatable-column">
+<h3>Using filters in DataTable column<a class="headerlink" href="#using-filters-in-datatable-column" title="Permalink to this headline">¶</a></h3>
+<p>DataTable takes tuple of filter functions, so e.g. this is valid decorating
+of a value with float format and with unit</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ram</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+    <span class="s2">&quot;ram&quot;</span><span class="p">,</span>
+    <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Memory&#39;</span><span class="p">),</span>
+    <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">floatformat</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+             <span class="n">add_unit</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>It always takes tuple, so using only one filter would look like this</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">floatformat</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">2</span><span class="p">),)</span>
+</pre></div>
+</div>
+<p>The decorated parameter doesn&#8217;t have to be only a string or number, it can
+be anything e.g. list or an object. So decorating of object, that has
+attributes value and unit would look like this</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">ram</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;ram&quot;</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Memory&#39;</span><span class="p">),</span>
+        <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
+                 <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="available-filters">
+<h3>Available filters<a class="headerlink" href="#available-filters" title="Permalink to this headline">¶</a></h3>
+<p>There are a load of filters, that can be used, defined in django already:
+<a class="reference external" href="https://github.com/django/django/blob/master/django/template/defaultfilters.py">https://github.com/django/django/blob/master/django/template/defaultfilters.py</a></p>
+<p>So it&#8217;s enough to just import and use them, e.g.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span> <span class="k">as</span> <span class="n">filters</span>
+
+<span class="c1"># code omitted</span>
+<span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">yesno</span><span class="p">,</span> <span class="n">filters</span><span class="o">.</span><span class="n">capfirst</span><span class="p">)</span>
+
+
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">timesince</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">title</span>
+
+<span class="c1"># code omitted</span>
+<span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">parse_isotime</span><span class="p">,</span> <span class="n">timesince</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="inline-editing">
+<h2>Inline editing<a class="headerlink" href="#inline-editing" title="Permalink to this headline">¶</a></h2>
+<p>Table cells can be easily upgraded with in-line editing. With use of
+django.form.Field, we are able to run validations of the field and correctly
+parse the data. The updating process is fully encapsulated into table
+functionality, communication with the server goes through AJAX in JSON format.
+The javascript wrapper for inline editing allows each table cell that has
+in-line editing available to:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Refresh itself with new data from the server.</li>
+<li>Display in edit mod.</li>
+<li>Send changed data to server.</li>
+<li>Display validation errors.</li>
+</ol>
+</div></blockquote>
+<p>There are basically 3 things that need to be defined in the table in order
+to enable in-line editing.</p>
+<div class="section" id="fetching-the-row-data">
+<h3>Fetching the row data<a class="headerlink" href="#fetching-the-row-data" title="Permalink to this headline">¶</a></h3>
+<p>Defining an <tt class="docutils literal"><span class="pre">get_data</span></tt> method in a class inherited from <tt class="docutils literal"><span class="pre">tables.Row</span></tt>.
+This method takes care of fetching the row data. This class has to be then
+defined in the table Meta class as <tt class="docutils literal"><span class="pre">row_class</span> <span class="pre">=</span> <span class="pre">UpdateRow</span></tt>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UpdateRow</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="c1"># this method is also used for automatic update of the row</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="c1"># getting all data of all row cells</span>
+        <span class="n">project_info</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span>
+                                               <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">project_info</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="updating-changed-cell-data">
+<h3>Updating changed cell data<a class="headerlink" href="#updating-changed-cell-data" title="Permalink to this headline">¶</a></h3>
+<p>Define an <tt class="docutils literal"><span class="pre">update_cell</span></tt> method in the class inherited from
+<tt class="docutils literal"><span class="pre">tables.UpdateAction</span></tt>. This method takes care of saving the data of the
+table cell. There can be one class for every cell thanks to the
+<tt class="docutils literal"><span class="pre">cell_name</span></tt> parameter. This class is then defined in tables column as
+<tt class="docutils literal"><span class="pre">update_action=UpdateCell</span></tt>, so each column can have its own updating
+method.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UpdateCell</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">UpdateAction</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+        <span class="c1"># Determines whether given cell or row will be inline editable</span>
+        <span class="c1"># for signed in user.</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_project</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">cell_name</span><span class="p">,</span> <span class="n">new_cell_value</span><span class="p">):</span>
+        <span class="c1"># in-line update project info</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">project_obj</span> <span class="o">=</span> <span class="n">datum</span>
+            <span class="c1"># updating changed value by new value</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">project_obj</span><span class="p">,</span> <span class="n">cell_name</span><span class="p">,</span> <span class="n">new_cell_value</span><span class="p">)</span>
+
+            <span class="c1"># sending new attributes back to API</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_update</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span>
+                <span class="n">project_id</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">project_obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="n">project_obj</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="n">enabled</span><span class="o">=</span><span class="n">project_obj</span><span class="o">.</span><span class="n">enabled</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">Conflict</span><span class="p">:</span>
+            <span class="c1"># Validation error for naming conflict, raised when user</span>
+            <span class="c1"># choose the existing name. We will raise a</span>
+            <span class="c1"># ValidationError, that will be sent back to the client</span>
+            <span class="c1"># browser and shown inside of the table cell.</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;This name is already taken.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># Other exception of the API just goes through standard</span>
+            <span class="c1"># channel</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="defining-a-form-field-for-each-column-that-we-want-to-be-in-line-edited">
+<h3>Defining a form_field for each Column that we want to be in-line edited.<a class="headerlink" href="#defining-a-form-field-for-each-column-that-we-want-to-be-in-line-edited" title="Permalink to this headline">¶</a></h3>
+<p>Form field should be <tt class="docutils literal"><span class="pre">django.form.Field</span></tt> instance, so we can use django
+validations and parsing of the values sent by POST (in example validation
+<tt class="docutils literal"><span class="pre">required=True</span></tt> and correct parsing of the checkbox value from the POST
+data).</p>
+<p>Form field can be also <tt class="docutils literal"><span class="pre">django.form.Widget</span></tt> class, if we need to just
+display the form widget in the table and we don&#8217;t need Field functionality.</p>
+<p>Then connecting <tt class="docutils literal"><span class="pre">UpdateRow</span></tt> and <tt class="docutils literal"><span class="pre">UpdateCell</span></tt> classes to the table.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TenantsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="c1"># Adding html text input for inline editing, with required validation.</span>
+    <span class="c1"># HTML form input will have a class attribute tenant-name-input, we</span>
+    <span class="c1"># can define here any HTML attribute we need.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">),</span>
+                         <span class="n">form_field</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                         <span class="n">form_field_attributes</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span><span class="s1">&#39;tenant-name-input&#39;</span><span class="p">},</span>
+                         <span class="n">update_action</span><span class="o">=</span><span class="n">UpdateCell</span><span class="p">)</span>
+
+    <span class="c1"># Adding html textarea without required validation.</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Description&#39;</span><span class="p">),</span>
+                                <span class="n">form_field</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+                                    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(),</span>
+                                    <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                                <span class="n">update_action</span><span class="o">=</span><span class="n">UpdateCell</span><span class="p">)</span>
+
+    <span class="c1"># Id will not be inline edited.</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Project ID&#39;</span><span class="p">))</span>
+
+    <span class="c1"># Adding html checkbox, that will be shown inside of the table cell with</span>
+    <span class="c1"># label</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Enabled&#39;</span><span class="p">),</span> <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">form_field</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+                                <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Enabled&#39;</span><span class="p">),</span>
+                                <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                            <span class="n">update_action</span><span class="o">=</span><span class="n">UpdateCell</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;tenants&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Projects&quot;</span><span class="p">)</span>
+        <span class="c1"># Connection to UpdateRow, so table can fetch row data based on</span>
+        <span class="c1"># their primary key.</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">UpdateRow</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">DataTables Topic Guide</a><ul>
+<li><a class="reference internal" href="#tables">Tables</a><ul>
+<li><a class="reference internal" href="#creating-your-own-tables">Creating your own tables</a></li>
+<li><a class="reference internal" href="#connecting-a-table-to-a-view">Connecting a table to a view</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#actions">Actions</a><ul>
+<li><a class="reference internal" href="#when-actions-get-run">When actions get run</a></li>
+<li><a class="reference internal" href="#basic-actions">Basic actions</a></li>
+<li><a class="reference internal" href="#shortcut-actions">Shortcut actions</a></li>
+<li><a class="reference internal" href="#preemptive-actions">Preemptive actions</a></li>
+<li><a class="reference internal" href="#policy-checks-on-actions">Policy checks on actions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#table-cell-filters-decorators">Table Cell filters (decorators)</a><ul>
+<li><a class="reference internal" href="#decorator-pattern">Decorator pattern</a></li>
+<li><a class="reference internal" href="#filter-function">Filter function</a></li>
+<li><a class="reference internal" href="#using-filters-in-datatable-column">Using filters in DataTable column</a></li>
+<li><a class="reference internal" href="#available-filters">Available filters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inline-editing">Inline editing</a><ul>
+<li><a class="reference internal" href="#fetching-the-row-data">Fetching the row data</a></li>
+<li><a class="reference internal" href="#updating-changed-cell-data">Updating changed cell data</a></li>
+<li><a class="reference internal" href="#defining-a-form-field-for-each-column-that-we-want-to-be-in-line-edited">Defining a form_field for each Column that we want to be in-line edited.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="workflows.html"
+                                  title="previous chapter">Workflows Topic Guide</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="policy.html"
+                                  title="next chapter">Horizon Policy Enforcement (RBAC: Role Based Access Control)</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/tables.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="policy.html" title="Horizon Policy Enforcement (RBAC: Role Based Access Control)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="workflows.html" title="Workflows Topic Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

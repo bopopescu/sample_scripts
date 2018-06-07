@@ -1,0 +1,788 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.cinder &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.cinder</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 OpenStack Foundation</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1"># Copyright (c) 2012 X.commerce, a business unit of eBay Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">cinderclient.exceptions</span> <span class="kn">import</span> <span class="n">ClientException</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">cinderclient.v2.contrib</span> <span class="kn">import</span> <span class="n">list_extensions</span> <span class="k">as</span> <span class="n">cinder_list_extensions</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.memoized</span> <span class="kn">import</span> <span class="n">memoized</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">nova</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># API static values</span>
+<span class="n">VOLUME_STATE_AVAILABLE</span> <span class="o">=</span> <span class="s2">&quot;available&quot;</span>
+<span class="n">DEFAULT_QUOTA_NAME</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+
+<span class="c1"># Available consumer choices associated with QOS Specs</span>
+<span class="n">CONSUMER_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s1">&#39;back-end&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;back-end&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;front-end&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;front-end&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s1">&#39;Both of front-end and back-end&#39;</span><span class="p">,</span> <span class="s1">u&#39;both&#39;</span><span class="p">)),</span>
+<span class="p">)</span>
+
+<span class="n">VERSIONS</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">APIVersionManager</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">preferred_version</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cinderclient.v2</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">cinder_client_v2</span>
+    <span class="n">VERSIONS</span><span class="o">.</span><span class="n">load_supported_version</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;client&quot;</span><span class="p">:</span> <span class="n">cinder_client_v2</span><span class="p">,</span>
+                                        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="BaseCinderAPIResourceWrapper"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper">[docs]</a><span class="k">class</span> <span class="nc">BaseCinderAPIResourceWrapper</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BaseCinderAPIResourceWrapper.name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># If a volume doesn&#39;t have a name, use its id.</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="s1">&#39;display_name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BaseCinderAPIResourceWrapper.description"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper.description">[docs]</a>    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="s1">&#39;display_description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="Volume"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.Volume">[docs]</a><span class="k">class</span> <span class="nc">Volume</span><span class="p">(</span><span class="n">BaseCinderAPIResourceWrapper</span><span class="p">):</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;volume_type&#39;</span><span class="p">,</span> <span class="s1">&#39;availability_zone&#39;</span><span class="p">,</span> <span class="s1">&#39;imageRef&#39;</span><span class="p">,</span> <span class="s1">&#39;bootable&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;snapshot_id&#39;</span><span class="p">,</span> <span class="s1">&#39;source_volid&#39;</span><span class="p">,</span> <span class="s1">&#39;attachments&#39;</span><span class="p">,</span> <span class="s1">&#39;tenant_name&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;os-vol-host-attr:host&#39;</span><span class="p">,</span> <span class="s1">&#39;os-vol-tenant-attr:tenant_id&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_image_metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;encrypted&#39;</span><span class="p">,</span> <span class="s1">&#39;transfer&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Volume.is_bootable"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.Volume.is_bootable">[docs]</a>    <span class="k">def</span> <span class="nf">is_bootable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bootable</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span>
+
+</div></div>
+<div class="viewcode-block" id="VolumeSnapshot"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolumeSnapshot">[docs]</a><span class="k">class</span> <span class="nc">VolumeSnapshot</span><span class="p">(</span><span class="n">BaseCinderAPIResourceWrapper</span><span class="p">):</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_id&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;os-extended-snapshot-attributes:project_id&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="VolumeType"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolumeType">[docs]</a><span class="k">class</span> <span class="nc">VolumeType</span><span class="p">(</span><span class="n">BaseCinderAPIResourceWrapper</span><span class="p">):</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;extra_specs&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;os-extended-snapshot-attributes:project_id&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="VolumeBackup"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolumeBackup">[docs]</a><span class="k">class</span> <span class="nc">VolumeBackup</span><span class="p">(</span><span class="n">BaseCinderAPIResourceWrapper</span><span class="p">):</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;container&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_id&#39;</span><span class="p">,</span> <span class="s1">&#39;availability_zone&#39;</span><span class="p">]</span>
+    <span class="n">_volume</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span>
+
+    <span class="nd">@volume.setter</span>
+<div class="viewcode-block" id="VolumeBackup.volume"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolumeBackup.volume">[docs]</a>    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span> <span class="o">=</span> <span class="n">value</span>
+
+</div></div>
+<div class="viewcode-block" id="VolTypeExtraSpec"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolTypeExtraSpec">[docs]</a><span class="k">class</span> <span class="nc">VolTypeExtraSpec</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_id</span> <span class="o">=</span> <span class="n">type_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+</div>
+<div class="viewcode-block" id="QosSpec"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.QosSpec">[docs]</a><span class="k">class</span> <span class="nc">QosSpec</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+</div>
+<div class="viewcode-block" id="VolumeTransfer"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolumeTransfer">[docs]</a><span class="k">class</span> <span class="nc">VolumeTransfer</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_id&#39;</span><span class="p">,</span> <span class="s1">&#39;auth_key&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="VolumePool"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.VolumePool">[docs]</a><span class="k">class</span> <span class="nc">VolumePool</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;pool_name&#39;</span><span class="p">,</span> <span class="s1">&#39;total_capacity_gb&#39;</span><span class="p">,</span> <span class="s1">&#39;free_capacity_gb&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;allocated_capacity_gb&#39;</span><span class="p">,</span> <span class="s1">&#39;QoS_support&#39;</span><span class="p">,</span> <span class="s1">&#39;reserved_percentage&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;volume_backend_name&#39;</span><span class="p">,</span> <span class="s1">&#39;vendor_name&#39;</span><span class="p">,</span> <span class="s1">&#39;driver_version&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;storage_protocol&#39;</span><span class="p">,</span> <span class="s1">&#39;extra_specs&#39;</span><span class="p">]</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="cinderclient"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.cinderclient">[docs]</a><span class="k">def</span> <span class="nf">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">api_version</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_active_version</span><span class="p">()</span>
+
+    <span class="n">insecure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_NO_VERIFY&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">cacert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_CACERT&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">cinder_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># The cinder client assumes that the v2 endpoint type will be</span>
+        <span class="c1"># &#39;volumev2&#39;.</span>
+        <span class="k">if</span> <span class="n">api_version</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cinder_url</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volumev2&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceCatalogException</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cinder v2 requested but no &#39;volumev2&#39; service &quot;</span>
+                            <span class="s2">&quot;type available in Keystone catalog.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceCatalogException</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;no volume service configured.&#39;</span><span class="p">)</span>
+        <span class="k">raise</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">api_version</span><span class="p">[</span><span class="s1">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                                     <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                     <span class="n">project_id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+                                     <span class="n">auth_url</span><span class="o">=</span><span class="n">cinder_url</span><span class="p">,</span>
+                                     <span class="n">insecure</span><span class="o">=</span><span class="n">insecure</span><span class="p">,</span>
+                                     <span class="n">cacert</span><span class="o">=</span><span class="n">cacert</span><span class="p">,</span>
+                                     <span class="n">http_log_debug</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">auth_token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">management_url</span> <span class="o">=</span> <span class="n">cinder_url</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_replace_v2_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="version_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.version_get">[docs]</a><span class="k">def</span> <span class="nf">version_get</span><span class="p">():</span>
+    <span class="n">api_version</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_active_version</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">api_version</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="volume_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_list">[docs]</a><span class="k">def</span> <span class="nf">volume_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To see all volumes in the cloud as an admin you can pass in a special</span>
+<span class="sd">    search option: {&#39;all_tenants&#39;: 1}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">c_client</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c_client</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="c1"># build a dictionary of volume_id -&gt; transfer</span>
+    <span class="n">transfers</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">volume_id</span><span class="p">:</span> <span class="n">t</span>
+                 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">transfer_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="n">search_opts</span><span class="p">)}</span>
+
+    <span class="n">volumes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">c_client</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">search_opts</span><span class="o">=</span><span class="n">search_opts</span><span class="p">):</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">transfer</span> <span class="o">=</span> <span class="n">transfers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">volumes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Volume</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">volumes</span>
+
+</div>
+<div class="viewcode-block" id="volume_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_get">[docs]</a><span class="k">def</span> <span class="nf">volume_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+    <span class="n">volume_data</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume_id</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">attachment</span> <span class="ow">in</span> <span class="n">volume_data</span><span class="o">.</span><span class="n">attachments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;server_id&quot;</span> <span class="ow">in</span> <span class="n">attachment</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">attachment</span><span class="p">[</span><span class="s1">&#39;server_id&#39;</span><span class="p">])</span>
+            <span class="n">attachment</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Nova volume can occasionally send back error&#39;d attachments</span>
+            <span class="c1"># the lack a server_id property; to work around that we&#39;ll</span>
+            <span class="c1"># give the attached instance a generic name.</span>
+            <span class="n">attachment</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unknown instance&quot;</span><span class="p">)</span>
+
+    <span class="n">volume_data</span><span class="o">.</span><span class="n">transfer</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">volume_data</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;awaiting-transfer&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">transfer</span> <span class="ow">in</span> <span class="n">transfer_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">transfer</span><span class="o">.</span><span class="n">volume_id</span> <span class="o">==</span> <span class="n">volume_id</span><span class="p">:</span>
+                <span class="n">volume_data</span><span class="o">.</span><span class="n">transfer</span> <span class="o">=</span> <span class="n">transfer</span>
+                <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">Volume</span><span class="p">(</span><span class="n">volume_data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_create">[docs]</a><span class="k">def</span> <span class="nf">volume_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">volume_type</span><span class="p">,</span>
+                  <span class="n">snapshot_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">image_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">availability_zone</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">source_volid</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="s1">&#39;volume_type&#39;</span><span class="p">:</span> <span class="n">volume_type</span><span class="p">,</span>
+            <span class="s1">&#39;snapshot_id&#39;</span><span class="p">:</span> <span class="n">snapshot_id</span><span class="p">,</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="n">metadata</span><span class="p">,</span>
+            <span class="s1">&#39;imageRef&#39;</span><span class="p">:</span> <span class="n">image_id</span><span class="p">,</span>
+            <span class="s1">&#39;availability_zone&#39;</span><span class="p">:</span> <span class="n">availability_zone</span><span class="p">,</span>
+            <span class="s1">&#39;source_volid&#39;</span><span class="p">:</span> <span class="n">source_volid</span><span class="p">}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_replace_v2_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Volume</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_extend"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_extend">[docs]</a><span class="k">def</span> <span class="nf">volume_extend</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">new_size</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span> <span class="n">new_size</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_delete">[docs]</a><span class="k">def</span> <span class="nf">volume_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">volume_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_retype"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_retype">[docs]</a><span class="k">def</span> <span class="nf">volume_retype</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">new_type</span><span class="p">,</span> <span class="n">migration_policy</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">retype</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span>
+                                                <span class="n">new_type</span><span class="p">,</span>
+                                                <span class="n">migration_policy</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_set_bootable"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_set_bootable">[docs]</a><span class="k">def</span> <span class="nf">volume_set_bootable</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">bootable</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">set_bootable</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span>
+                                                      <span class="n">bootable</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_update">[docs]</a><span class="k">def</span> <span class="nf">volume_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+    <span class="n">vol_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="p">}</span>
+    <span class="n">vol_data</span> <span class="o">=</span> <span class="n">_replace_v2_parameters</span><span class="p">(</span><span class="n">vol_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span>
+                                                <span class="o">**</span><span class="n">vol_data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_reset_state"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_reset_state">[docs]</a><span class="k">def</span> <span class="nf">volume_reset_state</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">reset_state</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_upload_to_image"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_upload_to_image">[docs]</a><span class="k">def</span> <span class="nf">volume_upload_to_image</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">image_name</span><span class="p">,</span>
+                           <span class="n">container_format</span><span class="p">,</span> <span class="n">disk_format</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">upload_to_image</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span>
+                                                         <span class="n">force</span><span class="p">,</span>
+                                                         <span class="n">image_name</span><span class="p">,</span>
+                                                         <span class="n">container_format</span><span class="p">,</span>
+                                                         <span class="n">disk_format</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_get_encryption_metadata"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_get_encryption_metadata">[docs]</a><span class="k">def</span> <span class="nf">volume_get_encryption_metadata</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get_encryption_metadata</span><span class="p">(</span><span class="n">volume_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_migrate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_migrate">[docs]</a><span class="k">def</span> <span class="nf">volume_migrate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">force_host_copy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                   <span class="n">lock_volume</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">migrate_volume</span><span class="p">(</span><span class="n">volume_id</span><span class="p">,</span>
+                                                        <span class="n">host</span><span class="p">,</span>
+                                                        <span class="n">force_host_copy</span><span class="p">,</span>
+                                                        <span class="n">lock_volume</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_snapshot_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_snapshot_get">[docs]</a><span class="k">def</span> <span class="nf">volume_snapshot_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">):</span>
+    <span class="n">snapshot</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">VolumeSnapshot</span><span class="p">(</span><span class="n">snapshot</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_snapshot_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_snapshot_list">[docs]</a><span class="k">def</span> <span class="nf">volume_snapshot_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">c_client</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c_client</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">VolumeSnapshot</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c_client</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+        <span class="n">search_opts</span><span class="o">=</span><span class="n">search_opts</span><span class="p">)]</span>
+
+</div>
+<div class="viewcode-block" id="volume_snapshot_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_snapshot_create">[docs]</a><span class="k">def</span> <span class="nf">volume_snapshot_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                           <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span>
+            <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="n">force</span><span class="p">}</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_replace_v2_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">VolumeSnapshot</span><span class="p">(</span><span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">volume_id</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="volume_snapshot_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_snapshot_delete">[docs]</a><span class="k">def</span> <span class="nf">volume_snapshot_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_snapshot_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_snapshot_update">[docs]</a><span class="k">def</span> <span class="nf">volume_snapshot_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+    <span class="n">snapshot_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                     <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">description</span><span class="p">}</span>
+    <span class="n">snapshot_data</span> <span class="o">=</span> <span class="n">_replace_v2_parameters</span><span class="p">(</span><span class="n">snapshot_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">,</span>
+                                                         <span class="o">**</span><span class="n">snapshot_data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_snapshot_reset_state"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_snapshot_reset_state">[docs]</a><span class="k">def</span> <span class="nf">volume_snapshot_reset_state</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_snapshots</span><span class="o">.</span><span class="n">reset_state</span><span class="p">(</span>
+        <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="volume_backup_supported"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_backup_supported">[docs]</a><span class="k">def</span> <span class="nf">volume_backup_supported</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method will determine if cinder supports backup.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO(lcheng) Cinder does not expose the information if cinder</span>
+    <span class="c1"># backup is configured yet. This is a workaround until that</span>
+    <span class="c1"># capability is available.</span>
+    <span class="c1"># https://bugs.launchpad.net/cinder/+bug/1334856</span>
+    <span class="n">cinder_config</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_CINDER_FEATURES&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">cinder_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_backup&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_backup_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_backup_get">[docs]</a><span class="k">def</span> <span class="nf">volume_backup_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">backup_id</span><span class="p">):</span>
+    <span class="n">backup</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">backups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">backup_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">VolumeBackup</span><span class="p">(</span><span class="n">backup</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_backup_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_backup_list">[docs]</a><span class="k">def</span> <span class="nf">volume_backup_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">c_client</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c_client</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">VolumeBackup</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">c_client</span><span class="o">.</span><span class="n">backups</span><span class="o">.</span><span class="n">list</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="volume_backup_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_backup_create">[docs]</a><span class="k">def</span> <span class="nf">volume_backup_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                         <span class="n">volume_id</span><span class="p">,</span>
+                         <span class="n">container_name</span><span class="p">,</span>
+                         <span class="n">name</span><span class="p">,</span>
+                         <span class="n">description</span><span class="p">):</span>
+    <span class="n">backup</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">backups</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">volume_id</span><span class="p">,</span>
+        <span class="n">container</span><span class="o">=</span><span class="n">container_name</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">VolumeBackup</span><span class="p">(</span><span class="n">backup</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_backup_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_backup_delete">[docs]</a><span class="k">def</span> <span class="nf">volume_backup_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">backup_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">backups</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">backup_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_backup_restore"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_backup_restore">[docs]</a><span class="k">def</span> <span class="nf">volume_backup_restore</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">backup_id</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">restores</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">backup_id</span><span class="o">=</span><span class="n">backup_id</span><span class="p">,</span>
+                                                  <span class="n">volume_id</span><span class="o">=</span><span class="n">volume_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_manage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_manage">[docs]</a><span class="k">def</span> <span class="nf">volume_manage</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                  <span class="n">host</span><span class="p">,</span>
+                  <span class="n">identifier</span><span class="p">,</span>
+                  <span class="n">id_type</span><span class="p">,</span>
+                  <span class="n">name</span><span class="p">,</span>
+                  <span class="n">description</span><span class="p">,</span>
+                  <span class="n">volume_type</span><span class="p">,</span>
+                  <span class="n">availability_zone</span><span class="p">,</span>
+                  <span class="n">metadata</span><span class="p">,</span>
+                  <span class="n">bootable</span><span class="p">):</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="p">{</span><span class="n">id_type</span><span class="p">:</span> <span class="n">identifier</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">manage</span><span class="p">(</span>
+        <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
+        <span class="n">ref</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+        <span class="n">volume_type</span><span class="o">=</span><span class="n">volume_type</span><span class="p">,</span>
+        <span class="n">availability_zone</span><span class="o">=</span><span class="n">availability_zone</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="n">bootable</span><span class="o">=</span><span class="n">bootable</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_unmanage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_unmanage">[docs]</a><span class="k">def</span> <span class="nf">volume_unmanage</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">unmanage</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tenant_quota_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.tenant_quota_get">[docs]</a><span class="k">def</span> <span class="nf">tenant_quota_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">):</span>
+    <span class="n">c_client</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c_client</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">QuotaSet</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">QuotaSet</span><span class="p">(</span><span class="n">c_client</span><span class="o">.</span><span class="n">quotas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="tenant_quota_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.tenant_quota_update">[docs]</a><span class="k">def</span> <span class="nf">tenant_quota_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quotas</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="default_quota_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.default_quota_get">[docs]</a><span class="k">def</span> <span class="nf">default_quota_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">QuotaSet</span><span class="p">(</span><span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quotas</span><span class="o">.</span><span class="n">defaults</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_list_with_qos_associations"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_list_with_qos_associations">[docs]</a><span class="k">def</span> <span class="nf">volume_type_list_with_qos_associations</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">vol_types</span> <span class="o">=</span> <span class="n">volume_type_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="n">vol_types_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># initialize and build a dictionary for lookup access below</span>
+    <span class="k">for</span> <span class="n">vol_type</span> <span class="ow">in</span> <span class="n">vol_types</span><span class="p">:</span>
+        <span class="n">vol_type</span><span class="o">.</span><span class="n">associated_qos_spec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">vol_types_dict</span><span class="p">[</span><span class="n">vol_type</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">vol_type</span>
+
+    <span class="c1"># get all currently defined qos specs</span>
+    <span class="n">qos_specs</span> <span class="o">=</span> <span class="n">qos_spec_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">qos_spec</span> <span class="ow">in</span> <span class="n">qos_specs</span><span class="p">:</span>
+        <span class="c1"># get all volume types this qos spec is associated with</span>
+        <span class="n">assoc_vol_types</span> <span class="o">=</span> <span class="n">qos_spec_get_associations</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">assoc_vol_type</span> <span class="ow">in</span> <span class="n">assoc_vol_types</span><span class="p">:</span>
+            <span class="c1"># update volume type to hold this association info</span>
+            <span class="n">vol_type</span> <span class="o">=</span> <span class="n">vol_types_dict</span><span class="p">[</span><span class="n">assoc_vol_type</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+            <span class="n">vol_type</span><span class="o">.</span><span class="n">associated_qos_spec</span> <span class="o">=</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">return</span> <span class="n">vol_types</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_get_with_qos_association"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_get_with_qos_association">[docs]</a><span class="k">def</span> <span class="nf">volume_type_get_with_qos_association</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">):</span>
+    <span class="n">vol_type</span> <span class="o">=</span> <span class="n">volume_type_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">)</span>
+    <span class="n">vol_type</span><span class="o">.</span><span class="n">associated_qos_spec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># get all currently defined qos specs</span>
+    <span class="n">qos_specs</span> <span class="o">=</span> <span class="n">qos_spec_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">qos_spec</span> <span class="ow">in</span> <span class="n">qos_specs</span><span class="p">:</span>
+        <span class="c1"># get all volume types this qos spec is associated with</span>
+        <span class="n">assoc_vol_types</span> <span class="o">=</span> <span class="n">qos_spec_get_associations</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">assoc_vol_type</span> <span class="ow">in</span> <span class="n">assoc_vol_types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vol_type</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">assoc_vol_type</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+                <span class="c1"># update volume type to hold this association info</span>
+                <span class="n">vol_type</span><span class="o">.</span><span class="n">associated_qos_spec</span> <span class="o">=</span> <span class="n">qos_spec</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">return</span> <span class="n">vol_type</span>
+
+    <span class="k">return</span> <span class="n">vol_type</span>
+
+</div>
+<div class="viewcode-block" id="default_quota_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.default_quota_update">[docs]</a><span class="k">def</span> <span class="nf">default_quota_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quota_classes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">DEFAULT_QUOTA_NAME</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_list">[docs]</a><span class="k">def</span> <span class="nf">volume_type_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_create">[docs]</a><span class="k">def</span> <span class="nf">volume_type_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_update">[docs]</a><span class="k">def</span> <span class="nf">volume_type_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">volume_type_id</span><span class="p">,</span>
+                                                     <span class="n">name</span><span class="p">,</span>
+                                                     <span class="n">description</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_default"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_default">[docs]</a><span class="k">def</span> <span class="nf">volume_type_default</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_delete">[docs]</a><span class="k">def</span> <span class="nf">volume_type_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">volume_type_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_get">[docs]</a><span class="k">def</span> <span class="nf">volume_type_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume_type_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_encryption_type_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_encryption_type_create">[docs]</a><span class="k">def</span> <span class="nf">volume_encryption_type_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_encryption_types</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">volume_type_id</span><span class="p">,</span>
+                                                                <span class="n">specs</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_encryption_type_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_encryption_type_delete">[docs]</a><span class="k">def</span> <span class="nf">volume_encryption_type_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_encryption_types</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">volume_type_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_encryption_type_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_encryption_type_get">[docs]</a><span class="k">def</span> <span class="nf">volume_encryption_type_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_type_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_encryption_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume_type_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_encryption_type_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_encryption_type_list">[docs]</a><span class="k">def</span> <span class="nf">volume_encryption_type_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volume_encryption_types</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_extra_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_extra_get">[docs]</a><span class="k">def</span> <span class="nf">volume_type_extra_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_id</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">vol_type</span> <span class="o">=</span> <span class="n">volume_type_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_id</span><span class="p">)</span>
+    <span class="n">extras</span> <span class="o">=</span> <span class="n">vol_type</span><span class="o">.</span><span class="n">get_keys</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">extras</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">VolTypeExtraSpec</span><span class="p">(</span><span class="n">type_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_extra_set"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_extra_set">[docs]</a><span class="k">def</span> <span class="nf">volume_type_extra_set</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+    <span class="n">vol_type</span> <span class="o">=</span> <span class="n">volume_type_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">return</span> <span class="n">vol_type</span><span class="o">.</span><span class="n">set_keys</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="volume_type_extra_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.volume_type_extra_delete">[docs]</a><span class="k">def</span> <span class="nf">volume_type_extra_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_id</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+    <span class="n">vol_type</span> <span class="o">=</span> <span class="n">volume_type_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vol_type</span><span class="o">.</span><span class="n">unset_keys</span><span class="p">([</span><span class="n">keys</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_list">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_get">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">qos_spec_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_delete">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_create">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">specs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">specs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_get_keys"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_get_keys">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_get_keys</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">qos_spec_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">)</span>
+    <span class="n">qos_specs</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">specs</span>
+    <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">spec</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">QosSpec</span><span class="p">(</span><span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">qos_specs</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_set_keys"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_set_keys">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_set_keys</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">specs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">set_keys</span><span class="p">(</span><span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">specs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_unset_keys"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_unset_keys">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_unset_keys</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">specs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">unset_keys</span><span class="p">(</span><span class="n">qos_spec_id</span><span class="p">,</span> <span class="n">specs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_associate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_associate">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_associate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_specs</span><span class="p">,</span> <span class="n">vol_type_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">qos_specs</span><span class="p">,</span> <span class="n">vol_type_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_disassociate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_disassociate">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_disassociate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_specs</span><span class="p">,</span> <span class="n">vol_type_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">disassociate</span><span class="p">(</span><span class="n">qos_specs</span><span class="p">,</span> <span class="n">vol_type_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="qos_spec_get_associations"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.qos_spec_get_associations">[docs]</a><span class="k">def</span> <span class="nf">qos_spec_get_associations</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">qos_spec_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">qos_specs</span><span class="o">.</span><span class="n">get_associations</span><span class="p">(</span><span class="n">qos_spec_id</span><span class="p">)</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="tenant_absolute_limits"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.tenant_absolute_limits">[docs]</a><span class="k">def</span> <span class="nf">tenant_absolute_limits</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">limits</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">absolute</span>
+    <span class="n">limits_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="n">limits</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># In some cases, the absolute limits data in Cinder can get</span>
+            <span class="c1"># out of sync causing the total.*Used limits to return</span>
+            <span class="c1"># negative values instead of 0. For such cases, replace</span>
+            <span class="c1"># negative values with 0.</span>
+            <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;total&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Used&#39;</span><span class="p">):</span>
+                <span class="n">limits_dict</span><span class="p">[</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># -1 is used to represent unlimited quotas</span>
+                <span class="n">limits_dict</span><span class="p">[</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">limits_dict</span><span class="p">[</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">limits_dict</span>
+
+</div>
+<div class="viewcode-block" id="service_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.service_list">[docs]</a><span class="k">def</span> <span class="nf">service_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="availability_zone_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.availability_zone_list">[docs]</a><span class="k">def</span> <span class="nf">availability_zone_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">detailed</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">availability_zones</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">detailed</span><span class="o">=</span><span class="n">detailed</span><span class="p">)</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="list_extensions"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.list_extensions">[docs]</a><span class="k">def</span> <span class="nf">list_extensions</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinder_list_extensions</span><span class="o">.</span><span class="n">ListExtManager</span><span class="p">(</span><span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>\
+        <span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="extension_supported"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.extension_supported">[docs]</a><span class="k">def</span> <span class="nf">extension_supported</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">extension_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This method will determine if Cinder supports a given extension name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">extensions</span> <span class="o">=</span> <span class="n">list_extensions</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">extension_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="transfer_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.transfer_list">[docs]</a><span class="k">def</span> <span class="nf">transfer_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">detailed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;To see all volumes transfers as an admin pass in a special</span>
+<span class="sd">    search option: {&#39;all_tenants&#39;: 1}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c_client</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">VolumeTransfer</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">c_client</span><span class="o">.</span><span class="n">transfers</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+        <span class="n">detailed</span><span class="o">=</span><span class="n">detailed</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="n">search_opts</span><span class="p">)]</span>
+
+</div>
+<div class="viewcode-block" id="transfer_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.transfer_get">[docs]</a><span class="k">def</span> <span class="nf">transfer_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">):</span>
+    <span class="n">transfer_data</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">transfers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">transfer_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">VolumeTransfer</span><span class="p">(</span><span class="n">transfer_data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="transfer_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.transfer_create">[docs]</a><span class="k">def</span> <span class="nf">transfer_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">transfers</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">transfer_id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">VolumeTransfer</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="transfer_accept"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.transfer_accept">[docs]</a><span class="k">def</span> <span class="nf">transfer_accept</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">,</span> <span class="n">auth_key</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">transfers</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="n">transfer_id</span><span class="p">,</span> <span class="n">auth_key</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="transfer_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.transfer_delete">[docs]</a><span class="k">def</span> <span class="nf">transfer_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">transfer_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">transfers</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">transfer_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.html#openstack_dashboard.api.cinder.pool_list">[docs]</a><span class="k">def</span> <span class="nf">pool_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">detailed</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">c_client</span> <span class="o">=</span> <span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c_client</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">VolumePool</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">c_client</span><span class="o">.</span><span class="n">pools</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+        <span class="n">detailed</span><span class="o">=</span><span class="n">detailed</span><span class="p">)]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.rest.nova Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.rest.keystone Module" href="openstack_dashboard.api.rest.keystone.html" />
+    <link rel="prev" title="The openstack_dashboard.api.rest.neutron Module" href="openstack_dashboard.api.rest.neutron.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-rest-nova-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.rest.nova</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-rest-nova-module" title="Permalink to this headline">¶</a></h1>
+<p>API over the nova service.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">AggregateExtraSpecs</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#AggregateExtraSpecs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for managing aggregate extra specs</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#AggregateExtraSpecs.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a specific aggregate&#8217;s extra specs</p>
+<p>Example GET:
+<a class="reference external" href="http://localhost/api/nova/flavors/1/extra-specs">http://localhost/api/nova/flavors/1/extra-specs</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">patch</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#AggregateExtraSpecs.patch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update a specific aggregate&#8217;s extra specs.</p>
+<p>This method returns HTTP 204 (no content) on success.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/aggregates/(?P&lt;aggregate_id&gt;[^/]+)/extra-specs/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">AvailabilityZones</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#AvailabilityZones"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for nova availability zones.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#AvailabilityZones.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a list of availability zones.</p>
+<p>The following get parameters may be passed in the GET
+request:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>detailed</strong> &#8211; If this equals &#8220;true&#8221; then the result will
+include more detail.</td>
+</tr>
+</tbody>
+</table>
+<p>The listing result is an object with property &#8220;items&#8221;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/availzones/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Extensions</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Extensions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for nova extensions.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Extensions.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a list of extensions.</p>
+<p>The listing result is an object with property &#8220;items&#8221;. Each item is
+an image.</p>
+<p>Example GET:
+<a class="reference external" href="http://localhost/api/nova/extensions">http://localhost/api/nova/extensions</a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/extensions/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Flavor</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Flavor"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for retrieving a single flavor</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Flavor.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a specific flavor</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>get_extras</strong> &#8211; Also retrieve the extra specs.</td>
+</tr>
+</tbody>
+</table>
+<p>Example GET:
+<a class="reference external" href="http://localhost/api/nova/flavors/1">http://localhost/api/nova/flavors/1</a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/flavors/(?P&lt;flavor_id&gt;[^/]+)/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">FlavorExtraSpecs</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#FlavorExtraSpecs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for managing flavor extra specs</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#FlavorExtraSpecs.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a specific flavor&#8217;s extra specs</p>
+<p>Example GET:
+<a class="reference external" href="http://localhost/api/nova/flavors/1/extra-specs">http://localhost/api/nova/flavors/1/extra-specs</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">patch</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#FlavorExtraSpecs.patch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update a specific flavor&#8217;s extra specs.</p>
+<p>This method returns HTTP 204 (no content) on success.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/flavors/(?P&lt;flavor_id&gt;[^/]+)/extra-specs/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Flavors</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Flavors"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for nova flavors.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Flavors.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a list of flavors.</p>
+<p>The listing result is an object with property &#8220;items&#8221;. Each item is
+an flavor. By default this will return the flavors for the user&#8217;s
+current project. If the user is admin, public flavors will also be
+returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>is_public</strong> &#8211; For a regular user, set to True to see all public
+flavors. For an admin user, set to False to not see public flavors.</li>
+<li><strong>get_extras</strong> &#8211; Also retrieve the extra specs.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example GET:
+<a class="reference external" href="http://localhost/api/nova/flavors?is_public=true">http://localhost/api/nova/flavors?is_public=true</a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/flavors/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Keypairs</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Keypairs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for nova keypairs.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Keypairs.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a list of keypairs associated with the current logged-in
+account.</p>
+<p>The listing result is an object with property &#8220;items&#8221;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">post</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Keypairs.post"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a keypair.</p>
+<p>Create a keypair using the parameters supplied in the POST
+application/json object. The parameters are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; the name to give the keypair</li>
+<li><strong>public_key</strong> &#8211; (optional) a key to import</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This returns the new keypair object on success.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/keypairs/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Limits</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Limits"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for nova limits.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Limits.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get an object describing the current project limits.</p>
+<p>Note: the Horizon API doesn&#8217;t support any other project (tenant) but
+the underlying client does...</p>
+<p>The following get parameters may be passed in the GET
+request:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>reserved</strong> &#8211; This may be set to &#8220;true&#8221; but it&#8217;s not
+clear what the result of that is.</td>
+</tr>
+</tbody>
+</table>
+<p>The result is an object with limits as properties.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/limits/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Server</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Server"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API for retrieving a single server</p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Server.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get a specific server</p>
+<p><a class="reference external" href="http://localhost/api/nova/servers/1">http://localhost/api/nova/servers/1</a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/servers/(?P&lt;server_id&gt;.+|default)$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.rest.nova.</tt><tt class="descname">Servers</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Servers"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.View</span></tt></p>
+<p>API over all servers.</p>
+<dl class="method">
+<dt>
+<tt class="descname">post</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kw</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/rest/nova.html#Servers.post"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a server.</p>
+<p>Create a server using the parameters supplied in the POST
+application/json object. The required parameters as specified by
+the underlying novaclient are:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; The new server name.</li>
+<li><strong>source_id</strong> &#8211; The ID of the image to use.</li>
+<li><strong>flavor_id</strong> &#8211; The ID of the flavor to use.</li>
+<li><strong>key_name</strong> &#8211; (optional extension) name of previously created
+keypair to inject into the instance.</li>
+<li><strong>user_data</strong> &#8211; user data to pass to be exposed by the metadata
+server this can be a file type object as well or a
+string.</li>
+<li><strong>security_groups</strong> &#8211; An array of one or more objects with a &#8220;name&#8221;
+attribute.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Other parameters are accepted as per the underlying novaclient:
+&#8220;block_device_mapping&#8221;, &#8220;block_device_mapping_v2&#8221;, &#8220;nics&#8221;, &#8220;meta&#8221;,
+&#8220;availability_zone&#8221;, &#8220;instance_count&#8221;, &#8220;admin_pass&#8221;, &#8220;disk_config&#8221;,
+&#8220;config_drive&#8221;</p>
+<p>This returns the new server object on success.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url_regex</tt><em class="property"> = 'nova/servers/$'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.rest.neutron.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.rest.neutron</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.rest.keystone.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.rest.keystone</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.rest.keystone.html" title="The openstack_dashboard.api.rest.keystone Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.rest.neutron.html" title="The openstack_dashboard.api.rest.neutron Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

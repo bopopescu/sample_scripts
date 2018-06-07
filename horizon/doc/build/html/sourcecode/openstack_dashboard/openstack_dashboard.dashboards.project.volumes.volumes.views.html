@@ -1,0 +1,806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.volumes.volumes.views Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.volumes.volumes Module" href="openstack_dashboard.dashboards.project.volumes.volumes.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.volumes.backups.forms Module" href="openstack_dashboard.dashboards.project.volumes.backups.forms.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-volumes-volumes-views-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.volumes.volumes.views</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-volumes-volumes-views-module" title="Permalink to this headline">¶</a></h1>
+<p>Views for managing volumes.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">AcceptTransferView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#AcceptTransferView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AcceptTransferForm</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50cd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_id</tt><em class="property"> = 'accept_volume_transfer_modal'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50c50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50310&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50110&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50bd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/accept_transfer.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">CreateSnapshotView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateSnapshotView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">CreateSnapshotForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateSnapshotView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateSnapshotView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98e50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc988d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:create_snapshot'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98790&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/create_snapshot.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">CreateTransferView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateTransferView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">CreateTransferForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateTransferView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateTransferView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bd30eb50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_id</tt><em class="property"> = 'create_volume_transfer_modal'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50450&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50150&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:create_transfer'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bd30ea10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/create_transfer.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">CreateView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">CreateForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#CreateView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98150&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98210&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98410&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98e10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98b90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/create.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">DetailView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#DetailView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.views.TabView</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#DetailView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#DetailView.get_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_redirect_url</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#DetailView.get_redirect_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_tabs</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#DetailView.get_tabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98a10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tab_group_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">VolumeDetailTabs</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/detail.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">EditAttachmentsView</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.views.DataTableView</span></tt>, <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AttachForm</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">form_id</tt><em class="property"> = 'attach_volume_form'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.get_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_form</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.get_form"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_object</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.get_object"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab250&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_id</tt><em class="property"> = 'attach_volume_modal'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab5d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">post</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EditAttachmentsView.post"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:attach'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90abfd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AttachmentsTable</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/attach.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">EncryptionDetailView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EncryptionDetailView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.TemplateView</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EncryptionDetailView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_encryption_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EncryptionDetailView.get_encryption_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_redirect_url</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EncryptionDetailView.get_redirect_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_volume_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#EncryptionDetailView.get_volume_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab690&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/encryption_detail.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">ExtendView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ExtendView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">ExtendForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ExtendView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ExtendView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_object</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ExtendView.get_object"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98f10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98b10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98ad0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:extend'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98f90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/extend.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">RetypeView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#RetypeView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">RetypeForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#RetypeView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#RetypeView.get_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#RetypeView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab7d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_id</tt><em class="property"> = 'retype_volume_modal'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab610&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab1d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:retype'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90abc90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/retype.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">ShowTransferView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ShowTransferView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">cancel_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50dd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">ShowTransferForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ShowTransferView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ShowTransferView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_object</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#ShowTransferView.get_object"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50d90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_id</tt><em class="property"> = 'show_volume_transfer_modal'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c506d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:show_transfer'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50710&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/show_transfer.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">UpdateView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UpdateView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UpdateView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UpdateView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_object</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UpdateView.get_object"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c503d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_id</tt><em class="property"> = 'update_volume_modal'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90ab190&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:update'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9c50b50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/update.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.volumes.volumes.views.</tt><tt class="descname">UploadToImageView</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UploadToImageView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.views.ModalFormView" title="horizon.forms.views.ModalFormView"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.views.ModalFormView</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">form_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UploadToImageForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UploadToImageView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UploadToImageView.get_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/volumes/volumes/views.html#UploadToImageView.get_initial"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">modal_header</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98390&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">page_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bd30eb90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbc98d90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">submit_url</tt><em class="property"> = 'horizon:project:volumes:volumes:upload_to_image'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bd30e110&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/volumes/volumes/upload_to_image.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.volumes.backups.forms.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.volumes.backups.forms</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.volumes.volumes.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.volumes.volumes</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.views.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.volumes.volumes.html" title="The openstack_dashboard.dashboards.project.volumes.volumes Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.volumes.backups.forms.html" title="The openstack_dashboard.dashboards.project.volumes.backups.forms Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

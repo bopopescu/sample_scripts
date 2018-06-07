@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.glance Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.base Module" href="openstack_dashboard.api.base.html" />
+    <link rel="prev" title="The openstack_dashboard.django_pyscss_fix Module" href="openstack_dashboard.django_pyscss_fix.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-glance-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.glance</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-glance-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">BaseGlanceMetadefAPIResourceWrapper</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#BaseGlanceMetadefAPIResourceWrapper"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">as_json</tt><big>(</big><em>indent=4</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#BaseGlanceMetadefAPIResourceWrapper.as_json"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">description</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#BaseGlanceMetadefAPIResourceWrapper.description"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">to_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#BaseGlanceMetadefAPIResourceWrapper.to_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">Namespace</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#Namespace"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.glance.BaseGlanceMetadefAPIResourceWrapper</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">public</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#Namespace.public"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">resource_type_names</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#Namespace.resource_type_names"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">glanceclient</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#glanceclient"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create image.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> &#8211; <ul>
+<li><dl class="first docutils">
+<dt>copy_from: URL from which Glance server should immediately copy</dt>
+<dd>the data and store it in its configured image store.</dd>
+</dl>
+</li>
+<li>data: Form data posted from client.</li>
+<li>location: URL where the data for this image already resides.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>In the case of &#8216;copy_from&#8217; and &#8216;location&#8217;, the Glance server
+will give us a immediate response from create and handle the data
+asynchronously.</p>
+<p>In the case of &#8216;data&#8217; the process of uploading the data may take
+some time and is handed off to a seperate thread.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_delete</tt><big>(</big><em>request</em>, <em>image_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_delete_properties</tt><big>(</big><em>request</em>, <em>image_id</em>, <em>keys</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_delete_properties"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete custom properties for an image.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_get</tt><big>(</big><em>request</em>, <em>image_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns an Image object populated with metadata for image
+with supplied identifier.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_list_detailed</tt><big>(</big><em>request</em>, <em>marker=None</em>, <em>sort_dir='desc'</em>, <em>sort_key='created_at'</em>, <em>filters=None</em>, <em>paginate=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_list_detailed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_update</tt><big>(</big><em>request</em>, <em>image_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">image_update_properties</tt><big>(</big><em>request</em>, <em>image_id</em>, <em>remove_props=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#image_update_properties"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Add or update a custom property of an image.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_add_resource_type</tt><big>(</big><em>request</em>, <em>namespace_name</em>, <em>resource_type</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_add_resource_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_create</tt><big>(</big><em>request</em>, <em>namespace</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_delete</tt><big>(</big><em>request</em>, <em>namespace_name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_full_list</tt><big>(</big><em>request</em>, <em>resource_type</em>, <em>filters={}</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_full_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_list</tt><big>(</big><em>request</em>, <em>filters={}</em>, <em>sort_dir='asc'</em>, <em>sort_key='namespace'</em>, <em>marker=None</em>, <em>paginate=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Retrieve a listing of Namespaces</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>paginate</strong> &#8211; If true will perform pagination based on settings.</li>
+<li><strong>marker</strong> &#8211; Specifies the namespace of the last-seen namespace.
+The typical pattern of limit and marker is to make an
+initial limited request and then to use the last
+namespace from the response as the marker parameter
+in a subsequent limited request. With paginate, limit
+is automatically set.</li>
+<li><strong>sort_dir</strong> &#8211; The sort direction (&#8216;asc&#8217; or &#8216;desc&#8217;).</li>
+<li><strong>sort_key</strong> &#8211; The field to sort on (for example, &#8216;created_at&#8217;). Default
+is namespace. The way base namespaces are loaded into glance
+typically at first deployment is done in a single transaction
+giving them a potentially unpredictable sort result when using
+create_at.</li>
+<li><strong>filters</strong> &#8211; specifies addition fields to filter on such as
+resource_types.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns A tuple of three values:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ol class="first last arabic simple">
+<li>Current page results</li>
+<li>A boolean of whether or not there are previous page(s).</li>
+<li>A boolean of whether or not there are more page(s).</li>
+</ol>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_remove_resource_type</tt><big>(</big><em>request</em>, <em>namespace_name</em>, <em>resource_type_name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_remove_resource_type"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_resource_types</tt><big>(</big><em>request</em>, <em>namespace_name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_resource_types"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_namespace_update</tt><big>(</big><em>request</em>, <em>namespace_name</em>, <em>**properties</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_namespace_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.glance.</tt><tt class="descname">metadefs_resource_types_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/glance.html#metadefs_resource_types_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.django_pyscss_fix.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.django_pyscss_fix</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.base.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.base</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.glance.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.base.html" title="The openstack_dashboard.api.base Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.django_pyscss_fix.html" title="The openstack_dashboard.django_pyscss_fix Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,3 @@
+elif str(panel_group.slug) == "data_processing" and big_data_filter == False:
+                    LOG.error("elif pass group: panel_group.slug == data_processing and big_data_filter == False")
+                    pass

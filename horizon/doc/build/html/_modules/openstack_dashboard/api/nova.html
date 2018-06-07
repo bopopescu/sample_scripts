@@ -1,0 +1,1117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.nova &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.nova</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 OpenStack Foundation</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1"># Copyright (c) 2012 X.commerce, a business unit of eBay Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.functional</span> <span class="kn">import</span> <span class="n">cached_property</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">novaclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">nova_client</span>
+<span class="kn">from</span> <span class="nn">novaclient</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">nova_exceptions</span>
+<span class="kn">from</span> <span class="nn">novaclient.v2.contrib</span> <span class="kn">import</span> <span class="n">instance_action</span> <span class="k">as</span> <span class="n">nova_instance_action</span>
+<span class="kn">from</span> <span class="nn">novaclient.v2.contrib</span> <span class="kn">import</span> <span class="n">list_extensions</span> <span class="k">as</span> <span class="n">nova_list_extensions</span>
+<span class="kn">from</span> <span class="nn">novaclient.v2</span> <span class="kn">import</span> <span class="n">security_group_rules</span> <span class="k">as</span> <span class="n">nova_rules</span>
+<span class="kn">from</span> <span class="nn">novaclient.v2</span> <span class="kn">import</span> <span class="n">security_groups</span> <span class="k">as</span> <span class="n">nova_security_groups</span>
+<span class="kn">from</span> <span class="nn">novaclient.v2</span> <span class="kn">import</span> <span class="n">servers</span> <span class="k">as</span> <span class="n">nova_servers</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">conf</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.memoized</span> <span class="kn">import</span> <span class="n">memoized</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">network_base</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># API static values</span>
+<span class="n">INSTANCE_ACTIVE_STATE</span> <span class="o">=</span> <span class="s1">&#39;ACTIVE&#39;</span>
+<span class="n">VOLUME_STATE_AVAILABLE</span> <span class="o">=</span> <span class="s2">&quot;available&quot;</span>
+<span class="n">DEFAULT_QUOTA_NAME</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+
+
+<div class="viewcode-block" id="VNCConsole"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.VNCConsole">[docs]</a><span class="k">class</span> <span class="nc">VNCConsole</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for the &quot;console&quot; dictionary.</span>
+
+<span class="sd">    Returned by the novaclient.servers.get_vnc_console method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="SPICEConsole"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SPICEConsole">[docs]</a><span class="k">class</span> <span class="nc">SPICEConsole</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for the &quot;console&quot; dictionary.</span>
+
+<span class="sd">    Returned by the novaclient.servers.get_spice_console method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="RDPConsole"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.RDPConsole">[docs]</a><span class="k">class</span> <span class="nc">RDPConsole</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for the &quot;console&quot; dictionary.</span>
+
+<span class="sd">    Returned by the novaclient.servers.get_rdp_console method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="SerialConsole"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SerialConsole">[docs]</a><span class="k">class</span> <span class="nc">SerialConsole</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for the &quot;console&quot; dictionary.</span>
+
+<span class="sd">    Returned by the novaclient.servers.get_serial_console method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="Server"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Server">[docs]</a><span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple wrapper around novaclient.server.Server.</span>
+
+<span class="sd">    Preserves the request info so image name can later be retrieved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;addresses&#39;</span><span class="p">,</span> <span class="s1">&#39;attrs&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="s1">&#39;links&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;private_ip&#39;</span><span class="p">,</span> <span class="s1">&#39;public_ip&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;uuid&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;image_name&#39;</span><span class="p">,</span> <span class="s1">&#39;VirtualInterfaces&#39;</span><span class="p">,</span> <span class="s1">&#39;flavor&#39;</span><span class="p">,</span> <span class="s1">&#39;key_name&#39;</span><span class="p">,</span> <span class="s1">&#39;fault&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;tenant_id&#39;</span><span class="p">,</span> <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;created&#39;</span><span class="p">,</span> <span class="s1">&#39;OS-EXT-STS:power_state&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;OS-EXT-STS:task_state&#39;</span><span class="p">,</span> <span class="s1">&#39;OS-EXT-SRV-ATTR:instance_name&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;OS-EXT-SRV-ATTR:host&#39;</span><span class="p">,</span> <span class="s1">&#39;OS-EXT-AZ:availability_zone&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;OS-DCF:diskConfig&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Server</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+
+    <span class="c1"># TODO(gabriel): deprecate making a call to Glance as a fallback.</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.image_name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Server.image_name">[docs]</a>    <span class="k">def</span> <span class="nf">image_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">glanceclient.exc</span> <span class="kn">as</span> <span class="nn">glance_exceptions</span>  <span class="c1"># noqa</span>
+        <span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">glance</span>  <span class="c1"># noqa</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">glance</span><span class="o">.</span><span class="n">image_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">image</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">except</span> <span class="n">glance_exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.internal_name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Server.internal_name">[docs]</a>    <span class="k">def</span> <span class="nf">internal_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;OS-EXT-SRV-ATTR:instance_name&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.availability_zone"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Server.availability_zone">[docs]</a>    <span class="k">def</span> <span class="nf">availability_zone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;OS-EXT-AZ:availability_zone&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Server.host_server"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Server.host_server">[docs]</a>    <span class="k">def</span> <span class="nf">host_server</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;OS-EXT-SRV-ATTR:host&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="Hypervisor"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Hypervisor">[docs]</a><span class="k">class</span> <span class="nc">Hypervisor</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple wrapper around novaclient.hypervisors.Hypervisor.&quot;&quot;&quot;</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;manager&#39;</span><span class="p">,</span> <span class="s1">&#39;_loaded&#39;</span><span class="p">,</span> <span class="s1">&#39;_info&#39;</span><span class="p">,</span> <span class="s1">&#39;hypervisor_hostname&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;servers&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Hypervisor.servers"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.Hypervisor.servers">[docs]</a>    <span class="k">def</span> <span class="nf">servers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># if hypervisor doesn&#39;t have servers, the attribute is not present</span>
+        <span class="n">servers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">servers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apidict</span><span class="o">.</span><span class="n">servers</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">servers</span>
+
+</div></div>
+<div class="viewcode-block" id="NovaUsage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage">[docs]</a><span class="k">class</span> <span class="nc">NovaUsage</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple wrapper around contrib/simple_usage.py.&quot;&quot;&quot;</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;server_usages&#39;</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">,</span> <span class="s1">&#39;tenant_id&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;total_local_gb_usage&#39;</span><span class="p">,</span> <span class="s1">&#39;total_memory_mb_usage&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;total_vcpus_usage&#39;</span><span class="p">,</span> <span class="s1">&#39;total_hours&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="NovaUsage.get_summary"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.get_summary">[docs]</a>    <span class="k">def</span> <span class="nf">get_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;instances&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_active_instances</span><span class="p">,</span>
+                <span class="s1">&#39;memory_mb&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory_mb</span><span class="p">,</span>
+                <span class="s1">&#39;vcpus&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">vcpus</span><span class="p">,</span>
+                <span class="s1">&#39;vcpu_hours&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">vcpu_hours</span><span class="p">,</span>
+                <span class="s1">&#39;local_gb&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_gb</span><span class="p">,</span>
+                <span class="s1">&#39;disk_gb_hours&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">disk_gb_hours</span><span class="p">,</span>
+                <span class="s1">&#39;memory_mb_hours&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory_mb_hours</span><span class="p">}</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.total_active_instances"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.total_active_instances">[docs]</a>    <span class="k">def</span> <span class="nf">total_active_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_usages</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;ended_at&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.vcpus"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.vcpus">[docs]</a>    <span class="k">def</span> <span class="nf">vcpus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;vcpus&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_usages</span>
+                   <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;ended_at&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.vcpu_hours"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.vcpu_hours">[docs]</a>    <span class="k">def</span> <span class="nf">vcpu_hours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;total_vcpus_usage&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.local_gb"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.local_gb">[docs]</a>    <span class="k">def</span> <span class="nf">local_gb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;local_gb&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_usages</span>
+                   <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;ended_at&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.memory_mb"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.memory_mb">[docs]</a>    <span class="k">def</span> <span class="nf">memory_mb</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;memory_mb&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_usages</span>
+                   <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;ended_at&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.disk_gb_hours"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.disk_gb_hours">[docs]</a>    <span class="k">def</span> <span class="nf">disk_gb_hours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;total_local_gb_usage&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NovaUsage.memory_mb_hours"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.NovaUsage.memory_mb_hours">[docs]</a>    <span class="k">def</span> <span class="nf">memory_mb_hours</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;total_memory_mb_usage&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SecurityGroup"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroup">[docs]</a><span class="k">class</span> <span class="nc">SecurityGroup</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper around novaclient.security_groups.SecurityGroup.</span>
+
+<span class="sd">    Wraps its rules in SecurityGroupRule objects and allows access to them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;tenant_id&#39;</span><span class="p">]</span>
+
+    <span class="nd">@cached_property</span>
+<div class="viewcode-block" id="SecurityGroup.rules"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroup.rules">[docs]</a>    <span class="k">def</span> <span class="nf">rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Wraps transmitted rule info in the novaclient rule class.&quot;&quot;&quot;</span>
+        <span class="n">manager</span> <span class="o">=</span> <span class="n">nova_rules</span><span class="o">.</span><span class="n">SecurityGroupRuleManager</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+        <span class="n">rule_objs</span> <span class="o">=</span> <span class="p">[</span><span class="n">nova_rules</span><span class="o">.</span><span class="n">SecurityGroupRule</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="o">.</span><span class="n">rules</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">SecurityGroupRule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span> <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rule_objs</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="SecurityGroup.to_dict"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroup.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+</div></div>
+<span class="nd">@six.python_2_unicode_compatible</span>
+<div class="viewcode-block" id="SecurityGroupRule"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupRule">[docs]</a><span class="k">class</span> <span class="nc">SecurityGroupRule</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for individual rules in a SecurityGroup.&quot;&quot;&quot;</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;ip_protocol&#39;</span><span class="p">,</span> <span class="s1">&#39;from_port&#39;</span><span class="p">,</span> <span class="s1">&#39;to_port&#39;</span><span class="p">,</span> <span class="s1">&#39;ip_range&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;from&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_port</span><span class="p">,</span>
+                    <span class="s1">&#39;to&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_port</span><span class="p">,</span>
+                    <span class="s1">&#39;ip_protocol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip_protocol</span><span class="p">,</span>
+                    <span class="s1">&#39;group&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]}</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;ALLOW </span><span class="si">%(from)s</span><span class="s1">:</span><span class="si">%(to)s</span><span class="s1">/</span><span class="si">%(ip_protocol)s</span><span class="s1"> from </span><span class="si">%(group)s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                    <span class="n">vals</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;from&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_port</span><span class="p">,</span>
+                    <span class="s1">&#39;to&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_port</span><span class="p">,</span>
+                    <span class="s1">&#39;ip_protocol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip_protocol</span><span class="p">,</span>
+                    <span class="s1">&#39;cidr&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip_range</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]}</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;ALLOW </span><span class="si">%(from)s</span><span class="s1">:</span><span class="si">%(to)s</span><span class="s1">/</span><span class="si">%(ip_protocol)s</span><span class="s1"> from </span><span class="si">%(cidr)s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                    <span class="n">vals</span><span class="p">)</span>
+
+    <span class="c1"># The following attributes are defined to keep compatibility with Neutron</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SecurityGroupRule.ethertype"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupRule.ethertype">[docs]</a>    <span class="k">def</span> <span class="nf">ethertype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SecurityGroupRule.direction"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupRule.direction">[docs]</a>    <span class="k">def</span> <span class="nf">direction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;ingress&#39;</span>
+
+</div></div>
+<div class="viewcode-block" id="SecurityGroupManager"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager">[docs]</a><span class="k">class</span> <span class="nc">SecurityGroupManager</span><span class="p">(</span><span class="n">network_base</span><span class="o">.</span><span class="n">SecurityGroupManager</span><span class="p">):</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;nova&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SecurityGroupManager.list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.list">[docs]</a>    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">SecurityGroup</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span>
+                <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_groups</span><span class="o">.</span><span class="n">list</span><span class="p">()]</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sg_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SecurityGroup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_groups</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sg_id</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SecurityGroup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_groups</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sg_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SecurityGroup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_groups</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sg_id</span><span class="p">,</span>
+                                                                <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">security_group_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_groups</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">security_group_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.rule_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.rule_create">[docs]</a>    <span class="k">def</span> <span class="nf">rule_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_group_id</span><span class="p">,</span>
+                    <span class="n">direction</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ethertype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">ip_protocol</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">from_port</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">to_port</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">cidr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">group_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Nova Security Group API does not use direction and ethertype fields.</span>
+        <span class="n">sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_group_rules</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">parent_group_id</span><span class="p">,</span>
+                                                     <span class="n">ip_protocol</span><span class="p">,</span>
+                                                     <span class="n">from_port</span><span class="p">,</span>
+                                                     <span class="n">to_port</span><span class="p">,</span>
+                                                     <span class="n">cidr</span><span class="p">,</span>
+                                                     <span class="n">group_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SecurityGroupRule</span><span class="p">(</span><span class="n">sg</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.rule_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.rule_delete">[docs]</a>    <span class="k">def</span> <span class="nf">rule_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">security_group_rule_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">security_group_rules</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">security_group_rule_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.list_by_instance"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.list_by_instance">[docs]</a>    <span class="k">def</span> <span class="nf">list_by_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets security groups of an instance.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO(gabriel): This needs to be moved up to novaclient, and should</span>
+        <span class="c1"># be removed once novaclient supports this call.</span>
+        <span class="n">security_groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">body</span> <span class="o">=</span> <span class="n">nclient</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/servers/</span><span class="si">%s</span><span class="s1">/os-security-groups&#39;</span>
+                                        <span class="o">%</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">body</span><span class="p">:</span>
+            <span class="c1"># Wrap data in SG objects as novaclient would.</span>
+            <span class="n">sg_objs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">nova_security_groups</span><span class="o">.</span><span class="n">SecurityGroup</span><span class="p">(</span>
+                    <span class="n">nclient</span><span class="o">.</span><span class="n">security_groups</span><span class="p">,</span> <span class="n">sg</span><span class="p">,</span> <span class="n">loaded</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;security_groups&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+            <span class="c1"># Then wrap novaclient&#39;s object with our own. Yes, sadly wrapping</span>
+            <span class="c1"># with two layers of objects is necessary.</span>
+            <span class="n">security_groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">SecurityGroup</span><span class="p">(</span><span class="n">sg</span><span class="p">)</span> <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">sg_objs</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">security_groups</span>
+</div>
+<div class="viewcode-block" id="SecurityGroupManager.update_instance_security_group"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.SecurityGroupManager.update_instance_security_group">[docs]</a>    <span class="k">def</span> <span class="nf">update_instance_security_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span>
+                                       <span class="n">new_security_group_ids</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">all_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t get security group list.&quot;</span><span class="p">))</span>
+        <span class="n">wanted_groups</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">sg</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">all_groups</span>
+                             <span class="k">if</span> <span class="n">sg</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">new_security_group_ids</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">current_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_by_instance</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t get current security group &quot;</span>
+                              <span class="s2">&quot;list for instance </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">)</span>
+                            <span class="o">%</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="n">current_group_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">sg</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">current_groups</span><span class="p">])</span>
+
+        <span class="n">groups_to_add</span> <span class="o">=</span> <span class="n">wanted_groups</span> <span class="o">-</span> <span class="n">current_group_names</span>
+        <span class="n">groups_to_remove</span> <span class="o">=</span> <span class="n">current_group_names</span> <span class="o">-</span> <span class="n">wanted_groups</span>
+
+        <span class="n">num_groups_to_modify</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups_to_add</span> <span class="o">|</span> <span class="n">groups_to_remove</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups_to_add</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">add_security_group</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+                <span class="n">num_groups_to_modify</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups_to_remove</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">remove_security_group</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+                <span class="n">num_groups_to_modify</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Failed to modify </span><span class="si">%(num_groups_to_modify)d</span><span class="s2"> instance &quot;</span>
+                        <span class="s2">&quot;security groups: </span><span class="si">%(err)s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span>
+                      <span class="nb">dict</span><span class="p">(</span><span class="n">num_groups_to_modify</span><span class="o">=</span><span class="n">num_groups_to_modify</span><span class="p">,</span>
+                           <span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">))</span>
+            <span class="c1"># reraise novaclient.exceptions.ClientException, but with</span>
+            <span class="c1"># a sanitized error message so we don&#39;t risk exposing</span>
+            <span class="c1"># sensitive information to the end user. This has to be</span>
+            <span class="c1"># novaclient.exceptions.ClientException, not just</span>
+            <span class="c1"># Exception, since the former is recognized as a</span>
+            <span class="c1"># &quot;recoverable&quot; exception by horizon, and therefore the</span>
+            <span class="c1"># error message is passed along to the end user, while</span>
+            <span class="c1"># Exception is swallowed alive by horizon and a gneric</span>
+            <span class="c1"># error message is given to the end user</span>
+            <span class="k">raise</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">(</span>
+                <span class="n">err</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+                <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Failed to modify </span><span class="si">%d</span><span class="s2"> instance security groups&quot;</span><span class="p">)</span> <span class="o">%</span>
+                <span class="n">num_groups_to_modify</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="FlavorExtraSpec"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FlavorExtraSpec">[docs]</a><span class="k">class</span> <span class="nc">FlavorExtraSpec</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flavor_id</span> <span class="o">=</span> <span class="n">flavor_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">val</span>
+
+</div>
+<div class="viewcode-block" id="FloatingIp"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIp">[docs]</a><span class="k">class</span> <span class="nc">FloatingIp</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;ip&#39;</span><span class="p">,</span> <span class="s1">&#39;fixed_ip&#39;</span><span class="p">,</span> <span class="s1">&#39;port_id&#39;</span><span class="p">,</span> <span class="s1">&#39;instance_id&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;instance_type&#39;</span><span class="p">,</span> <span class="s1">&#39;pool&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fip</span><span class="p">):</span>
+        <span class="n">fip</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="s1">&#39;port_id&#39;</span><span class="p">,</span> <span class="n">fip</span><span class="o">.</span><span class="n">instance_id</span><span class="p">)</span>
+        <span class="n">fip</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="s1">&#39;instance_type&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;compute&#39;</span> <span class="k">if</span> <span class="n">fip</span><span class="o">.</span><span class="n">instance_id</span> <span class="k">else</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FloatingIp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">fip</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FloatingIpPool"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpPool">[docs]</a><span class="k">class</span> <span class="nc">FloatingIpPool</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="n">pool_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                     <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FloatingIpPool</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">pool_dict</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FloatingIpTarget"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpTarget">[docs]</a><span class="k">class</span> <span class="nc">FloatingIpTarget</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
+        <span class="n">server_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">server</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">id</span><span class="p">),</span>
+                       <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">id</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FloatingIpTarget</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">server_dict</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="FloatingIpManager"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager">[docs]</a><span class="k">class</span> <span class="nc">FloatingIpManager</span><span class="p">(</span><span class="n">network_base</span><span class="o">.</span><span class="n">FloatingIpManager</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FloatingIpManager.list_pools"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.list_pools">[docs]</a>    <span class="k">def</span> <span class="nf">list_pools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">FloatingIpPool</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ip_pools</span><span class="o">.</span><span class="n">list</span><span class="p">()]</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.list">[docs]</a>    <span class="k">def</span> <span class="nf">list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">FloatingIp</span><span class="p">(</span><span class="n">fip</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">fip</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ips</span><span class="o">.</span><span class="n">list</span><span class="p">()]</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating_ip_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FloatingIp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ips</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">floating_ip_id</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.allocate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.allocate">[docs]</a>    <span class="k">def</span> <span class="nf">allocate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FloatingIp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ips</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.release"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating_ip_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ips</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">floating_ip_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.associate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.associate">[docs]</a>    <span class="k">def</span> <span class="nf">associate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating_ip_id</span><span class="p">,</span> <span class="n">port_id</span><span class="p">):</span>
+        <span class="c1"># In Nova implied port_id is instance_id</span>
+        <span class="n">server</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">port_id</span><span class="p">)</span>
+        <span class="n">fip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ips</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">floating_ip_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">add_floating_ip</span><span class="p">(</span><span class="n">server</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.disassociate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.disassociate">[docs]</a>    <span class="k">def</span> <span class="nf">disassociate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating_ip_id</span><span class="p">):</span>
+        <span class="n">fip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">floating_ips</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">floating_ip_id</span><span class="p">)</span>
+        <span class="n">server</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fip</span><span class="o">.</span><span class="n">instance_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">remove_floating_ip</span><span class="p">(</span><span class="n">server</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.list_targets"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.list_targets">[docs]</a>    <span class="k">def</span> <span class="nf">list_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">FloatingIpTarget</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">list</span><span class="p">()]</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.get_target_id_by_instance"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.get_target_id_by_instance">[docs]</a>    <span class="k">def</span> <span class="nf">get_target_id_by_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">target_list</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance_id</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.list_target_id_by_instance"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.list_target_id_by_instance">[docs]</a>    <span class="k">def</span> <span class="nf">list_target_id_by_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">target_list</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">instance_id</span><span class="p">,</span> <span class="p">]</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.is_simple_associate_supported"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.is_simple_associate_supported">[docs]</a>    <span class="k">def</span> <span class="nf">is_simple_associate_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">conf</span><span class="o">.</span><span class="n">HORIZON_CONFIG</span><span class="p">[</span><span class="s2">&quot;simple_ip_management&quot;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="FloatingIpManager.is_supported"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.FloatingIpManager.is_supported">[docs]</a>    <span class="k">def</span> <span class="nf">is_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="novaclient"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.novaclient">[docs]</a><span class="k">def</span> <span class="nf">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">insecure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_NO_VERIFY&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">cacert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_CACERT&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">nova_client</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                           <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="n">project_id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+                           <span class="n">auth_url</span><span class="o">=</span><span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;compute&#39;</span><span class="p">),</span>
+                           <span class="n">insecure</span><span class="o">=</span><span class="n">insecure</span><span class="p">,</span>
+                           <span class="n">cacert</span><span class="o">=</span><span class="n">cacert</span><span class="p">,</span>
+                           <span class="n">http_log_debug</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">auth_token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">management_url</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;compute&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">c</span>
+
+</div>
+<div class="viewcode-block" id="server_vnc_console"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_vnc_console">[docs]</a><span class="k">def</span> <span class="nf">server_vnc_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="o">=</span><span class="s1">&#39;novnc&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">VNCConsole</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get_vnc_console</span><span class="p">(</span>
+        <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="p">)[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="server_spice_console"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_spice_console">[docs]</a><span class="k">def</span> <span class="nf">server_spice_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="o">=</span><span class="s1">&#39;spice-html5&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">SPICEConsole</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get_spice_console</span><span class="p">(</span>
+        <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="p">)[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="server_rdp_console"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_rdp_console">[docs]</a><span class="k">def</span> <span class="nf">server_rdp_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="o">=</span><span class="s1">&#39;rdp-html5&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">RDPConsole</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get_rdp_console</span><span class="p">(</span>
+        <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="p">)[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="server_serial_console"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_serial_console">[docs]</a><span class="k">def</span> <span class="nf">server_serial_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="o">=</span><span class="s1">&#39;serial&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">SerialConsole</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get_serial_console</span><span class="p">(</span>
+        <span class="n">instance_id</span><span class="p">,</span> <span class="n">console_type</span><span class="p">)[</span><span class="s1">&#39;console&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="flavor_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_create">[docs]</a><span class="k">def</span> <span class="nf">flavor_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">vcpu</span><span class="p">,</span> <span class="n">disk</span><span class="p">,</span> <span class="n">flavorid</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                  <span class="n">ephemeral</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">swap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">flavor</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">vcpu</span><span class="p">,</span> <span class="n">disk</span><span class="p">,</span>
+                                                <span class="n">flavorid</span><span class="o">=</span><span class="n">flavorid</span><span class="p">,</span>
+                                                <span class="n">ephemeral</span><span class="o">=</span><span class="n">ephemeral</span><span class="p">,</span>
+                                                <span class="n">swap</span><span class="o">=</span><span class="n">swap</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="n">is_public</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">metadata</span><span class="p">):</span>
+        <span class="n">flavor_extra_set</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flavor</span>
+
+</div>
+<div class="viewcode-block" id="flavor_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_delete">[docs]</a><span class="k">def</span> <span class="nf">flavor_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="flavor_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_get">[docs]</a><span class="k">def</span> <span class="nf">flavor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">get_extras</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">flavor</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">get_extras</span><span class="p">:</span>
+        <span class="n">flavor</span><span class="o">.</span><span class="n">extras</span> <span class="o">=</span> <span class="n">flavor_get_extras</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">flavor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flavor</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="flavor_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_list">[docs]</a><span class="k">def</span> <span class="nf">flavor_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">get_extras</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the list of available instance sizes (flavors).&quot;&quot;&quot;</span>
+    <span class="n">flavors</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">is_public</span><span class="o">=</span><span class="n">is_public</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">get_extras</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">:</span>
+            <span class="n">flavor</span><span class="o">.</span><span class="n">extras</span> <span class="o">=</span> <span class="n">flavor_get_extras</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">flavor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flavors</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="flavor_access_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_access_list">[docs]</a><span class="k">def</span> <span class="nf">flavor_access_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the list of access instance sizes (flavors).&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavor_access</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">flavor</span><span class="o">=</span><span class="n">flavor</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="add_tenant_to_flavor"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.add_tenant_to_flavor">[docs]</a><span class="k">def</span> <span class="nf">add_tenant_to_flavor</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">tenant</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a tenant to the given flavor access list.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavor_access</span><span class="o">.</span><span class="n">add_tenant_access</span><span class="p">(</span>
+        <span class="n">flavor</span><span class="o">=</span><span class="n">flavor</span><span class="p">,</span> <span class="n">tenant</span><span class="o">=</span><span class="n">tenant</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_tenant_from_flavor"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.remove_tenant_from_flavor">[docs]</a><span class="k">def</span> <span class="nf">remove_tenant_from_flavor</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">tenant</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove a tenant from the given flavor access list.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavor_access</span><span class="o">.</span><span class="n">remove_tenant_access</span><span class="p">(</span>
+        <span class="n">flavor</span><span class="o">=</span><span class="n">flavor</span><span class="p">,</span> <span class="n">tenant</span><span class="o">=</span><span class="n">tenant</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="flavor_get_extras"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_get_extras">[docs]</a><span class="k">def</span> <span class="nf">flavor_get_extras</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">flavor</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get flavor extra specs.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">flavor</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">flavor</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+    <span class="n">extras</span> <span class="o">=</span> <span class="n">flavor</span><span class="o">.</span><span class="n">get_keys</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">raw</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">extras</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">FlavorExtraSpec</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">extras</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+</div>
+<div class="viewcode-block" id="flavor_extra_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_extra_delete">[docs]</a><span class="k">def</span> <span class="nf">flavor_extra_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unset the flavor extra spec keys.&quot;&quot;&quot;</span>
+    <span class="n">flavor</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flavor</span><span class="o">.</span><span class="n">unset_keys</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="flavor_extra_set"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.flavor_extra_set">[docs]</a><span class="k">def</span> <span class="nf">flavor_extra_set</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the flavor extra spec keys.&quot;&quot;&quot;</span>
+    <span class="n">flavor</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">flavors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">metadata</span><span class="p">):</span>  <span class="c1"># not a way to delete keys</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">return</span> <span class="n">flavor</span><span class="o">.</span><span class="n">set_keys</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="snapshot_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.snapshot_create">[docs]</a><span class="k">def</span> <span class="nf">snapshot_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">create_image</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keypair_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.keypair_create">[docs]</a><span class="k">def</span> <span class="nf">keypair_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">keypairs</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keypair_import"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.keypair_import">[docs]</a><span class="k">def</span> <span class="nf">keypair_import</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">public_key</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">keypairs</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">public_key</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keypair_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.keypair_delete">[docs]</a><span class="k">def</span> <span class="nf">keypair_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">keypair_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">keypairs</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">keypair_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keypair_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.keypair_list">[docs]</a><span class="k">def</span> <span class="nf">keypair_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">keypairs</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="keypair_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.keypair_get">[docs]</a><span class="k">def</span> <span class="nf">keypair_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">keypair_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">keypairs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">keypair_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_create">[docs]</a><span class="k">def</span> <span class="nf">server_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">key_name</span><span class="p">,</span> <span class="n">user_data</span><span class="p">,</span>
+                  <span class="n">security_groups</span><span class="p">,</span> <span class="n">block_device_mapping</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">block_device_mapping_v2</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">nics</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">availability_zone</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">instance_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">admin_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">disk_config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">config_drive</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Server</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">userdata</span><span class="o">=</span><span class="n">user_data</span><span class="p">,</span>
+        <span class="n">security_groups</span><span class="o">=</span><span class="n">security_groups</span><span class="p">,</span>
+        <span class="n">key_name</span><span class="o">=</span><span class="n">key_name</span><span class="p">,</span> <span class="n">block_device_mapping</span><span class="o">=</span><span class="n">block_device_mapping</span><span class="p">,</span>
+        <span class="n">block_device_mapping_v2</span><span class="o">=</span><span class="n">block_device_mapping_v2</span><span class="p">,</span>
+        <span class="n">nics</span><span class="o">=</span><span class="n">nics</span><span class="p">,</span> <span class="n">availability_zone</span><span class="o">=</span><span class="n">availability_zone</span><span class="p">,</span>
+        <span class="n">min_count</span><span class="o">=</span><span class="n">instance_count</span><span class="p">,</span> <span class="n">admin_pass</span><span class="o">=</span><span class="n">admin_pass</span><span class="p">,</span>
+        <span class="n">disk_config</span><span class="o">=</span><span class="n">disk_config</span><span class="p">,</span> <span class="n">config_drive</span><span class="o">=</span><span class="n">config_drive</span><span class="p">,</span>
+        <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">),</span> <span class="n">request</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_delete">[docs]</a><span class="k">def</span> <span class="nf">server_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_get">[docs]</a><span class="k">def</span> <span class="nf">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Server</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">instance_id</span><span class="p">),</span> <span class="n">request</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_list">[docs]</a><span class="k">def</span> <span class="nf">server_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">all_tenants</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">page_size</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_page_size</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="n">paginate</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">search_opts</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">search_opts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">elif</span> <span class="s1">&#39;paginate&#39;</span> <span class="ow">in</span> <span class="n">search_opts</span><span class="p">:</span>
+        <span class="n">paginate</span> <span class="o">=</span> <span class="n">search_opts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;paginate&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">paginate</span><span class="p">:</span>
+            <span class="n">search_opts</span><span class="p">[</span><span class="s1">&#39;limit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">page_size</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">all_tenants</span><span class="p">:</span>
+        <span class="n">search_opts</span><span class="p">[</span><span class="s1">&#39;all_tenants&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">search_opts</span><span class="p">[</span><span class="s1">&#39;project_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+    <span class="n">servers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Server</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+               <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">search_opts</span><span class="p">)]</span>
+
+    <span class="n">has_more_data</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">paginate</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">servers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">page_size</span><span class="p">:</span>
+        <span class="n">servers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">has_more_data</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">elif</span> <span class="n">paginate</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">servers</span><span class="p">)</span> <span class="o">==</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;API_RESULT_LIMIT&#39;</span><span class="p">,</span>
+                                              <span class="mi">1000</span><span class="p">):</span>
+        <span class="n">has_more_data</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">servers</span><span class="p">,</span> <span class="n">has_more_data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_console_output"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_console_output">[docs]</a><span class="k">def</span> <span class="nf">server_console_output</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">tail_length</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets console output of an instance.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get_console_output</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span>
+                                                          <span class="n">length</span><span class="o">=</span><span class="n">tail_length</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_pause"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_pause">[docs]</a><span class="k">def</span> <span class="nf">server_pause</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_unpause"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_unpause">[docs]</a><span class="k">def</span> <span class="nf">server_unpause</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">unpause</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_suspend"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_suspend">[docs]</a><span class="k">def</span> <span class="nf">server_suspend</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">suspend</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_resume"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_resume">[docs]</a><span class="k">def</span> <span class="nf">server_resume</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_shelve"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_shelve">[docs]</a><span class="k">def</span> <span class="nf">server_shelve</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">shelve</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_unshelve"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_unshelve">[docs]</a><span class="k">def</span> <span class="nf">server_unshelve</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">unshelve</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_reboot"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_reboot">[docs]</a><span class="k">def</span> <span class="nf">server_reboot</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">soft_reboot</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">hardness</span> <span class="o">=</span> <span class="n">nova_servers</span><span class="o">.</span><span class="n">REBOOT_HARD</span>
+    <span class="k">if</span> <span class="n">soft_reboot</span><span class="p">:</span>
+        <span class="n">hardness</span> <span class="o">=</span> <span class="n">nova_servers</span><span class="o">.</span><span class="n">REBOOT_SOFT</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">reboot</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">hardness</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_rebuild"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_rebuild">[docs]</a><span class="k">def</span> <span class="nf">server_rebuild</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">image_id</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">disk_config</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">rebuild</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">image_id</span><span class="p">,</span>
+                                               <span class="n">password</span><span class="p">,</span> <span class="n">disk_config</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_update">[docs]</a><span class="k">def</span> <span class="nf">server_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_migrate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_migrate">[docs]</a><span class="k">def</span> <span class="nf">server_migrate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">migrate</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_live_migrate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_live_migrate">[docs]</a><span class="k">def</span> <span class="nf">server_live_migrate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">block_migration</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                        <span class="n">disk_over_commit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">live_migrate</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span>
+                                             <span class="n">block_migration</span><span class="p">,</span>
+                                             <span class="n">disk_over_commit</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_resize"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_resize">[docs]</a><span class="k">def</span> <span class="nf">server_resize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">disk_config</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span>
+                                       <span class="n">disk_config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_confirm_resize"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_confirm_resize">[docs]</a><span class="k">def</span> <span class="nf">server_confirm_resize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">confirm_resize</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_revert_resize"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_revert_resize">[docs]</a><span class="k">def</span> <span class="nf">server_revert_resize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">revert_resize</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_start"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_start">[docs]</a><span class="k">def</span> <span class="nf">server_start</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_stop"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_stop">[docs]</a><span class="k">def</span> <span class="nf">server_stop</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_lock"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_lock">[docs]</a><span class="k">def</span> <span class="nf">server_lock</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">lock</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="server_unlock"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.server_unlock">[docs]</a><span class="k">def</span> <span class="nf">server_unlock</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">unlock</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tenant_quota_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.tenant_quota_get">[docs]</a><span class="k">def</span> <span class="nf">tenant_quota_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">QuotaSet</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quotas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="tenant_quota_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.tenant_quota_update">[docs]</a><span class="k">def</span> <span class="nf">tenant_quota_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quotas</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="default_quota_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.default_quota_get">[docs]</a><span class="k">def</span> <span class="nf">default_quota_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">QuotaSet</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quotas</span><span class="o">.</span><span class="n">defaults</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="default_quota_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.default_quota_update">[docs]</a><span class="k">def</span> <span class="nf">default_quota_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">quota_classes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">DEFAULT_QUOTA_NAME</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="usage_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.usage_get">[docs]</a><span class="k">def</span> <span class="nf">usage_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">NovaUsage</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="usage_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.usage_list">[docs]</a><span class="k">def</span> <span class="nf">usage_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">NovaUsage</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span>
+            <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="bp">True</span><span class="p">)]</span>
+
+</div>
+<div class="viewcode-block" id="virtual_interfaces_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.virtual_interfaces_list">[docs]</a><span class="k">def</span> <span class="nf">virtual_interfaces_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">virtual_interfaces</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_x509_credentials"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.get_x509_credentials">[docs]</a><span class="k">def</span> <span class="nf">get_x509_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">certs</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="get_x509_root_certificate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.get_x509_root_certificate">[docs]</a><span class="k">def</span> <span class="nf">get_x509_root_certificate</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">certs</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="get_password"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.get_password">[docs]</a><span class="k">def</span> <span class="nf">get_password</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">private_key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">get_password</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span> <span class="n">private_key</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="instance_volume_attach"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.instance_volume_attach">[docs]</a><span class="k">def</span> <span class="nf">instance_volume_attach</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">create_server_volume</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span>
+                                                            <span class="n">volume_id</span><span class="p">,</span>
+                                                            <span class="n">device</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="instance_volume_detach"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.instance_volume_detach">[docs]</a><span class="k">def</span> <span class="nf">instance_volume_detach</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">att_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">delete_server_volume</span><span class="p">(</span><span class="n">instance_id</span><span class="p">,</span>
+                                                            <span class="n">att_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="instance_volumes_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.instance_volumes_list">[docs]</a><span class="k">def</span> <span class="nf">instance_volumes_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">cinder</span>
+
+    <span class="n">volumes</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get_server_volumes</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">volume</span> <span class="ow">in</span> <span class="n">volumes</span><span class="p">:</span>
+        <span class="n">volume_data</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">cinderclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">volume</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">Volume</span><span class="p">(</span><span class="n">volume_data</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">return</span> <span class="n">volumes</span>
+
+</div>
+<div class="viewcode-block" id="hypervisor_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.hypervisor_list">[docs]</a><span class="k">def</span> <span class="nf">hypervisor_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">hypervisors</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="hypervisor_stats"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.hypervisor_stats">[docs]</a><span class="k">def</span> <span class="nf">hypervisor_stats</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">hypervisors</span><span class="o">.</span><span class="n">statistics</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="hypervisor_search"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.hypervisor_search">[docs]</a><span class="k">def</span> <span class="nf">hypervisor_search</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">servers</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">hypervisors</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">servers</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="evacuate_host"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.evacuate_host">[docs]</a><span class="k">def</span> <span class="nf">evacuate_host</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">on_shared_storage</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="c1"># TODO(jmolle) This should be change for nova atomic api host_evacuate</span>
+    <span class="n">hypervisors</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">hypervisors</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">err_code</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">hypervisor</span> <span class="ow">in</span> <span class="n">hypervisors</span><span class="p">:</span>
+        <span class="n">hyper</span> <span class="o">=</span> <span class="n">Hypervisor</span><span class="p">(</span><span class="n">hypervisor</span><span class="p">)</span>
+        <span class="c1"># if hypervisor doesn&#39;t have servers, the attribute is not present</span>
+        <span class="k">for</span> <span class="n">server</span> <span class="ow">in</span> <span class="n">hyper</span><span class="o">.</span><span class="n">servers</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">evacuate</span><span class="p">(</span><span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">],</span>
+                                                     <span class="n">target</span><span class="p">,</span>
+                                                     <span class="n">on_shared_storage</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">err_code</span> <span class="o">=</span> <span class="n">err</span><span class="o">.</span><span class="n">code</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name: </span><span class="si">%(name)s</span><span class="s2"> ID: </span><span class="si">%(uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]}</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">err_code</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to evacuate instances: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">(</span><span class="n">err_code</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="migrate_host"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.migrate_host">[docs]</a><span class="k">def</span> <span class="nf">migrate_host</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">live_migrate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">disk_over_commit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">block_migration</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">hypervisors</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">hypervisors</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">err_code</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">for</span> <span class="n">hyper</span> <span class="ow">in</span> <span class="n">hypervisors</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">server</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">hyper</span><span class="p">,</span> <span class="s2">&quot;servers&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">live_migrate</span><span class="p">:</span>
+                    <span class="n">instance</span> <span class="o">=</span> <span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+
+                    <span class="c1"># Checking that instance can be live-migrated</span>
+                    <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span> <span class="s2">&quot;PAUSED&quot;</span><span class="p">]:</span>
+                        <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">live_migrate</span><span class="p">(</span>
+                            <span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">],</span>
+                            <span class="bp">None</span><span class="p">,</span>
+                            <span class="n">block_migration</span><span class="p">,</span>
+                            <span class="n">disk_over_commit</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">migrate</span><span class="p">(</span><span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">migrate</span><span class="p">(</span><span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">])</span>
+            <span class="k">except</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">err_code</span> <span class="o">=</span> <span class="n">err</span><span class="o">.</span><span class="n">code</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name: </span><span class="si">%(name)s</span><span class="s2"> ID: </span><span class="si">%(uuid)s</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]}</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">err_code</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to migrate instances: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">nova_exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">(</span><span class="n">err_code</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="tenant_absolute_limits"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.tenant_absolute_limits">[docs]</a><span class="k">def</span> <span class="nf">tenant_absolute_limits</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">reserved</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">limits</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reserved</span><span class="o">=</span><span class="n">reserved</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span>
+    <span class="n">limits_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="n">limits</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Workaround for nova bug 1370867 that absolute_limits</span>
+            <span class="c1"># returns negative value for total.*Used instead of 0.</span>
+            <span class="c1"># For such case, replace negative values with 0.</span>
+            <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;total&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;Used&#39;</span><span class="p">):</span>
+                <span class="n">limits_dict</span><span class="p">[</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># -1 is used to represent unlimited quotas</span>
+                <span class="n">limits_dict</span><span class="p">[</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">limits_dict</span><span class="p">[</span><span class="n">limit</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="n">limits_dict</span>
+
+</div>
+<div class="viewcode-block" id="availability_zone_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.availability_zone_list">[docs]</a><span class="k">def</span> <span class="nf">availability_zone_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">detailed</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">availability_zones</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">detailed</span><span class="o">=</span><span class="n">detailed</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="service_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.service_list">[docs]</a><span class="k">def</span> <span class="nf">service_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="n">binary</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="service_enable"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.service_enable">[docs]</a><span class="k">def</span> <span class="nf">service_enable</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">binary</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">binary</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="service_disable"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.service_disable">[docs]</a><span class="k">def</span> <span class="nf">service_disable</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">reason</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">disable_log_reason</span><span class="p">(</span><span class="n">host</span><span class="p">,</span>
+                                                               <span class="n">binary</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">services</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">binary</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="aggregate_details_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.aggregate_details_list">[docs]</a><span class="k">def</span> <span class="nf">aggregate_details_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">aggregate</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">list</span><span class="p">():</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">get_details</span><span class="p">(</span><span class="n">aggregate</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="aggregate_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.aggregate_create">[docs]</a><span class="k">def</span> <span class="nf">aggregate_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">availability_zone</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">availability_zone</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="aggregate_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.aggregate_delete">[docs]</a><span class="k">def</span> <span class="nf">aggregate_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">aggregate_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="aggregate_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.aggregate_get">[docs]</a><span class="k">def</span> <span class="nf">aggregate_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">aggregate_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="aggregate_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.aggregate_update">[docs]</a><span class="k">def</span> <span class="nf">aggregate_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">aggregate_id</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="aggregate_set_metadata"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.aggregate_set_metadata">[docs]</a><span class="k">def</span> <span class="nf">aggregate_set_metadata</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">set_metadata</span><span class="p">(</span><span class="n">aggregate_id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="host_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.host_list">[docs]</a><span class="k">def</span> <span class="nf">host_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">hosts</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="add_host_to_aggregate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.add_host_to_aggregate">[docs]</a><span class="k">def</span> <span class="nf">add_host_to_aggregate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">add_host</span><span class="p">(</span><span class="n">aggregate_id</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_host_from_aggregate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.remove_host_from_aggregate">[docs]</a><span class="k">def</span> <span class="nf">remove_host_from_aggregate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">aggregates</span><span class="o">.</span><span class="n">remove_host</span><span class="p">(</span><span class="n">aggregate_id</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="interface_attach"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.interface_attach">[docs]</a><span class="k">def</span> <span class="nf">interface_attach</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                     <span class="n">server</span><span class="p">,</span> <span class="n">port_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">net_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fixed_ip</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">interface_attach</span><span class="p">(</span><span class="n">server</span><span class="p">,</span>
+                                                        <span class="n">port_id</span><span class="p">,</span>
+                                                        <span class="n">net_id</span><span class="p">,</span>
+                                                        <span class="n">fixed_ip</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="interface_detach"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.interface_detach">[docs]</a><span class="k">def</span> <span class="nf">interface_detach</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">port_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">interface_detach</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">port_id</span><span class="p">)</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="list_extensions"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.list_extensions">[docs]</a><span class="k">def</span> <span class="nf">list_extensions</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List all nova extensions, except the ones in the blacklist.&quot;&quot;&quot;</span>
+
+    <span class="n">blacklist</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                            <span class="s1">&#39;OPENSTACK_NOVA_EXTENSIONS_BLACKLIST&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">extension</span> <span class="k">for</span> <span class="n">extension</span> <span class="ow">in</span>
+        <span class="n">nova_list_extensions</span><span class="o">.</span><span class="n">ListExtManager</span><span class="p">(</span><span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">))</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span>
+    <span class="p">]</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="extension_supported"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.extension_supported">[docs]</a><span class="k">def</span> <span class="nf">extension_supported</span><span class="p">(</span><span class="n">extension_name</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine if nova supports a given extension name.</span>
+
+<span class="sd">    Example values for the extension_name include AdminActions, ConsoleOutput,</span>
+<span class="sd">    etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">extensions</span> <span class="o">=</span> <span class="n">list_extensions</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">extension_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="can_set_server_password"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.can_set_server_password">[docs]</a><span class="k">def</span> <span class="nf">can_set_server_password</span><span class="p">():</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_HYPERVISOR_FEATURES&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">features</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;can_set_password&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="instance_action_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.instance_action_list">[docs]</a><span class="k">def</span> <span class="nf">instance_action_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">nova_instance_action</span><span class="o">.</span><span class="n">InstanceActionManager</span><span class="p">(</span>
+        <span class="n">novaclient</span><span class="p">(</span><span class="n">request</span><span class="p">))</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">instance_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="can_set_mount_point"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.can_set_mount_point">[docs]</a><span class="k">def</span> <span class="nf">can_set_mount_point</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return the Hypervisor&#39;s capability of setting mount points.&quot;&quot;&quot;</span>
+    <span class="n">hypervisor_features</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+        <span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_HYPERVISOR_FEATURES&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">hypervisor_features</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;can_set_mount_point&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="requires_keypair"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.nova.html#openstack_dashboard.api.nova.requires_keypair">[docs]</a><span class="k">def</span> <span class="nf">requires_keypair</span><span class="p">():</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_HYPERVISOR_FEATURES&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">features</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;requires_keypair&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

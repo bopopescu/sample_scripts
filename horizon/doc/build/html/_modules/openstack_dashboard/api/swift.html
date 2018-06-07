@@ -1,0 +1,486 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.swift &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.swift</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">timeutils</span>
+<span class="kn">import</span> <span class="nn">six.moves.urllib.parse</span> <span class="kn">as</span> <span class="nn">urlparse</span>
+<span class="kn">import</span> <span class="nn">swiftclient</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.memoized</span> <span class="kn">import</span> <span class="n">memoized</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">base</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">FOLDER_DELIMITER</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+<span class="n">CHUNK_SIZE</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;SWIFT_FILE_TRANSFER_CHUNK_SIZE&#39;</span><span class="p">,</span> <span class="mi">512</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
+<span class="c1"># Swift ACL</span>
+<span class="n">GLOBAL_READ_ACL</span> <span class="o">=</span> <span class="s2">&quot;.r:*&quot;</span>
+<span class="n">LIST_CONTENTS_ACL</span> <span class="o">=</span> <span class="s2">&quot;.rlistings&quot;</span>
+
+
+<div class="viewcode-block" id="Container"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.Container">[docs]</a><span class="k">class</span> <span class="nc">Container</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="StorageObject"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.StorageObject">[docs]</a><span class="k">class</span> <span class="nc">StorageObject</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apidict</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">orig_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StorageObject</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apidict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">container_name</span> <span class="o">=</span> <span class="n">container_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orig_name</span> <span class="o">=</span> <span class="n">orig_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="StorageObject.id"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.StorageObject.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+</div></div>
+<div class="viewcode-block" id="PseudoFolder"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.PseudoFolder">[docs]</a><span class="k">class</span> <span class="nc">PseudoFolder</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apidict</span><span class="p">,</span> <span class="n">container_name</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PseudoFolder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apidict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">container_name</span> <span class="o">=</span> <span class="n">container_name</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PseudoFolder.id"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.PseudoFolder.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">container_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PseudoFolder.name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.PseudoFolder.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdir</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">FOLDER_DELIMITER</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PseudoFolder.bytes"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.PseudoFolder.bytes">[docs]</a>    <span class="k">def</span> <span class="nf">bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="PseudoFolder.content_type"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.PseudoFolder.content_type">[docs]</a>    <span class="k">def</span> <span class="nf">content_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;application/pseudo-folder&quot;</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">_objectify</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">container_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Splits a listing of objects into their appropriate wrapper classes.&quot;&quot;&quot;</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Deal with objects and object pseudo-folders first, save subdirs for later</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subdir&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">object_cls</span> <span class="o">=</span> <span class="n">PseudoFolder</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">object_cls</span> <span class="o">=</span> <span class="n">StorageObject</span>
+
+        <span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">object_cls</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">container_name</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">objects</span>
+
+
+<span class="k">def</span> <span class="nf">_metadata_to_header</span><span class="p">(</span><span class="n">metadata</span><span class="p">):</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">public</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_public&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">public</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">public_container_acls</span> <span class="o">=</span> <span class="p">[</span><span class="n">GLOBAL_READ_ACL</span><span class="p">,</span> <span class="n">LIST_CONTENTS_ACL</span><span class="p">]</span>
+        <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;x-container-read&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">public_container_acls</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">public</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;x-container-read&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">headers</span>
+
+
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="swift_api"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_api">[docs]</a><span class="k">def</span> <span class="nf">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">endpoint</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;object-store&#39;</span><span class="p">)</span>
+    <span class="n">cacert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_CACERT&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">insecure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_NO_VERIFY&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">swiftclient</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span>
+                                         <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                                         <span class="bp">None</span><span class="p">,</span>
+                                         <span class="n">preauthtoken</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                         <span class="n">preauthurl</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+                                         <span class="n">cacert</span><span class="o">=</span><span class="n">cacert</span><span class="p">,</span>
+                                         <span class="n">insecure</span><span class="o">=</span><span class="n">insecure</span><span class="p">,</span>
+                                         <span class="n">auth_version</span><span class="o">=</span><span class="s2">&quot;2.0&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_container_exists"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_container_exists">[docs]</a><span class="k">def</span> <span class="nf">swift_container_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">head_container</span><span class="p">(</span><span class="n">container_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">except</span> <span class="n">swiftclient</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ClientException</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="swift_object_exists"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_object_exists">[docs]</a><span class="k">def</span> <span class="nf">swift_object_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">head_object</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">except</span> <span class="n">swiftclient</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">ClientException</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="swift_get_containers"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_get_containers">[docs]</a><span class="k">def</span> <span class="nf">swift_get_containers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;API_RESULT_LIMIT&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="n">headers</span><span class="p">,</span> <span class="n">containers</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">get_account</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="n">limit</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                                                         <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span>
+                                                         <span class="n">full_listing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">container_objs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Container</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">containers</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">container_objs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">container_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">container_objs</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_get_container"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_get_container">[docs]</a><span class="k">def</span> <span class="nf">swift_get_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">with_data</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">with_data</span><span class="p">:</span>
+        <span class="n">headers</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">head_container</span><span class="p">(</span><span class="n">container_name</span><span class="p">)</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">is_public</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">public_url</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">is_public</span> <span class="o">=</span> <span class="n">GLOBAL_READ_ACL</span> <span class="ow">in</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x-container-read&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_public</span><span class="p">:</span>
+            <span class="n">swift_endpoint</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                          <span class="s1">&#39;object-store&#39;</span><span class="p">,</span>
+                                          <span class="n">endpoint_type</span><span class="o">=</span><span class="s1">&#39;publicURL&#39;</span><span class="p">)</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">container_name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+            <span class="n">public_url</span> <span class="o">=</span> <span class="n">swift_endpoint</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">parameters</span>
+        <span class="n">ts_float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x-timestamp&#39;</span><span class="p">))</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">iso8601_from_timestamp</span><span class="p">(</span><span class="n">ts_float</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">container_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">container_name</span><span class="p">,</span>
+        <span class="s1">&#39;container_object_count&#39;</span><span class="p">:</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x-container-object-count&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;container_bytes_used&#39;</span><span class="p">:</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x-container-bytes-used&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+        <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+        <span class="s1">&#39;is_public&#39;</span><span class="p">:</span> <span class="n">is_public</span><span class="p">,</span>
+        <span class="s1">&#39;public_url&#39;</span><span class="p">:</span> <span class="n">public_url</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">Container</span><span class="p">(</span><span class="n">container_info</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_create_container"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_create_container">[docs]</a><span class="k">def</span> <span class="nf">swift_create_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">({})):</span>
+    <span class="k">if</span> <span class="n">swift_container_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">AlreadyExists</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;container&#39;</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">_metadata_to_header</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+    <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">put_container</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Container</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+
+</div>
+<div class="viewcode-block" id="swift_update_container"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_update_container">[docs]</a><span class="k">def</span> <span class="nf">swift_update_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">({})):</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">_metadata_to_header</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+    <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">post_container</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Container</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
+
+</div>
+<div class="viewcode-block" id="swift_delete_container"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_delete_container">[docs]</a><span class="k">def</span> <span class="nf">swift_delete_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="c1"># It cannot be deleted if it&#39;s not empty. The batch remove of objects</span>
+    <span class="c1"># be done in swiftclient instead of Horizon.</span>
+    <span class="n">objects</span><span class="p">,</span> <span class="n">more</span> <span class="o">=</span> <span class="n">swift_get_objects</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">objects</span><span class="p">:</span>
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;The container cannot be deleted &quot;</span>
+                      <span class="s2">&quot;since it is not empty.&quot;</span><span class="p">)</span>
+        <span class="n">exc</span> <span class="o">=</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exc</span>
+    <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">delete_container</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="swift_get_objects"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_get_objects">[docs]</a><span class="k">def</span> <span class="nf">swift_get_objects</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;API_RESULT_LIMIT&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+                  <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span>
+                  <span class="n">limit</span><span class="o">=</span><span class="n">limit</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="n">delimiter</span><span class="o">=</span><span class="n">FOLDER_DELIMITER</span><span class="p">,</span>
+                  <span class="n">full_listing</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">headers</span><span class="p">,</span> <span class="n">objects</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">get_container</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span>
+                                                        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">object_objs</span> <span class="o">=</span> <span class="n">_objectify</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">container_name</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">object_objs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">object_objs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">object_objs</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_filter_objects"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_filter_objects">[docs]</a><span class="k">def</span> <span class="nf">swift_filter_objects</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">marker</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c1"># FIXME(kewu): Swift currently has no real filtering API, thus the marker</span>
+    <span class="c1"># parameter here won&#39;t actually help the pagination. For now I am just</span>
+    <span class="c1"># getting the largest number of objects from a container and filtering</span>
+    <span class="c1"># based on those objects.</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="mi">9999</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">swift_get_objects</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                <span class="n">container_name</span><span class="p">,</span>
+                                <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+                                <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span>
+                                <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">)</span>
+    <span class="n">filter_string_list</span> <span class="o">=</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">matches_filter</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">filter_string_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">wildcard_search</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">q</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">filter</span><span class="p">(</span><span class="n">matches_filter</span><span class="p">,</span> <span class="n">objects</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="wildcard_search"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.wildcard_search">[docs]</a><span class="k">def</span> <span class="nf">wildcard_search</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+    <span class="n">q_list</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">q_list</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">elif</span> <span class="n">q_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">q_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="n">string</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">head</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">q_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">wildcard_search</span><span class="p">(</span><span class="n">tail</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">q_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+</div>
+<div class="viewcode-block" id="swift_copy_object"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_copy_object">[docs]</a><span class="k">def</span> <span class="nf">swift_copy_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">orig_container_name</span><span class="p">,</span> <span class="n">orig_object_name</span><span class="p">,</span>
+                      <span class="n">new_container_name</span><span class="p">,</span> <span class="n">new_object_name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">swift_object_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">new_container_name</span><span class="p">,</span> <span class="n">new_object_name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">AlreadyExists</span><span class="p">(</span><span class="n">new_object_name</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span>
+
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;X-Copy-From&quot;</span><span class="p">:</span> <span class="n">FOLDER_DELIMITER</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">orig_container_name</span><span class="p">,</span>
+                                                     <span class="n">orig_object_name</span><span class="p">])}</span>
+    <span class="k">return</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">put_object</span><span class="p">(</span><span class="n">new_container_name</span><span class="p">,</span>
+                                         <span class="n">new_object_name</span><span class="p">,</span>
+                                         <span class="bp">None</span><span class="p">,</span>
+                                         <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_upload_object"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_upload_object">[docs]</a><span class="k">def</span> <span class="nf">swift_upload_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span>
+                        <span class="n">object_file</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">swift_object_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">AlreadyExists</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">object_file</span><span class="p">:</span>
+        <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Object-Meta-Orig-Filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_file</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">object_file</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="n">etag</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">put_object</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span>
+                                         <span class="n">object_name</span><span class="p">,</span>
+                                         <span class="n">object_file</span><span class="p">,</span>
+                                         <span class="n">content_length</span><span class="o">=</span><span class="n">size</span><span class="p">,</span>
+                                         <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+    <span class="n">obj_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">object_name</span><span class="p">,</span> <span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span> <span class="s1">&#39;etag&#39;</span><span class="p">:</span> <span class="n">etag</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">StorageObject</span><span class="p">(</span><span class="n">obj_info</span><span class="p">,</span> <span class="n">container_name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_create_pseudo_folder"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_create_pseudo_folder">[docs]</a><span class="k">def</span> <span class="nf">swift_create_pseudo_folder</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">pseudo_folder_name</span><span class="p">):</span>
+    <span class="c1"># Make sure the folder name doesn&#39;t already exist.</span>
+    <span class="k">if</span> <span class="n">swift_object_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">pseudo_folder_name</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">pseudo_folder_name</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">AlreadyExists</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;pseudo-folder&#39;</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">etag</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">put_object</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span>
+                                         <span class="n">pseudo_folder_name</span><span class="p">,</span>
+                                         <span class="bp">None</span><span class="p">,</span>
+                                         <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="n">obj_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">pseudo_folder_name</span><span class="p">,</span>
+        <span class="s1">&#39;etag&#39;</span><span class="p">:</span> <span class="n">etag</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">PseudoFolder</span><span class="p">(</span><span class="n">obj_info</span><span class="p">,</span> <span class="n">container_name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="swift_delete_object"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_delete_object">[docs]</a><span class="k">def</span> <span class="nf">swift_delete_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">):</span>
+    <span class="n">objects</span><span class="p">,</span> <span class="n">more</span> <span class="o">=</span> <span class="n">swift_get_objects</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span>
+                                      <span class="n">prefix</span><span class="o">=</span><span class="n">object_name</span><span class="p">)</span>
+    <span class="c1"># In case the given object is pseudo folder,</span>
+    <span class="c1"># it can be deleted only if it is empty.</span>
+    <span class="c1"># swift_get_objects will return at least</span>
+    <span class="c1"># one object (i.e container_name) even if the</span>
+    <span class="c1"># given pseudo folder is empty. So if swift_get_objects</span>
+    <span class="c1"># returns more than one object then only it will be</span>
+    <span class="c1"># considered as non empty folder.</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">objects</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">error_msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;The pseudo folder cannot be deleted &quot;</span>
+                      <span class="s2">&quot;since it is not empty.&quot;</span><span class="p">)</span>
+        <span class="n">exc</span> <span class="o">=</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">exc</span>
+    <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">delete_object</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="swift_get_object"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.swift.html#openstack_dashboard.api.swift.swift_get_object">[docs]</a><span class="k">def</span> <span class="nf">swift_get_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">with_data</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                     <span class="n">resp_chunk_size</span><span class="o">=</span><span class="n">CHUNK_SIZE</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">with_data</span><span class="p">:</span>
+        <span class="n">headers</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
+            <span class="n">container_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">resp_chunk_size</span><span class="o">=</span><span class="n">resp_chunk_size</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">swift_api</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">head_object</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span>
+                                                 <span class="n">object_name</span><span class="p">)</span>
+    <span class="n">orig_name</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x-object-meta-orig-filename&quot;</span><span class="p">)</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ts_float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;x-timestamp&#39;</span><span class="p">))</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">timeutils</span><span class="o">.</span><span class="n">iso8601_from_timestamp</span><span class="p">(</span><span class="n">ts_float</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">obj_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">object_name</span><span class="p">,</span>
+        <span class="s1">&#39;bytes&#39;</span><span class="p">:</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-length&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;content_type&#39;</span><span class="p">:</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-type&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;etag&#39;</span><span class="p">:</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;etag&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">StorageObject</span><span class="p">(</span><span class="n">obj_info</span><span class="p">,</span>
+                         <span class="n">container_name</span><span class="p">,</span>
+                         <span class="n">orig_name</span><span class="o">=</span><span class="n">orig_name</span><span class="p">,</span>
+                         <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

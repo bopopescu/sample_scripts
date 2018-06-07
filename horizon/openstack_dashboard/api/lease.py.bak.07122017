@@ -1,0 +1,134 @@
+# Copyright 2012 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#
+# Copyright 2012 OpenStack Foundation
+# Copyright 2012 Nebula, Inc.
+# Copyright (c) 2012 X.commerce, a business unit of eBay Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+from __future__ import absolute_import
+
+import logging
+
+from django.conf import settings
+from django.utils.functional import cached_property  # noqa
+from django.utils.translation import ugettext_lazy as _
+import six
+import pymysql
+import json
+from datetime import datetime
+from pytz import timezone
+import pytz
+
+import smtplib
+import socket
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+
+
+from novaclient import client as nova_client
+from novaclient import exceptions as nova_exceptions
+from novaclient.v2.contrib import instance_action as nova_instance_action
+from novaclient.v2.contrib import list_extensions as nova_list_extensions
+from novaclient.v2 import security_group_rules as nova_rules
+from novaclient.v2 import security_groups as nova_security_groups
+from novaclient.v2 import servers as nova_servers
+
+from horizon import conf
+from horizon.utils import functions as utils
+from horizon.utils.memoized import memoized  # noqa
+
+from openstack_dashboard.api import base
+from openstack_dashboard.api import network_base
+
+
+LOG = logging.getLogger(__name__)
+
+def notify(receiver, vmname, flavor, whattodo,ipaddressa,submitter):
+    me = "expostack@exponential.com"
+    msg = MIMEMultipart('related')
+    msgAlternative = MIMEMultipart('alternative')
+    receiversplit = receiver.split("@")
+    if len(receiversplit)==2:
+       aaaa=""
+    else:
+       receiver = "cloudautomation@exponential.com"
+    msg['From'] = me
+    you = receiver;
+    msg['To'] = receiver;
+    msg.preamble = 'This is a multi-part message in MIME format.'
+    text = "Hi!"
+    font = "<font face=verdana size=2>"
+    if whattodo == "createrequeststart":
+       msg['Subject'] = "Your request for virtual Machine " + vmname + "" + " is submitted"
+       html1 = "<html><head></head><body>" + font + "<b>VM Name  : </b>" + vmname + "<br><b>Flavor : </b>" + flavor + "<br><br> <b>Thanks and Regards</b><br>Expostack Administrator"
+
+    if whattodo == "deleterequeststart":
+       msg['Subject'] = "Your request for virtual Machine " + vmname + "" + " destroy has been submitted"
+       html1 = "<html><head></head><body>" + font + "<b>VM Name  : </b>" + vmname + "<br><b>Submitted By</b> :" + submitter + "<br><b> Thanks and Regards</b><br>Expostack Administrator"
+
+    htmlfinal = []
+    htmlb = ''.join(htmlfinal)
+    html = ''.join(str(x) for x in (html1,htmlb))
+    part1 = MIMEText(text, 'plain')
+    part2 = MIMEText(html, 'html')
+    msg.attach(msgAlternative)
+    msgAlternative.attach(part1)
+    msgAlternative.attach(part2)
+    s = smtplib.SMTP('mail.tribalfusion.com')
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
+
+def lease_project_verify(tenant_id, controllername):
+
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='BSoniC', db='expo_keystone')
+    cursor = db.cursor()
+    cursor.execute("select d.local_id, e.name, f.name from assignment c, id_mapping d, project e, role f where c.actor_id=d.public_id and d.local_id='vpc.leaseadmin@exponential.com' and c.target_id=e.id and e.id='" + tenant_id + "' and c.role_id=f.id and f.name='admin'")
+    if cursor.rowcount == 0:
+       return False
+    else:
+       return True
+
+def check_instance_owner(controllername, instancename):
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+    cursor = db.cursor()
+    sql = "select owner from lease_active_vms where hostname='" + instancename + "'"
+    cursor.execute(sql)
+    resultnew = cursor.fetchall()
+    for rows in resultnew:
+        owner = rows[0]
+        return owner
+
+def check_instance_lease(controllername, instancename , instancetenantid):
+    db = pymysql.connect(host=controllername, port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+    cursor = db.cursor()
+    date_formatv='%Y-%m-%d %H:%M:%S'
+    datev = datetime.now(tz=pytz.utc)
+    currentdatev = datetime.strftime(datev, date_formatv);
+    sql = "select case requesttype when 'days' then DATE_ADD(created_on,INTERVAL leasedays DAY) when 'hours' then DATE_ADD(created_on,INTERVAL leasedays HOUR) end as leasehowmuch ,case requesttype when 'days' then timestampdiff(MINUTE,'"+ currentdatev +"',DATE_ADD(created_on,INTERVAL leasedays DAY)) " +                   "when 'hours'  then timestampdiff(MINUTE,'"+ currentdatev +"',DATE_ADD(created_on,INTERVAL leasedays HOUR)) end as jordan from lease_active_vms where hostname='" + instancename + "'"
+    cursor.execute(sql)
+    resultnew = cursor.fetchall()
+    for rows in resultnew:
+        if rows[1] < 0:
+           leaseexpire = "Expired";
+        else:
+           leaseexpire = rows[0]
+        if lease_project_verify(instancetenantid, controllername) == False:
+           leaseexpire = "Never"
+        return leaseexpire
+
+def create_lease_record(controllername):
+    print "ok"

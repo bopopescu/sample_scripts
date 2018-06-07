@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.admin.networks.subnets.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.admin.networks.subnets.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 NEC Corporation</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.networks.subnets</span> \
+    <span class="kn">import</span> <span class="n">tables</span> <span class="k">as</span> <span class="n">proj_tables</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DeleteSubnet"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.DeleteSubnet">[docs]</a><span class="k">class</span> <span class="nc">DeleteSubnet</span><span class="p">(</span><span class="n">proj_tables</span><span class="o">.</span><span class="n">SubnetPolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteSubnet.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.DeleteSubnet.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Subnet&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Subnets&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteSubnet.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.DeleteSubnet.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted Subnet&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Subnets&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;delete_subnet&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="DeleteSubnet.delete"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.DeleteSubnet.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnet_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to delete subnet </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">obj_id</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">network_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;network_id&#39;</span><span class="p">]</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;horizon:admin:networks:detail&#39;</span><span class="p">,</span>
+                               <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">network_id</span><span class="p">])</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateSubnet"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.CreateSubnet">[docs]</a><span class="k">class</span> <span class="nc">CreateSubnet</span><span class="p">(</span><span class="n">proj_tables</span><span class="o">.</span><span class="n">SubnetPolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Subnet&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:networks:addsubnet&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;create_subnet&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="CreateSubnet.get_link_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.CreateSubnet.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">network_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;network_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">network_id</span><span class="p">,))</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateSubnet"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.UpdateSubnet">[docs]</a><span class="k">class</span> <span class="nc">UpdateSubnet</span><span class="p">(</span><span class="n">proj_tables</span><span class="o">.</span><span class="n">SubnetPolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;update&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Subnet&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:networks:editsubnet&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;update_subnet&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UpdateSubnet.get_link_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.UpdateSubnet.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subnet</span><span class="p">):</span>
+        <span class="n">network_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;network_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">network_id</span><span class="p">,</span> <span class="n">subnet</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="SubnetsTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.SubnetsTable">[docs]</a><span class="k">class</span> <span class="nc">SubnetsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name_or_id&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s1">&#39;horizon:admin:networks:subnets:detail&#39;</span><span class="p">)</span>
+    <span class="n">cidr</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;cidr&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;CIDR&quot;</span><span class="p">))</span>
+    <span class="n">ip_version</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;ipver_str&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP Version&quot;</span><span class="p">))</span>
+    <span class="n">gateway_ip</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;gateway_ip&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Gateway IP&quot;</span><span class="p">))</span>
+    <span class="n">failure_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s1">&#39;horizon:admin:networks:index&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SubnetsTable.get_object_display"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.SubnetsTable.get_object_display">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subnet</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">subnet</span><span class="o">.</span><span class="n">id</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_network</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">network_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;network_id&#39;</span><span class="p">]</span>
+            <span class="n">network</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">network_id</span><span class="p">)</span>
+            <span class="n">network</span><span class="o">.</span><span class="n">set_id_as_name_if_empty</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve details for network &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> \
+                <span class="o">%</span> <span class="p">(</span><span class="n">network_id</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">failure_url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">network</span>
+
+<div class="viewcode-block" id="SubnetsTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.subnets.tables.html#openstack_dashboard.dashboards.admin.networks.subnets.tables.SubnetsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;subnets&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Subnets&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">CreateSubnet</span><span class="p">,</span> <span class="n">DeleteSubnet</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">UpdateSubnet</span><span class="p">,</span> <span class="n">DeleteSubnet</span><span class="p">,)</span>
+        <span class="n">hidden_title</span> <span class="o">=</span> <span class="bp">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

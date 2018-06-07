@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.access_and_security.api_access.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.access_and_security.api_access.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 OpenStack Foundation</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>  <span class="c1"># noqa</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">tenant_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+    <span class="n">all_keys</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">list_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">all_keys</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">tenant_id</span> <span class="o">==</span> <span class="n">tenant_id</span><span class="p">),</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">create_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                  <span class="n">tenant_id</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s3_endpoint</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                       <span class="s1">&#39;s3&#39;</span><span class="p">,</span>
+                                       <span class="n">endpoint_type</span><span class="o">=</span><span class="s1">&#39;publicURL&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceCatalogException</span><span class="p">:</span>
+        <span class="n">s3_endpoint</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ec2_endpoint</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                        <span class="s1">&#39;ec2&#39;</span><span class="p">,</span>
+                                        <span class="n">endpoint_type</span><span class="o">=</span><span class="s1">&#39;publicURL&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceCatalogException</span><span class="p">:</span>
+        <span class="n">ec2_endpoint</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;ec2_access_key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="o">.</span><span class="n">access</span><span class="p">,</span>
+            <span class="s1">&#39;ec2_secret_key&#39;</span><span class="p">:</span> <span class="n">key</span><span class="o">.</span><span class="n">secret</span><span class="p">,</span>
+            <span class="s1">&#39;ec2_endpoint&#39;</span><span class="p">:</span> <span class="n">ec2_endpoint</span><span class="p">,</span>
+            <span class="s1">&#39;s3_endpoint&#39;</span><span class="p">:</span> <span class="n">s3_endpoint</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_get_openrc_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">keystone_url</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                    <span class="s1">&#39;identity&#39;</span><span class="p">,</span>
+                                    <span class="n">endpoint_type</span><span class="o">=</span><span class="s1">&#39;publicURL&#39;</span><span class="p">)</span>
+    <span class="n">credentials</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tenant_id</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+                       <span class="n">tenant_name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_name</span><span class="p">,</span>
+                       <span class="n">auth_url</span><span class="o">=</span><span class="n">keystone_url</span><span class="p">,</span>
+                       <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                       <span class="n">region</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;services_region&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">credentials</span>
+
+
+<div class="viewcode-block" id="download_ec2_bundle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.api_access.views.html#openstack_dashboard.dashboards.project.access_and_security.api_access.views.download_ec2_bundle">[docs]</a><span class="k">def</span> <span class="nf">download_ec2_bundle</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">tenant_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_name</span>
+
+    <span class="c1"># Gather or create our EC2 credentials</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">credentials</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">get_x509_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">cacert</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">get_x509_root_certificate</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">_get_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                          <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to fetch EC2 credentials.&#39;</span><span class="p">),</span>
+                          <span class="n">redirect</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">())</span>
+
+    <span class="c1"># Create our file bundle</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="s1">&#39;project/access_and_security/api_access/ec2rc.sh.template&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">temp_zip</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">temp_zip</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">archive</span><span class="p">:</span>
+            <span class="n">archive</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s1">&#39;pk.pem&#39;</span><span class="p">,</span> <span class="n">credentials</span><span class="o">.</span><span class="n">private_key</span><span class="p">)</span>
+            <span class="n">archive</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s1">&#39;cert.pem&#39;</span><span class="p">,</span> <span class="n">credentials</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">archive</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s1">&#39;cacert.pem&#39;</span><span class="p">,</span> <span class="n">cacert</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">archive</span><span class="o">.</span><span class="n">writestr</span><span class="p">(</span><span class="s1">&#39;ec2rc.sh&#39;</span><span class="p">,</span> <span class="n">render_to_string</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                          <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Error writing zipfile: </span><span class="si">%(exc)s</span><span class="s1">&#39;</span><span class="p">),</span>
+                          <span class="n">redirect</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">())</span>
+
+    <span class="c1"># Send it back</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/zip&#39;</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">temp_zip</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+    <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;attachment; &#39;</span>
+                                       <span class="s1">&#39;filename=&quot;</span><span class="si">%s</span><span class="s1">-x509.zip&quot;&#39;</span>
+                                       <span class="o">%</span> <span class="n">tenant_name</span><span class="p">)</span>
+    <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_zip</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">response</span>
+
+</div>
+<div class="viewcode-block" id="download_rc_file"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.api_access.views.html#openstack_dashboard.dashboards.project.access_and_security.api_access.views.download_rc_file">[docs]</a><span class="k">def</span> <span class="nf">download_rc_file</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="s1">&#39;project/access_and_security/api_access/openrc.sh.template&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">_get_openrc_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                    <span class="n">template</span><span class="p">,</span>
+                                    <span class="n">context</span><span class="p">,</span>
+                                    <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">)</span>
+        <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;attachment; &#39;</span>
+                                           <span class="s1">&#39;filename=&quot;</span><span class="si">%s</span><span class="s1">-openrc.sh&quot;&#39;</span>
+                                           <span class="o">%</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;tenant_name&#39;</span><span class="p">])</span>
+        <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Exception in DownloadOpenRCForm.&quot;</span><span class="p">)</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Error Downloading RC File: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">())</span>
+
+</div>
+<div class="viewcode-block" id="CredentialsView"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.api_access.views.html#openstack_dashboard.dashboards.project.access_and_security.api_access.views.CredentialsView">[docs]</a><span class="k">class</span> <span class="nc">CredentialsView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormMixin</span><span class="p">,</span> <span class="n">views</span><span class="o">.</span><span class="n">HorizonTemplateView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/access_and_security/api_access/credentials.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;User Credentials Details&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CredentialsView.get_context_data"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.api_access.views.html#openstack_dashboard.dashboards.project.access_and_security.api_access.views.CredentialsView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CredentialsView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;openrc_creds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_openrc_credentials</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get openrc credentials&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;ec2&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">context</span><span class="p">[</span><span class="s1">&#39;ec2_creds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_ec2_credentials</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                  <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get EC2 credentials&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">context</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

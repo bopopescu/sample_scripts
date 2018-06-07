@@ -1,0 +1,650 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.volumes.volumes.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.volumes.volumes.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">NoReverseMatch</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span> <span class="k">as</span> <span class="n">filters</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">html</span>
+<span class="kn">from</span> <span class="nn">django.utils.http</span> <span class="kn">import</span> <span class="n">urlencode</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">safestring</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">string_concat</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">cinder</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">policy</span>
+
+
+<span class="n">DELETABLE_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="s2">&quot;error_extending&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="VolumePolicyTargetMixin"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumePolicyTargetMixin">[docs]</a><span class="k">class</span> <span class="nc">VolumePolicyTargetMixin</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">):</span>
+    <span class="n">policy_target_attrs</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="s1">&#39;os-vol-tenant-attr:tenant_id&#39;</span><span class="p">),)</span>
+
+</div>
+<div class="viewcode-block" id="LaunchVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.LaunchVolume">[docs]</a><span class="k">class</span> <span class="nc">LaunchVolume</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;launch_volume&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch as Instance&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:instances:launch&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-launch&quot;</span><span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;cloud-upload&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;compute:create&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="LaunchVolume.get_link_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.LaunchVolume.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="n">vol_id</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:vol&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">datum</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">({</span><span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;volume_id&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;source_id&quot;</span><span class="p">:</span> <span class="n">vol_id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="s2">&quot;?&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">base_url</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="LaunchVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.LaunchVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="s1">&#39;bootable&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteVolume">[docs]</a><span class="k">class</span> <span class="nc">DeleteVolume</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteVolume.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteVolume.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Volume&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Volumes&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteVolume.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteVolume.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Scheduled deletion of Volume&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Scheduled deletion of Volumes&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:delete&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="DeleteVolume.delete"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteVolume.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">cinder</span><span class="o">.</span><span class="n">volume_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">volume</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">DELETABLE_STATES</span> <span class="ow">and</span>
+                    <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="s1">&#39;has_snapshot&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateVolume">[docs]</a><span class="k">class</span> <span class="nc">CreateVolume</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Volume&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:create&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-create&quot;</span><span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:create&quot;</span><span class="p">),)</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;preempt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateVolume</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">tenant_absolute_limits</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="n">gb_available</span> <span class="o">=</span> <span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;maxTotalVolumeGigabytes&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))</span>
+                        <span class="o">-</span> <span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;totalGigabytesUsed&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">volumes_available</span> <span class="o">=</span> <span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;maxTotalVolumes&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))</span>
+                             <span class="o">-</span> <span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;totalVolumesUsed&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">gb_available</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">volumes_available</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;disabled&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;disabled&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">string_concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                                                  <span class="n">_</span><span class="p">(</span><span class="s2">&quot;(Quota exceeded)&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Volume&quot;</span><span class="p">)</span>
+            <span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;disabled&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="CreateVolume.single"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateVolume.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">object_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+
+</div></div>
+<div class="viewcode-block" id="ExtendVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.ExtendVolume">[docs]</a><span class="k">class</span> <span class="nc">ExtendVolume</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;extend&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Extend Volume&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:extend&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-extend&quot;</span><span class="p">)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:extend&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="ExtendVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.ExtendVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span>
+
+</div></div>
+<div class="viewcode-block" id="EditAttachments"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.EditAttachments">[docs]</a><span class="k">class</span> <span class="nc">EditAttachments</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;attachments&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Manage Attachments&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:attach&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+
+<div class="viewcode-block" id="EditAttachments.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.EditAttachments.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">volume</span><span class="p">:</span>
+            <span class="n">project_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="s2">&quot;os-vol-tenant-attr:tenant_id&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">attach_allowed</span> <span class="o">=</span> \
+                <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;compute:attach_volume&quot;</span><span class="p">),),</span>
+                             <span class="n">request</span><span class="p">,</span>
+                             <span class="p">{</span><span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">})</span>
+            <span class="n">detach_allowed</span> <span class="o">=</span> \
+                <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;compute:detach_volume&quot;</span><span class="p">),),</span>
+                             <span class="n">request</span><span class="p">,</span>
+                             <span class="p">{</span><span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">})</span>
+
+            <span class="k">if</span> <span class="n">attach_allowed</span> <span class="ow">or</span> <span class="n">detach_allowed</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="s2">&quot;in-use&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateSnapshot"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateSnapshot">[docs]</a><span class="k">class</span> <span class="nc">CreateSnapshot</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;snapshots&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Snapshot&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:create_snapshot&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;camera&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:create_snapshot&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="CreateSnapshot.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateSnapshot.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">limits</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">tenant_absolute_limits</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve tenant limits.&#39;</span><span class="p">))</span>
+            <span class="n">limits</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">snapshots_available</span> <span class="o">=</span> <span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;maxTotalSnapshots&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))</span>
+                               <span class="o">-</span> <span class="n">limits</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;totalSnapshotsUsed&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">snapshots_available</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="s2">&quot;disabled&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;disabled&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">string_concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;(Quota exceeded)&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="s2">&quot;in-use&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateTransfer"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateTransfer">[docs]</a><span class="k">class</span> <span class="nc">CreateTransfer</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create_transfer&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Transfer&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:create_transfer&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:create_transfer&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="CreateTransfer.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateTransfer.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateBackup"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateBackup">[docs]</a><span class="k">class</span> <span class="nc">CreateBackup</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;backups&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Backup&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:create_backup&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;backup:create&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="CreateBackup.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.CreateBackup.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">cinder</span><span class="o">.</span><span class="n">volume_backup_supported</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;available&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="UploadToImage"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.UploadToImage">[docs]</a><span class="k">class</span> <span class="nc">UploadToImage</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;upload_to_image&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Upload to Image&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:upload_to_image&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;cloud-upload&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:upload_to_image&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UploadToImage.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.UploadToImage.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">has_image_service_perm</span> <span class="o">=</span> \
+            <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span><span class="s1">&#39;openstack.services.image&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="s2">&quot;in-use&quot;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">has_image_service_perm</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="EditVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.EditVolume">[docs]</a><span class="k">class</span> <span class="nc">EditVolume</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;edit&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Volume&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:update&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:update&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="EditVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.EditVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="s2">&quot;in-use&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="RetypeVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.RetypeVolume">[docs]</a><span class="k">class</span> <span class="nc">RetypeVolume</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;retype&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Change Volume Type&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:retype&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:retype&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="RetypeVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.RetypeVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="s2">&quot;in-use&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="AcceptTransfer"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AcceptTransfer">[docs]</a><span class="k">class</span> <span class="nc">AcceptTransfer</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;accept_transfer&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Accept Transfer&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:volumes:volumes:accept_transfer&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;exchange&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:accept_transfer&quot;</span><span class="p">),)</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="AcceptTransfer.single"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AcceptTransfer.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">object_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteTransfer"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteTransfer">[docs]</a><span class="k">class</span> <span class="nc">DeleteTransfer</span><span class="p">(</span><span class="n">VolumePolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="c1"># This class inherits from tables.Action instead of the more obvious</span>
+    <span class="c1"># tables.DeleteAction due to the confirmation message.  When the delete</span>
+    <span class="c1"># is successful, DeleteAction automatically appends the name of the</span>
+    <span class="c1"># volume to the message, e.g. &quot;Deleted volume transfer &#39;volume&#39;&quot;. But</span>
+    <span class="c1"># we are deleting the volume *transfer*, whose name is different.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;delete_transfer&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Cancel Transfer&quot;</span><span class="p">)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;volume:delete_transfer&quot;</span><span class="p">),)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;btn-danger&#39;</span><span class="p">,)</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;This action cannot be undone.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DeleteTransfer.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteTransfer.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;awaiting-transfer&quot;</span> <span class="ow">and</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="s1">&#39;transfer&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="DeleteTransfer.single"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DeleteTransfer.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">volume_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">transfer_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">volume</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully deleted volume transfer &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span>
+                        <span class="p">)</span> <span class="o">%</span> <span class="n">volume</span><span class="o">.</span><span class="n">transfer</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Successfully deleted volume transfer&quot;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to delete volume transfer.&quot;</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateRow"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.UpdateRow">[docs]</a><span class="k">class</span> <span class="nc">UpdateRow</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="UpdateRow.get_data"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.UpdateRow.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">):</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">volume</span>
+
+</div></div>
+<div class="viewcode-block" id="get_size"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.get_size">[docs]</a><span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="n">volume</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">GB&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">volume</span><span class="o">.</span><span class="n">size</span>
+
+</div>
+<div class="viewcode-block" id="get_attachment_name"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.get_attachment_name">[docs]</a><span class="k">def</span> <span class="nf">get_attachment_name</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">attachment</span><span class="p">):</span>
+    <span class="n">server_id</span> <span class="o">=</span> <span class="n">attachment</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;server_id&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;instance&quot;</span> <span class="ow">in</span> <span class="n">attachment</span> <span class="ow">and</span> <span class="n">attachment</span><span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">]:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">attachment</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">server</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">server_id</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve &quot;</span>
+                                         <span class="s2">&quot;attachment information.&quot;</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:detail&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">server_id</span><span class="p">,))</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="s1">&#39;&lt;a href=&quot;</span><span class="si">%s</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">NoReverseMatch</span><span class="p">:</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">instance</span>
+
+</div>
+<div class="viewcode-block" id="AttachmentColumn"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentColumn">[docs]</a><span class="k">class</span> <span class="nc">AttachmentColumn</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Customized column class.</span>
+
+<span class="sd">    So it that does complex processing on the attachments</span>
+<span class="sd">    for a volume instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AttachmentColumn.get_raw_data"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentColumn.get_raw_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">request</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Attached to </span><span class="si">%(instance)s</span><span class="s1"> on </span><span class="si">%(dev)s</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">attachments</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Filter out &quot;empty&quot; attachments which the client returns...</span>
+        <span class="k">for</span> <span class="n">attachment</span> <span class="ow">in</span> <span class="p">[</span><span class="n">att</span> <span class="k">for</span> <span class="n">att</span> <span class="ow">in</span> <span class="n">volume</span><span class="o">.</span><span class="n">attachments</span> <span class="k">if</span> <span class="n">att</span><span class="p">]:</span>
+            <span class="c1"># When a volume is attached it may return the server_id</span>
+            <span class="c1"># without the server name...</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">get_attachment_name</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">attachment</span><span class="p">)</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;instance&quot;</span><span class="p">:</span> <span class="n">instance</span><span class="p">,</span>
+                    <span class="s2">&quot;dev&quot;</span><span class="p">:</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">attachment</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;device&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))}</span>
+            <span class="n">attachments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">link</span> <span class="o">%</span> <span class="n">vals</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">safestring</span><span class="o">.</span><span class="n">mark_safe</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attachments</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="get_volume_type"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.get_volume_type">[docs]</a><span class="k">def</span> <span class="nf">get_volume_type</span><span class="p">(</span><span class="n">volume</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">volume_type</span> <span class="k">if</span> <span class="n">volume</span><span class="o">.</span><span class="n">volume_type</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="k">else</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="get_encrypted_value"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.get_encrypted_value">[docs]</a><span class="k">def</span> <span class="nf">get_encrypted_value</span><span class="p">(</span><span class="n">volume</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="s1">&#39;encrypted&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">volume</span><span class="o">.</span><span class="n">encrypted</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">volume</span><span class="o">.</span><span class="n">encrypted</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Yes&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="VolumesTableBase"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumesTableBase">[docs]</a><span class="k">class</span> <span class="nc">VolumesTableBase</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;in-use&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;creating&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;error_extending&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">STATUS_DISPLAY_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;available&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                    <span class="s2">u&quot;Available&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;in-use&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span> <span class="s2">u&quot;In-use&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span> <span class="s2">u&quot;Error&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;creating&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                   <span class="s2">u&quot;Creating&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;error_extending&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                          <span class="s2">u&quot;Error Extending&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;extending&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                    <span class="s2">u&quot;Extending&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;attaching&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                    <span class="s2">u&quot;Attaching&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;detaching&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                    <span class="s2">u&quot;Detaching&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;deleting&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                   <span class="s2">u&quot;Deleting&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;error_deleting&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                         <span class="s2">u&quot;Error deleting&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;backing-up&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                     <span class="s2">u&quot;Backing Up&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;restoring-backup&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                           <span class="s2">u&quot;Restoring Backup&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;error_restoring&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Volume&quot;</span><span class="p">,</span>
+                                          <span class="s2">u&quot;Error Restoring&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:volumes:volumes:detail&quot;</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                <span class="n">truncate</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_size</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size&quot;</span><span class="p">),</span>
+                         <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s1">&#39;size&#39;</span><span class="p">})</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">),</span>
+                           <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                           <span class="n">status_choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+                           <span class="n">display_choices</span><span class="o">=</span><span class="n">STATUS_DISPLAY_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VolumesTableBase.get_object_display"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumesTableBase.get_object_display">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span>
+
+</div></div>
+<div class="viewcode-block" id="VolumesFilterAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumesFilterAction">[docs]</a><span class="k">class</span> <span class="nc">VolumesFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+
+<div class="viewcode-block" id="VolumesFilterAction.filter"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumesFilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">volumes</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Naive case-insensitive search.&quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">volume</span> <span class="k">for</span> <span class="n">volume</span> <span class="ow">in</span> <span class="n">volumes</span>
+                <span class="k">if</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">volume</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+
+</div></div>
+<div class="viewcode-block" id="VolumesTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumesTable">[docs]</a><span class="k">class</span> <span class="nc">VolumesTable</span><span class="p">(</span><span class="n">VolumesTableBase</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:volumes:volumes:detail&quot;</span><span class="p">)</span>
+    <span class="n">volume_type</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_volume_type</span><span class="p">,</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Type&quot;</span><span class="p">))</span>
+    <span class="n">attachments</span> <span class="o">=</span> <span class="n">AttachmentColumn</span><span class="p">(</span><span class="s2">&quot;attachments&quot;</span><span class="p">,</span>
+                                   <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Attached To&quot;</span><span class="p">))</span>
+    <span class="n">availability_zone</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;availability_zone&quot;</span><span class="p">,</span>
+                                      <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Availability Zone&quot;</span><span class="p">))</span>
+    <span class="n">bootable</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;is_bootable&#39;</span><span class="p">,</span>
+                             <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Bootable&quot;</span><span class="p">),</span>
+                             <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">yesno</span><span class="p">,</span> <span class="n">filters</span><span class="o">.</span><span class="n">capfirst</span><span class="p">))</span>
+    <span class="n">encryption</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_encrypted_value</span><span class="p">,</span>
+                               <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Encrypted&quot;</span><span class="p">),</span>
+                               <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:volumes:&quot;</span>
+                                    <span class="s2">&quot;volumes:encryption_detail&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VolumesTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.VolumesTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;volumes&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volumes&quot;</span><span class="p">)</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">UpdateRow</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">CreateVolume</span><span class="p">,</span> <span class="n">AcceptTransfer</span><span class="p">,</span> <span class="n">DeleteVolume</span><span class="p">,</span>
+                         <span class="n">VolumesFilterAction</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">EditVolume</span><span class="p">,</span> <span class="n">ExtendVolume</span><span class="p">,</span> <span class="n">LaunchVolume</span><span class="p">,</span> <span class="n">EditAttachments</span><span class="p">,</span>
+                       <span class="n">CreateSnapshot</span><span class="p">,</span> <span class="n">CreateBackup</span><span class="p">,</span> <span class="n">RetypeVolume</span><span class="p">,</span>
+                       <span class="n">UploadToImage</span><span class="p">,</span> <span class="n">CreateTransfer</span><span class="p">,</span> <span class="n">DeleteTransfer</span><span class="p">,</span>
+                       <span class="n">DeleteVolume</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DetachVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DetachVolume">[docs]</a><span class="k">class</span> <span class="nc">DetachVolume</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;detach&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;btn-danger&#39;</span><span class="p">,</span> <span class="s1">&#39;btn-detach&#39;</span><span class="p">)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;compute:detach_volume&quot;</span><span class="p">),)</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;The data will remain in the volume and another instance&quot;</span>
+                  <span class="s2">&quot; will be able to access the data if you attach&quot;</span>
+                  <span class="s2">&quot; this volume to it.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DetachVolume.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DetachVolume.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Detach Volume&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Detach Volumes&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+
+    <span class="c1"># This action is asynchronous.</span></div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DetachVolume.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DetachVolume.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Detaching Volume&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Detaching Volumes&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DetachVolume.action"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DetachVolume.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">attachment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">instance_volume_detach</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                        <span class="n">attachment</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;server_id&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                        <span class="n">obj_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DetachVolume.get_success_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.DetachVolume.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;horizon:project:volumes:index&#39;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="AttachedInstanceColumn"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachedInstanceColumn">[docs]</a><span class="k">class</span> <span class="nc">AttachedInstanceColumn</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Customized column class that does complex processing on the attachments</span>
+<span class="sd">    for a volume instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="AttachedInstanceColumn.get_raw_data"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachedInstanceColumn.get_raw_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attachment</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">request</span>
+        <span class="k">return</span> <span class="n">safestring</span><span class="o">.</span><span class="n">mark_safe</span><span class="p">(</span><span class="n">get_attachment_name</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">attachment</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="AttachmentsTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentsTable">[docs]</a><span class="k">class</span> <span class="nc">AttachmentsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">instance</span> <span class="o">=</span> <span class="n">AttachedInstanceColumn</span><span class="p">(</span><span class="n">get_attachment_name</span><span class="p">,</span>
+                                      <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance&quot;</span><span class="p">))</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;device&quot;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Device&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AttachmentsTable.get_object_id"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentsTable.get_object_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="AttachmentsTable.get_object_display"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentsTable.get_object_display">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attachment</span><span class="p">):</span>
+        <span class="n">instance_name</span> <span class="o">=</span> <span class="n">get_attachment_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">attachment</span><span class="p">)</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;volume_name&quot;</span><span class="p">:</span> <span class="n">attachment</span><span class="p">[</span><span class="s1">&#39;volume_name&#39;</span><span class="p">],</span>
+                <span class="s2">&quot;instance_name&quot;</span><span class="p">:</span> <span class="n">html</span><span class="o">.</span><span class="n">strip_tags</span><span class="p">(</span><span class="n">instance_name</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume </span><span class="si">%(volume_name)s</span><span class="s2"> on instance </span><span class="si">%(instance_name)s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">vals</span>
+</div>
+<div class="viewcode-block" id="AttachmentsTable.get_object_by_id"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentsTable.get_object_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">==</span> <span class="n">obj_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">obj</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No match found for the id &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AttachmentsTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.tables.html#openstack_dashboard.dashboards.project.volumes.volumes.tables.AttachmentsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;attachments&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Attachments&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">DetachVolume</span><span class="p">,)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">DetachVolume</span><span class="p">,)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

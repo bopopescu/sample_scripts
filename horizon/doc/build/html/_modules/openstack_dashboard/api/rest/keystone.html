@@ -1,0 +1,692 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.rest.keystone &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.rest.keystone</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2014, Rackspace, US, Inc.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;API over the keystone service.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">django.http</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">rest_utils</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">urls</span>
+
+
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Version"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Version">[docs]</a><span class="k">class</span> <span class="nc">Version</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for active keystone version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/version/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Version.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Version.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get active keystone version.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">get_version</span><span class="p">()}</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Users"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Users">[docs]</a><span class="k">class</span> <span class="nc">Users</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for keystone users.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/users/$&#39;</span>
+    <span class="n">client_keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;project_id&#39;</span><span class="p">,</span> <span class="s1">&#39;domain_id&#39;</span><span class="p">,</span> <span class="s1">&#39;group_id&#39;</span><span class="p">}</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Users.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Users.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of users.</span>
+
+<span class="sd">        By default, a listing of all users for the current domain are</span>
+<span class="sd">        returned. You may specify GET parameters for project_id, domain_id and</span>
+<span class="sd">        group_id to change that listing&#39;s context.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">domain_context</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain_context&#39;</span><span class="p">)</span>
+
+        <span class="n">filters</span> <span class="o">=</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">parse_filters_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">client_keywords</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_list</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">),</span>
+            <span class="n">domain</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain_id&#39;</span><span class="p">,</span> <span class="n">domain_context</span><span class="p">),</span>
+            <span class="n">group</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_id&#39;</span><span class="p">),</span>
+            <span class="n">filters</span><span class="o">=</span><span class="n">filters</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Users.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Users.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a user.</span>
+
+<span class="sd">        Create a user using the parameters supplied in the POST</span>
+<span class="sd">        application/json object. The base parameters are name (string), email</span>
+<span class="sd">        (string, optional), password (string, optional), project_id (string,</span>
+<span class="sd">        optional), enabled (boolean, defaults to true). The user will be</span>
+<span class="sd">        created in the default domain.</span>
+
+<span class="sd">        This action returns the new user object on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># not sure why email is forced to None, but other code does it</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">get_default_domain</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">new_user</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_create</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="n">email</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">None</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">),</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">),</span>
+            <span class="n">enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+            <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">id</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/keystone/users/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">new_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">new_user</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Users.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Users.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete multiple users by id.</span>
+
+<span class="sd">        The DELETE data should be an application/json array of user ids to</span>
+<span class="sd">        delete.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user_id</span> <span class="o">!=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for a single keystone user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/users/(?P&lt;id&gt;[0-9a-f]+|current)$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="User.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.User.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a specific user by id.</span>
+
+<span class="sd">        If the id supplied is &#39;current&#39; then the current logged-in user</span>
+<span class="sd">        will be returned, otherwise the user specified by the id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="o">==</span> <span class="s1">&#39;current&#39;</span><span class="p">:</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="User.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.User.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a single user by id.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="o">==</span> <span class="s1">&#39;current&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">django</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">HttpResponseNotFound</span><span class="p">(</span><span class="s1">&#39;current&#39;</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="User.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.User.patch">[docs]</a>    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update a single user.</span>
+
+<span class="sd">        The PATCH data should be an application/json object with attributes to</span>
+<span class="sd">        set to new values: password (string), project (string),</span>
+<span class="sd">        enabled (boolean).</span>
+
+<span class="sd">        A PATCH may contain any one of those attributes, but</span>
+<span class="sd">        if it contains more than one it must contain the project, even</span>
+<span class="sd">        if it is not being altered.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">)</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;password&#39;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_update_password</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="s1">&#39;enabled&#39;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">enabled</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;enabled&#39;</span><span class="p">]</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_update_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># note that project is actually project_id</span>
+            <span class="c1"># but we can not rename due to legacy compatibility</span>
+            <span class="c1"># refer to keystone.api user_update method</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">user_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Roles"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Roles">[docs]</a><span class="k">class</span> <span class="nc">Roles</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API over all roles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/roles/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Roles.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Roles.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of roles.</span>
+
+<span class="sd">        By default a listing of all roles are returned.</span>
+
+<span class="sd">        If the GET parameters project_id and user_id are specified then that</span>
+<span class="sd">        user&#39;s roles for that project are returned. If user_id is &#39;current&#39;</span>
+<span class="sd">        then the current user&#39;s roles for that project are returned.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">project_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">)</span>
+        <span class="n">user_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">project_id</span> <span class="ow">and</span> <span class="n">user_id</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user_id</span> <span class="o">==</span> <span class="s1">&#39;current&#39;</span><span class="p">:</span>
+                <span class="n">user_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">roles_for_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span>
+                                                <span class="n">project_id</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">role_list</span><span class="p">(</span><span class="n">request</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="n">items</span><span class="p">}</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Roles.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Roles.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a role.</span>
+
+<span class="sd">        Create a role using the &quot;name&quot; (string) parameter supplied in the POST</span>
+<span class="sd">        application/json object.</span>
+
+<span class="sd">        This method returns the new role object on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_role</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">role_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/keystone/roles/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">new_role</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">new_role</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Roles.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Roles.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete multiple roles by id.</span>
+
+<span class="sd">        The DELETE data should be an application/json array of role ids to</span>
+<span class="sd">                delete.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">role_id</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">role_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role_id</span><span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Role"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Role">[docs]</a><span class="k">class</span> <span class="nc">Role</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for a single role.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/roles/(?P&lt;id&gt;[0-9a-f]+|default)$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Role.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Role.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a specific role by id.</span>
+
+<span class="sd">        If the id supplied is &#39;default&#39; then the default role will be</span>
+<span class="sd">        returned, otherwise the role specified by the id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">get_default_role</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">role_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Role.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Role.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a single role by id.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">django</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">HttpResponseNotFound</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">role_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Role.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Role.patch">[docs]</a>    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update a single role.</span>
+
+<span class="sd">        The PATCH data should be an application/json object with the &quot;name&quot;</span>
+<span class="sd">        attribute to update.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">role_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Domains"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domains">[docs]</a><span class="k">class</span> <span class="nc">Domains</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API over all domains.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/domains/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Domains.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domains.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of domains.</span>
+
+<span class="sd">        A listing of all domains are returned.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_list</span><span class="p">(</span><span class="n">request</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="n">items</span><span class="p">}</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Domains.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domains.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform some action on the collection of domains.</span>
+
+<span class="sd">        This action creates a domain using parameters supplied in the POST</span>
+<span class="sd">        application/json object. The &quot;name&quot; (string) parameter is required,</span>
+<span class="sd">        others are optional: &quot;description&quot; (string) and &quot;enabled&quot; (boolean,</span>
+<span class="sd">        defaults to true).</span>
+
+<span class="sd">        This method returns the new domain object on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_domain</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_create</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">),</span>
+            <span class="n">enabled</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/keystone/domains/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">new_domain</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">new_domain</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Domains.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domains.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete multiple domains by id.</span>
+
+<span class="sd">        The DELETE data should be an application/json array of domain ids to</span>
+<span class="sd">                delete.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">domain_id</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain_id</span><span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Domain"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domain">[docs]</a><span class="k">class</span> <span class="nc">Domain</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API over a single domains.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/domains/(?P&lt;id&gt;[0-9a-f]+|default)$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Domain.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domain.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a specific domain by id.</span>
+
+<span class="sd">        If the id supplied is &#39;default&#39; then the default domain will be</span>
+<span class="sd">        returned, otherwise the domain specified by the id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">get_default_domain</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Domain.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domain.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a single domain by id.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">django</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">HttpResponseNotFound</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Domain.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Domain.patch">[docs]</a>    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update a single domain.</span>
+
+<span class="sd">        The PATCH data should be an application/json object with the attributes</span>
+<span class="sd">        to set to new values: &quot;name&quot; (string), &quot;description&quot; (string) and</span>
+<span class="sd">        &quot;enabled&quot; (boolean).</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_update</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="nb">id</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">),</span>
+            <span class="n">enabled</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">_tenant_kwargs_from_DATA</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="c1"># tenant_create takes arbitrary keyword arguments with only a small</span>
+    <span class="c1"># restriction (the default args)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="n">enabled</span><span class="p">,</span>
+              <span class="s1">&#39;domain&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;domain_id&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)}</span>
+    <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">kwargs</span>
+
+
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Projects"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Projects">[docs]</a><span class="k">class</span> <span class="nc">Projects</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API over all projects.</span>
+
+<span class="sd">    Note that in the following &quot;project&quot; is used exclusively where in the</span>
+<span class="sd">    underlying keystone API the terms &quot;project&quot; and &quot;tenant&quot; are used</span>
+<span class="sd">    interchangeably.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/projects/$&#39;</span>
+    <span class="n">client_keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;paginate&#39;</span><span class="p">,</span> <span class="s1">&#39;marker&#39;</span><span class="p">,</span> <span class="s1">&#39;domain_id&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">}</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Projects.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Projects.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of projects.</span>
+
+<span class="sd">        By default a listing of all projects for the current domain are</span>
+<span class="sd">        returned.</span>
+
+<span class="sd">        You may specify GET parameters for domain_id (string), user_id</span>
+<span class="sd">        (string) and admin (boolean) to change that listing&#39;s context.</span>
+<span class="sd">        Additionally, paginate (boolean) and marker may be used to get</span>
+<span class="sd">        paginated listings.</span>
+
+<span class="sd">        The listing result is an object with properties:</span>
+
+<span class="sd">        items</span>
+<span class="sd">            The list of project objects.</span>
+<span class="sd">        has_more</span>
+<span class="sd">            Boolean indicating there are more results when pagination is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filters</span> <span class="o">=</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">parse_filters_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">client_keywords</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">paginate</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;paginate&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span>
+        <span class="n">admin</span> <span class="o">=</span> <span class="bp">False</span> <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;admin&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;false&#39;</span> <span class="k">else</span> <span class="bp">True</span>
+
+        <span class="n">result</span><span class="p">,</span> <span class="n">has_more</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_list</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">paginate</span><span class="o">=</span><span class="n">paginate</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker&#39;</span><span class="p">),</span>
+            <span class="n">domain</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;domain_id&#39;</span><span class="p">),</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">),</span>
+            <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">,</span>
+            <span class="n">filters</span><span class="o">=</span><span class="n">filters</span>
+        <span class="p">)</span>
+        <span class="c1"># return (list of results, has_more_data)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">has_more</span><span class="o">=</span><span class="n">has_more</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">result</span><span class="p">])</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Projects.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Projects.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a project (tenant).</span>
+
+<span class="sd">        Create a project using parameters supplied in the POST</span>
+<span class="sd">        application/json object. The &quot;name&quot; (string) parameter is required,</span>
+<span class="sd">        others are optional: &quot;description&quot; (string), &quot;domain_id&quot; (string) and</span>
+<span class="sd">        &quot;enabled&quot; (boolean, defaults to true). Additional, undefined</span>
+<span class="sd">        parameters may also be provided, but you&#39;ll have to look deep into</span>
+<span class="sd">        keystone to figure out what they might be.</span>
+
+<span class="sd">        This method returns the new project object on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_tenant_kwargs_from_DATA</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">AjaxError</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;&quot;name&quot; is required&#39;</span><span class="p">)</span>
+        <span class="n">new_project</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_create</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/keystone/projects/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">new_project</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">new_project</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Projects.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Projects.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete multiple projects by id.</span>
+
+<span class="sd">        The DELETE data should be an application/json array of project ids to</span>
+<span class="sd">        delete.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Project">[docs]</a><span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API over a single project.</span>
+
+<span class="sd">    Note that in the following &quot;project&quot; is used exclusively where in the</span>
+<span class="sd">    underlying keystone API the terms &quot;project&quot; and &quot;tenant&quot; are used</span>
+<span class="sd">    interchangeably.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/projects/(?P&lt;id&gt;[0-9a-f]+)$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Project.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Project.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a specific project by id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Project.delete"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Project.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete a single project by id.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Project.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.Project.patch">[docs]</a>    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update a single project.</span>
+
+<span class="sd">        The PATCH data should be an application/json object with  the</span>
+<span class="sd">        attributes to set to new values: &quot;name&quot; (string),  &quot;description&quot;</span>
+<span class="sd">        (string), &quot;domain_id&quot; (string) and &quot;enabled&quot; (boolean). Additional,</span>
+<span class="sd">        undefined parameters may also be provided, but you&#39;ll have to look</span>
+<span class="sd">        deep into keystone to figure out what they might be.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_tenant_kwargs_from_DATA</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="ProjectRole"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.ProjectRole">[docs]</a><span class="k">class</span> <span class="nc">ProjectRole</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/projects/(?P&lt;project_id&gt;[0-9a-f]+)/&#39;</span> \
+                <span class="s1">&#39;(?P&lt;role_id&gt;[0-9a-f]+)/(?P&lt;user_id&gt;[0-9a-f]+)$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="ProjectRole.put"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.ProjectRole.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">role_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Grant the specified role to the user in the project (tenant).</span>
+
+<span class="sd">        This method takes no data.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">add_tenant_user_role</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">project_id</span><span class="p">,</span>
+            <span class="n">user_id</span><span class="p">,</span>
+            <span class="n">role_id</span>
+        <span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="ServiceCatalog"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.ServiceCatalog">[docs]</a><span class="k">class</span> <span class="nc">ServiceCatalog</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/svc-catalog/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="ServiceCatalog.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.ServiceCatalog.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the Keystone service catalog associated with the current</span>
+<span class="sd">        user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">service_catalog</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="UserSession"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.UserSession">[docs]</a><span class="k">class</span> <span class="nc">UserSession</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for a single keystone user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;keystone/user-session/$&#39;</span>
+    <span class="n">allowed_fields</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;available_services_regions&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;domain_id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;domain_name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;enabled&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;is_superuser&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;project_name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;roles&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;services_region&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;user_domain_id&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;user_domain_name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;username&#39;</span>
+    <span class="p">}</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="UserSession.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.keystone.html#openstack_dashboard.api.rest.keystone.UserSession.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the current user session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed_fields</span><span class="p">}</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

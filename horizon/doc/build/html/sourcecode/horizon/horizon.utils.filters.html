@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon.utils.filters Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The horizon.utils.functions Module" href="horizon.utils.functions.html" />
+    <link rel="prev" title="The horizon.utils.secret_key Module" href="horizon.utils.secret_key.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-horizon-utils-filters-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">horizon.utils.filters</span></tt> Module<a class="headerlink" href="#the-horizon-utils-filters-module" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.utils.filters.</tt><tt class="descname">parse_isotime</tt><big>(</big><em>timestr</em>, <em>default=None</em><big>)</big><a class="reference internal" href="../../_modules/horizon/utils/filters.html#parse_isotime"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>This duplicates oslo timeutils parse_isotime but with a
+&#64;register.filter annotation and a silent fallback on error.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.utils.filters.</tt><tt class="descname">replace_underscores</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="../../_modules/horizon/utils/filters.html#replace_underscores"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.utils.filters.</tt><tt class="descname">timesince_or_never</tt><big>(</big><em>dt</em>, <em>default=None</em><big>)</big><a class="reference internal" href="../../_modules/horizon/utils/filters.html#timesince_or_never"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Call the Django <tt class="docutils literal"><span class="pre">timesince</span></tt> filter, but return the string
+<em>default</em> if <em>dt</em> is not a valid <tt class="docutils literal"><span class="pre">date</span></tt> or <tt class="docutils literal"><span class="pre">datetime</span></tt> object.
+When <em>default</em> is None, &#8220;Never&#8221; is returned.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">horizon.utils.filters.</tt><tt class="descname">timesince_sortable</tt><big>(</big><em>dt</em><big>)</big><a class="reference internal" href="../../_modules/horizon/utils/filters.html#timesince_sortable"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.utils.secret_key.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon.utils.secret_key</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.utils.functions.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon.utils.functions</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/horizon/horizon.utils.filters.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.utils.functions.html" title="The horizon.utils.functions Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.utils.secret_key.html" title="The horizon.utils.secret_key Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

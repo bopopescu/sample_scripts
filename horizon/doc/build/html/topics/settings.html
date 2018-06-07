@@ -1,0 +1,1654 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Settings and Configuration &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Customizing Horizon" href="customizing.html" />
+    <link rel="prev" title="Deploying Horizon" href="deployment.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="settings-and-configuration">
+<h1>Settings and Configuration<a class="headerlink" href="#settings-and-configuration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Horizon&#8217;s settings tend to fall into three categories:</p>
+<ul class="simple">
+<li>Horizon configuration options (contained in the <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt> dict)
+which are not OpenStack-specific and pertain only to the core framework.</li>
+<li>OpenStack-related settings which pertain to other projects/services and
+are generally prefixed with <tt class="docutils literal"><span class="pre">OPENSTACK_</span></tt> in the settings file.</li>
+<li>Django settings (including common plugins like <tt class="docutils literal"><span class="pre">django-compressor</span></tt>) which
+can be (and should be) read about in their respective documentation.</li>
+</ul>
+<p>What follows is an overview of the Horizon and OpenStack-specific settings
+and a few notes on the Django-related settings.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Prior to the Essex release of Horizon there were settings which controlled
+whether features such as Object Storage/Swift or Networking/Neutron would be
+enabled in the OpenStack Dashboard. This code has long since been removed
+and those pre-Essex settings have no impact now.</p>
+<p class="last">In Essex and later, the Service Catalog returned by the Identity Service
+after a user has successfully authenticated determines the dashboards and
+panels that will be available within the OpenStack Dashboard. If you are not
+seeing a particular service you expected make sure your Service Catalog is
+configured correctly.</p>
+</div>
+</div>
+<div class="section" id="horizon-settings">
+<h2>Horizon Settings<a class="headerlink" href="#horizon-settings" title="Permalink to this headline">¶</a></h2>
+<p>The following options are available in order to configure/customize the
+behavior of your Horizon installation. All of them are contained in the
+<tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt> dictionary.</p>
+<div class="section" id="dashboards">
+<span id="id1"></span><h3><tt class="docutils literal"><span class="pre">dashboards</span></tt><a class="headerlink" href="#dashboards" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>In OpenStack Dashboard configuration, we suggest <strong>NOT</strong> to use this
+setting. Please specify the order of dashboard using the
+<a class="reference internal" href="#pluggable-settings-label"><em>Pluggable Settings</em></a>.</p>
+<p class="last">Both the pluggable dashboard mechanism (OpenStack Dashboard default) and
+this setting <tt class="docutils literal"><span class="pre">dashboard</span></tt> configure the order of dashboards and
+the setting <tt class="docutils literal"><span class="pre">dashboard</span></tt> precedes the pluggable dashboard mechanism.
+Specifying the order in two places may cause confusion.
+Please use this parameter only when the pluggable config is not used.</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>Horizon Dashboards are automatically discovered in the following way:</p>
+<ul class="simple">
+<li>By adding a configuration file to the <tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled</span></tt>
+directory (for more information see <a class="reference internal" href="#pluggable-settings-label"><em>Pluggable Settings</em></a>).
+This is the default way in OpenStack Dashboard.</li>
+<li>By traversing Django&#8217;s list of
+<a class="reference external" href="https://docs.djangoproject.com/en/1.4/ref/settings/#std:setting-INSTALLED_APPS">INSTALLED_APPS</a>
+and importing any files that have the name <tt class="docutils literal"><span class="pre">&quot;dashboard.py&quot;</span></tt> and include
+code to register themselves as a Horizon dashboard.</li>
+</ul>
+<p>By default, dashboards defined by <tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled</span></tt> are
+displayed first in the alphabetical order of the config files, and then the
+remaining dashboards discovered by traversing INSTALLED_APPS are displayed
+in the alphabetical order.</p>
+<p>If a list of <tt class="docutils literal"><span class="pre">dashboard</span></tt> slugs is provided in this setting, the supplied
+ordering is applied to the list of discovered dashboards. If the list of
+dashboard slugs is shorter than the number of discovered dashboards, the
+remaining dashboards are appended in the default order described above.</p>
+<p>The dashboards listed must be in a Python module which
+is included in the <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt> list and on the Python path.</p>
+</div>
+<div class="section" id="default-dashboard">
+<h3><tt class="docutils literal"><span class="pre">default_dashboard</span></tt><a class="headerlink" href="#default-dashboard" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>In OpenStack Dashboard configuration, we suggest <strong>NOT</strong> to use this
+setting. Please specify the order of dashboard using the
+<a class="reference internal" href="#pluggable-settings-label"><em>Pluggable Settings</em></a>.</p>
+<p class="last">The default dashboard can be configured via both the pluggable
+dashboard mechanism (OpenStack Dashboard default) and this setting
+<tt class="docutils literal"><span class="pre">default_dashboard</span></tt>, and if both are specified, the setting
+by the pluggable dashboard mechanism will be used.
+Specifying the default dashboard in two places may cause confusion.
+Please use this parameter only when the pluggable config is not used.</p>
+</div>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>The slug of the dashboard which should act as the first-run/fallback dashboard
+whenever a user logs in or is otherwise redirected to an ambiguous location.</p>
+</div>
+<div class="section" id="user-home">
+<h3><tt class="docutils literal"><span class="pre">user_home</span></tt><a class="headerlink" href="#user-home" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">settings.LOGIN_REDIRECT_URL</span></tt></p>
+<p>This can be either a literal URL path (such as the default), or Python&#8217;s
+dotted string notation representing a function which will evaluate what URL
+a user should be redirected to based on the attributes of that user.</p>
+</div>
+<div class="section" id="ajax-queue-limit">
+<h3><tt class="docutils literal"><span class="pre">ajax_queue_limit</span></tt><a class="headerlink" href="#ajax-queue-limit" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">10</span></tt></p>
+<p>The maximum number of simultaneous AJAX connections the dashboard may try
+to make. This is particularly relevant when monitoring a large number of
+instances, volumes, etc. which are all actively trying to update/change state.</p>
+</div>
+<div class="section" id="ajax-poll-interval">
+<h3><tt class="docutils literal"><span class="pre">ajax_poll_interval</span></tt><a class="headerlink" href="#ajax-poll-interval" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">2500</span></tt></p>
+<p>How frequently resources in transition states should be polled for updates,
+expressed in milliseconds.</p>
+</div>
+<div class="section" id="auto-fade-alerts">
+<h3><tt class="docutils literal"><span class="pre">auto_fade_alerts</span></tt><a class="headerlink" href="#auto-fade-alerts" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Defaults: <tt class="docutils literal"><span class="pre">{'delay':</span> <span class="pre">[3000],</span> <span class="pre">'fade_duration':</span> <span class="pre">[1500],</span> <span class="pre">'types':</span> <span class="pre">[]}</span></tt></p>
+<p>If provided, will auto-fade the alert types specified. Valid alert types
+include: [&#8216;alert-success&#8217;, &#8216;alert-info&#8217;, &#8216;alert-warning&#8217;, &#8216;alert-error&#8217;]
+Can also define the delay before the alert fades and the fade out duration.</p>
+</div>
+<div class="section" id="help-url">
+<h3><tt class="docutils literal"><span class="pre">help_url</span></tt><a class="headerlink" href="#help-url" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.2(Folsom).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>If provided, a &#8220;Help&#8221; link will be displayed in the site header which links
+to the value of this settings (ideally a URL containing help information).</p>
+</div>
+<div class="section" id="exceptions">
+<h3><tt class="docutils literal"><span class="pre">exceptions</span></tt><a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{'unauthorized':</span> <span class="pre">[],</span> <span class="pre">'not_found':</span> <span class="pre">[],</span> <span class="pre">'recoverable':</span> <span class="pre">[]}</span></tt></p>
+<p>A dictionary containing classes of exceptions which Horizon&#8217;s centralized
+exception handling should be aware of. Based on these exception categories,
+Horizon will handle the exception and display a message to the user.</p>
+</div>
+<div class="section" id="modal-backdrop">
+<h3><tt class="docutils literal"><span class="pre">modal_backdrop</span></tt><a class="headerlink" href="#modal-backdrop" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;static&quot;</span></tt></p>
+<p>Controls how bootstrap backdrop element outside of modals looks and feels.
+Valid values are <tt class="docutils literal"><span class="pre">&quot;true&quot;</span></tt> (show backdrop element outside the modal, close
+the modal after clicking on backdrop), <tt class="docutils literal"><span class="pre">&quot;false&quot;</span></tt> (do not show backdrop
+element, do not close the modal after clicking outside of it) and <tt class="docutils literal"><span class="pre">&quot;static&quot;</span></tt>
+(show backdrop element outside the modal, do not close the modal after
+clicking on backdrop).</p>
+</div>
+<div class="section" id="disable-password-reveal">
+<h3><tt class="docutils literal"><span class="pre">disable_password_reveal</span></tt><a class="headerlink" href="#disable-password-reveal" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Setting this to True will disable the reveal button for password fields,
+including on the login form.</p>
+</div>
+<div class="section" id="password-validator">
+<h3><tt class="docutils literal"><span class="pre">password_validator</span></tt><a class="headerlink" href="#password-validator" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{'regex':</span> <span class="pre">'.*',</span> <span class="pre">'help_text':</span> <span class="pre">_(&quot;Password</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">accepted&quot;)}</span></tt></p>
+<p>A dictionary containing a regular expression which will be used for password
+validation and help text which will be displayed if the password does not
+pass validation. The help text should describe the password requirements if
+there are any.</p>
+<p>This setting allows you to set rules for passwords if your organization
+requires them.</p>
+</div>
+<div class="section" id="password-autocomplete">
+<h3><tt class="docutils literal"><span class="pre">password_autocomplete</span></tt><a class="headerlink" href="#password-autocomplete" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;off&quot;</span></tt></p>
+<p>Controls whether browser autocompletion should be enabled on the login form.
+Valid values are <tt class="docutils literal"><span class="pre">&quot;on&quot;</span></tt> and <tt class="docutils literal"><span class="pre">&quot;off&quot;</span></tt>.</p>
+</div>
+<div class="section" id="simple-ip-management">
+<h3><tt class="docutils literal"><span class="pre">simple_ip_management</span></tt><a class="headerlink" href="#simple-ip-management" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Enable or disable simplified floating IP address management.</p>
+<p>&#8220;Simple&#8221; floating IP address management means that the user does not ever have
+to select the specific IP addresses they wish to use, and the process of
+allocating an IP and assigning it to an instance is one-click.</p>
+<p>The &#8220;advanced&#8221; floating IP management allows users to select the floating IP
+pool from which the IP should be allocated and to select a specific IP address
+when associating one with an instance.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently &#8220;simple&#8221; floating IP address management is not compatible with
+Neutron. There are two reasons for this. First, Neutron does not support
+the default floating IP pool at the moment. Second, a Neutron floating IP
+can be associated with each VIF and we need to check whether there is only
+one VIF for an instance to enable simple association support.</p>
+</div>
+</div>
+<div class="section" id="angular-modules">
+<h3><tt class="docutils literal"><span class="pre">angular_modules</span></tt><a class="headerlink" href="#angular-modules" title="Permalink to this headline">¶</a></h3>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt></p>
+<p>A list of AngularJS modules to be loaded when Angular bootstraps. These modules
+are added as dependencies on the root Horizon application <tt class="docutils literal"><span class="pre">horizon</span></tt>.</p>
+</div>
+<div class="section" id="js-files">
+<h3><tt class="docutils literal"><span class="pre">js_files</span></tt><a class="headerlink" href="#js-files" title="Permalink to this headline">¶</a></h3>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt></p>
+<p>A list of javascript source files to be included in the compressed set of files that are
+loaded on every page. This is needed for AngularJS modules that are referenced in
+<tt class="docutils literal"><span class="pre">angular_modules</span></tt> and therefore need to be include in every page.</p>
+</div>
+<div class="section" id="js-spec-files">
+<h3><tt class="docutils literal"><span class="pre">js_spec_files</span></tt><a class="headerlink" href="#js-spec-files" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt></p>
+<p>A list of javascript spec files to include for integration with the Jasmine spec runner.
+Jasmine is a behavior-driven development framework for testing JavaScript code.</p>
+</div>
+</div>
+<div class="section" id="openstack-settings-partial">
+<h2>OpenStack Settings (Partial)<a class="headerlink" href="#openstack-settings-partial" title="Permalink to this headline">¶</a></h2>
+<p>The following settings inform the OpenStack Dashboard of information about the
+other OpenStack projects which are part of this cloud and control the behavior
+of specific dashboards, panels, API calls, etc.</p>
+<dl class="docutils">
+<dt>Most of the following settings are defined in</dt>
+<dd><tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt>, which should be copied from
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py.example</span></tt>.</dd>
+</dl>
+<div class="section" id="authentication-urls">
+<h3><tt class="docutils literal"><span class="pre">AUTHENTICATION_URLS</span></tt><a class="headerlink" href="#authentication-urls" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">['openstack_auth.urls']</span></tt></p>
+<p>A list of modules from which to collate authentication URLs from. The default
+option adds URLs from the django-openstack-auth module however others will be
+required for additional authentication mechanisms.</p>
+</div>
+<div class="section" id="api-result-limit">
+<h3><tt class="docutils literal"><span class="pre">API_RESULT_LIMIT</span></tt><a class="headerlink" href="#api-result-limit" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">1000</span></tt></p>
+<p>The maximum number of objects (e.g. Swift objects or Glance images) to display
+on a single page before providing a paging element (a &#8220;more&#8221; link) to paginate
+results.</p>
+</div>
+<div class="section" id="api-result-page-size">
+<h3><tt class="docutils literal"><span class="pre">API_RESULT_PAGE_SIZE</span></tt><a class="headerlink" href="#api-result-page-size" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.2(Folsom).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">20</span></tt></p>
+<p>Similar to <tt class="docutils literal"><span class="pre">API_RESULT_LIMIT</span></tt>. This setting controls the number of items
+to be shown per page if API pagination support for this exists.</p>
+</div>
+<div class="section" id="available-regions">
+<h3><tt class="docutils literal"><span class="pre">AVAILABLE_REGIONS</span></tt><a class="headerlink" href="#available-regions" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>A list of tuples which define multiple regions. The tuple format is
+<tt class="docutils literal"><span class="pre">('http://{{</span> <span class="pre">keystone_host</span> <span class="pre">}}:5000/v2.0',</span> <span class="pre">'{{</span> <span class="pre">region_name</span> <span class="pre">}}')</span></tt>. If any regions
+are specified the login form will have a dropdown selector for authenticating
+to the appropriate region, and there will be a region switcher dropdown in
+the site header when logged in.</p>
+<p>If you do not have multiple regions you should use the <tt class="docutils literal"><span class="pre">OPENSTACK_HOST</span></tt> and
+<tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_URL</span></tt> settings instead.</p>
+</div>
+<div class="section" id="console-type">
+<h3><tt class="docutils literal"><span class="pre">CONSOLE_TYPE</span></tt><a class="headerlink" href="#console-type" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default:  <tt class="docutils literal"><span class="pre">&quot;AUTO&quot;</span></tt></p>
+<p>This setting specifies the type of in-browser console used to access the
+VMs.
+Valid values are  <tt class="docutils literal"><span class="pre">&quot;AUTO&quot;``(default),</span> <span class="pre">``&quot;VNC&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;SPICE&quot;</span></tt>, <tt class="docutils literal"><span class="pre">&quot;RDP&quot;</span></tt>,
+<tt class="docutils literal"><span class="pre">&quot;SERIAL&quot;</span></tt>, and <tt class="docutils literal"><span class="pre">None</span></tt>.
+<tt class="docutils literal"><span class="pre">None</span></tt> deactivates the in-browser console and is available in version
+2014.2(Juno).
+<tt class="docutils literal"><span class="pre">&quot;SERIAL&quot;</span></tt> is available since 2015.1(Kilo).</p>
+</div>
+<div class="section" id="swift-file-transfer-chunk-size">
+<h3><tt class="docutils literal"><span class="pre">SWIFT_FILE_TRANSFER_CHUNK_SIZE</span></tt><a class="headerlink" href="#swift-file-transfer-chunk-size" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">512</span> <span class="pre">*</span> <span class="pre">1024</span></tt></p>
+<p>This setting specifies the size of the chunk (in bytes) for downloading objects
+from Swift. Do not make it very large (higher than several dozens of Megabytes,
+exact number depends on your connection speed), otherwise you may encounter
+socket timeout. The default value is 524288 bytes (or 512 Kilobytes).</p>
+</div>
+<div class="section" id="instance-log-length">
+<h3><tt class="docutils literal"><span class="pre">INSTANCE_LOG_LENGTH</span></tt><a class="headerlink" href="#instance-log-length" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default:  <tt class="docutils literal"><span class="pre">35</span></tt></p>
+<p>This setting enables you to change the default number of lines displayed for
+the log of an instance.
+Valid value must be a positive integer.</p>
+</div>
+<div class="section" id="create-instance-flavor-sort">
+<h3><tt class="docutils literal"><span class="pre">CREATE_INSTANCE_FLAVOR_SORT</span></tt><a class="headerlink" href="#create-instance-flavor-sort" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{'key':'ram'}</span></tt></p>
+<p>When launching a new instance the default flavor is sorted by RAM usage in
+ascending order.
+You can customize the sort order by: id, name, ram, disk and vcpus.
+Additionally, you can insert any custom callback function. You can also
+provide a flag for reverse sort.
+See the description in local_settings.py.example for more information.</p>
+<p>This example sorts flavors by vcpus in descending order:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CREATE_INSTANCE_FLAVOR_SORT</span> <span class="o">=</span> <span class="p">{</span>
+     <span class="s1">&#39;key&#39;</span><span class="p">:</span><span class="s1">&#39;vcpus&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;reverse&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-theme-path">
+<h3><tt class="docutils literal"><span class="pre">CUSTOM_THEME_PATH</span></tt><a class="headerlink" href="#custom-theme-path" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;themes/default&quot;</span></tt></p>
+<p>This setting tells Horizon to use a directory as a custom theme.</p>
+<p>By default, this directory will serve as the static root of the theme
+and the entire contents of the directory will be served up at
+<tt class="docutils literal"><span class="pre">/static/custom</span></tt>.  If you wish to include content other than static
+files in a theme directory, but do not wish that content to be served up,
+then you can create a sub directory named <tt class="docutils literal"><span class="pre">static</span></tt>. If the theme folder
+contains a sub-directory with the name <tt class="docutils literal"><span class="pre">static</span></tt>, then
+<tt class="docutils literal"><span class="pre">static/custom/static`</span></tt> will be used as the root for the content
+served at <tt class="docutils literal"><span class="pre">/static/custom</span></tt>.</p>
+<p>The static root of the theme folder must always contain a _variables.scss
+file and a _styles.scss file.  These must contain or import all the
+bootstrap and horizon specific variables and styles which are used to style
+the GUI. For example themes, see: /horizon/openstack_dashboard/themes/</p>
+<p>Horizon ships with one alternate theme based on Google&#8217;s Material Design.  To
+use the alternate theme, set your CUSTOM_THEME_PATH to <tt class="docutils literal"><span class="pre">themes/material</span></tt>.</p>
+</div>
+<div class="section" id="default-theme-path">
+<h3><tt class="docutils literal"><span class="pre">DEFAULT_THEME_PATH</span></tt><a class="headerlink" href="#default-theme-path" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;themes/default&quot;</span></tt></p>
+<p>This setting allows Horizon to collect an additional theme during static
+collection and be served up via /static/themes/default.  This is useful
+if CUSTOM_THEME_PATH inherits from another theme (like &#8216;default&#8217;).</p>
+<p>If DEFAULT_THEME_PATH is the same as CUSTOM_THEME_PATH, then collection
+is skipped and /static/themes will not exist.</p>
+</div>
+<div class="section" id="dropdown-max-items">
+<h3><tt class="docutils literal"><span class="pre">DROPDOWN_MAX_ITEMS</span></tt><a class="headerlink" href="#dropdown-max-items" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">30</span></tt></p>
+<p>This setting sets the maximum number of items displayed in a dropdown.
+Dropdowns that limit based on this value need to support a way to observe
+the entire list.</p>
+</div>
+<div class="section" id="enforce-password-check">
+<h3><tt class="docutils literal"><span class="pre">ENFORCE_PASSWORD_CHECK</span></tt><a class="headerlink" href="#enforce-password-check" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>This setting will display an &#8216;Admin Password&#8217; field on the Change Password
+form to verify that it is indeed the admin logged-in who wants to change
+the password.</p>
+</div>
+<div class="section" id="images-list-filter-tenants">
+<h3><tt class="docutils literal"><span class="pre">IMAGES_LIST_FILTER_TENANTS</span></tt><a class="headerlink" href="#images-list-filter-tenants" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>A list of dictionaries to add optional categories to the image fixed filters
+in the Images panel, based on project ownership.</p>
+<p>Each dictionary should contain a <cite>tenant</cite> attribute with the project
+id, and optionally a <cite>text</cite> attribute specifying the category name, and
+an <cite>icon</cite> attribute that displays an icon in the filter button. The
+icon names are based on the default icon theme provided by Bootstrap.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">[{'text':</span> <span class="pre">'Official',</span> <span class="pre">'tenant':</span> <span class="pre">'27d0058849da47c896d205e2fc25a5e8',</span> <span class="pre">'icon':</span> <span class="pre">'icon-ok'}]</span></tt></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Since the Kilo release, the Bootstrap icon library (e.g. &#8216;icon-ok&#8217;) has
+been replaced with Font Awesome (e.g. &#8216;fa-check&#8217;).</p>
+</div>
+</div>
+<div class="section" id="image-reserved-custom-properties">
+<h3><tt class="docutils literal"><span class="pre">IMAGE_RESERVED_CUSTOM_PROPERTIES</span></tt><a class="headerlink" href="#image-reserved-custom-properties" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt></p>
+<p>A list of image custom property keys that should not be displayed in the
+Update Metadata tree.</p>
+<p>This setting can be used in the case where a separate panel is used for
+managing a custom property or if a certain custom property should never be
+edited.</p>
+</div>
+<div class="section" id="openstack-api-versions">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_API_VERSIONS</span></tt><a class="headerlink" href="#openstack-api-versions" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;data-processing&quot;</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span>
+    <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Overrides for OpenStack API versions. Use this setting to force the
+OpenStack dashboard to use a specific API version for a given service API.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The version should be formatted as it appears in the URL for the
+service API. For example, the identity service APIs have inconsistent
+use of the decimal point, so valid options would be &#8220;2.0&#8221; or &#8220;3&#8221;.
+For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span><span class="n">OPENSTACK_API_VERSIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;data-processing&quot;</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">,</span>
+    <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="openstack-enable-password-retrieve">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_ENABLE_PASSWORD_RETRIEVE</span></tt><a class="headerlink" href="#openstack-enable-password-retrieve" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;False&quot;</span></tt></p>
+<p>When set, enables the instance action &#8220;Retrieve password&#8221; allowing password retrieval
+from metadata service.</p>
+</div>
+<div class="section" id="openstack-endpoint-type">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_ENDPOINT_TYPE</span></tt><a class="headerlink" href="#openstack-endpoint-type" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;publicURL&quot;</span></tt></p>
+<p>A string which specifies the endpoint type to use for the endpoints in the
+Keystone service catalog. The default value for all services except for identity is <tt class="docutils literal"><span class="pre">&quot;publicURL&quot;</span></tt> . The default value for the identity service is <tt class="docutils literal"><span class="pre">&quot;internalURL&quot;</span></tt>.</p>
+</div>
+<div class="section" id="openstack-host">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_HOST</span></tt><a class="headerlink" href="#openstack-host" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;127.0.0.1&quot;</span></tt></p>
+<p>The hostname of the Keystone server used for authentication if you only have
+one region. This is often the <em>only</em> setting that needs to be set for a
+basic deployment.</p>
+</div>
+<div class="section" id="openstack-hypervisor-features">
+<span id="hypervisor-settings-label"></span><h3><tt class="docutils literal"><span class="pre">OPENSTACK_HYPERVISOR_FEATURES</span></tt><a class="headerlink" href="#openstack-hypervisor-features" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.2(Folsom).</span></p>
+</div>
+<p>Default:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;can_set_mount_point&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="s1">&#39;can_set_password&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="s1">&#39;requires_keypair&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A dictionary containing settings which can be used to identify the
+capabilities of the hypervisor for Nova.</p>
+<p>The Xen Hypervisor has the ability to set the mount point for volumes attached
+to instances (other Hypervisors currently do not). Setting
+<tt class="docutils literal"><span class="pre">can_set_mount_point</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will add the option to set the mount point
+from the UI.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">can_set_password</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will enable the option to set
+an administrator password when launching or rebuilding an instance.</p>
+<p>Setting <tt class="docutils literal"><span class="pre">requires_keypair</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> will require users to select
+a key pair when launching an instance.</p>
+</div>
+<div class="section" id="openstack-image-backend">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_IMAGE_BACKEND</span></tt><a class="headerlink" href="#openstack-image-backend" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;image_formats&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select format&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;aki&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;AKI - Amazon Kernel Image&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;ami&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;AMI - Amazon Machine Image&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;ari&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;ARI - Amazon Ramdisk Image&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;docker&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Docker&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;iso&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;ISO - Optical Disk Image&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;qcow2&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;QCOW2 - QEMU Emulator&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Raw&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;vdi&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;VDI&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;vhd&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;VHD&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;vmdk&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;VMDK&#39;</span><span class="p">))</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Used to customize features related to the image service, such as the list of
+supported image formats.</p>
+</div>
+<div class="section" id="image-custom-property-titles">
+<h3><tt class="docutils literal"><span class="pre">IMAGE_CUSTOM_PROPERTY_TITLES</span></tt><a class="headerlink" href="#image-custom-property-titles" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>Default:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;architecture&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Architecture&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;kernel_id&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Kernel ID&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;ramdisk_id&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Ramdisk ID&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;image_state&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Euca2ools state&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project ID&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;image_type&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image Type&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Used to customize the titles for image custom property attributes that
+appear on image detail pages.</p>
+</div>
+<div class="section" id="horizon-images-allow-upload">
+<h3><tt class="docutils literal"><span class="pre">HORIZON_IMAGES_ALLOW_UPLOAD</span></tt><a class="headerlink" href="#horizon-images-allow-upload" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>If set to <tt class="docutils literal"><span class="pre">False</span></tt>, this setting disables <em>local</em> uploads to prevent filling
+up the disk on the dashboard server since uploads to the Glance image store
+service tend to be particularly large - in the order of hundreds of megabytes
+to multiple gigabytes.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This will not disable image creation altogether, as this setting does not
+affect images created by specifying an image location (URL) as the image source.</p>
+</div>
+</div>
+<div class="section" id="openstack-keystone-backend">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_BACKEND</span></tt><a class="headerlink" href="#openstack-keystone-backend" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{'name':</span> <span class="pre">'native',</span> <span class="pre">'can_edit_user':</span> <span class="pre">True,</span> <span class="pre">'can_edit_project':</span> <span class="pre">True}</span></tt></p>
+<p>A dictionary containing settings which can be used to identify the
+capabilities of the auth backend for Keystone.</p>
+<p>If Keystone has been configured to use LDAP as the auth backend then set
+<tt class="docutils literal"><span class="pre">can_edit_user</span></tt> and <tt class="docutils literal"><span class="pre">can_edit_project</span></tt> to <tt class="docutils literal"><span class="pre">False</span></tt> and name to <tt class="docutils literal"><span class="pre">&quot;ldap&quot;</span></tt>.</p>
+</div>
+<div class="section" id="openstack-keystone-default-domain">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_DEFAULT_DOMAIN</span></tt><a class="headerlink" href="#openstack-keystone-default-domain" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;Default&quot;</span></tt></p>
+<p>Overrides the default domain used when running on single-domain model
+with Keystone V3. All entities will be created in the default domain.</p>
+</div>
+<div class="section" id="openstack-keystone-default-role">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_DEFAULT_ROLE</span></tt><a class="headerlink" href="#openstack-keystone-default-role" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2011.3(Diablo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;_member_&quot;</span></tt></p>
+<p>The name of the role which will be assigned to a user when added to a project.
+This value must correspond to an existing role name in Keystone. In general,
+the value should match the <tt class="docutils literal"><span class="pre">member_role_name</span></tt> defined in <tt class="docutils literal"><span class="pre">keystone.conf</span></tt>.</p>
+</div>
+<div class="section" id="openstack-keystone-admin-roles">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_ADMIN_ROLES</span></tt><a class="headerlink" href="#openstack-keystone-admin-roles" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">[&quot;admin&quot;]</span></tt></p>
+<p>The list of roles that have administrator privileges in this OpenStack
+installation. This check is very basic and essentially only works with
+keystone v2.0 and v3 with the default policy file. The setting assumes there
+is a common <tt class="docutils literal"><span class="pre">admin</span></tt> like role(s) across services. Example uses of this
+setting are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>to rename the <tt class="docutils literal"><span class="pre">admin</span></tt> role to <tt class="docutils literal"><span class="pre">cloud-admin</span></tt></li>
+<li>allowing multiple roles to have administrative privileges, like
+<tt class="docutils literal"><span class="pre">[&quot;admin&quot;,</span> <span class="pre">&quot;cloud-admin&quot;,</span> <span class="pre">&quot;net-op&quot;]</span></tt></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="openstack-keystone-multidomain-support">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT</span></tt><a class="headerlink" href="#openstack-keystone-multidomain-support" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Set this to True if running on multi-domain model. When this is enabled, it
+will require user to enter the Domain name in addition to username for login.</p>
+</div>
+<div class="section" id="openstack-keystone-url">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_URL</span></tt><a class="headerlink" href="#openstack-keystone-url" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2011.3(Diablo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;http://%s:5000/v2.0&quot;</span> <span class="pre">%</span> <span class="pre">OPENSTACK_HOST</span></tt></p>
+<p>The full URL for the Keystone endpoint used for authentication. Unless you
+are using HTTPS, running your Keystone server on a nonstandard port, or using
+a nonstandard URL scheme you shouldn&#8217;t need to touch this setting.</p>
+</div>
+<div class="section" id="websso-enabled">
+<h3><tt class="docutils literal"><span class="pre">WEBSSO_ENABLED</span></tt><a class="headerlink" href="#websso-enabled" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Enables keystone web single-sign-on if set to True. For this feature to work,
+make sure that you are using Keystone V3 and Django OpenStack Auth V1.2.0 or
+later.</p>
+</div>
+<div class="section" id="websso-initial-choice">
+<h3><tt class="docutils literal"><span class="pre">WEBSSO_INITIAL_CHOICE</span></tt><a class="headerlink" href="#websso-initial-choice" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;credentials&quot;</span></tt></p>
+<p>Determines the default authentication mechanism. When user lands on the login
+page, this is the first choice they will see.</p>
+</div>
+<div class="section" id="websso-choices">
+<h3><tt class="docutils literal"><span class="pre">WEBSSO_CHOICES</span></tt><a class="headerlink" href="#websso-choices" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">(</span>
+  <span class="p">(</span><span class="s2">&quot;credentials&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Keystone Credentials&quot;</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s2">&quot;oidc&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;OpenID Connect&quot;</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s2">&quot;saml2&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Security Assertion Markup Language&quot;</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This is the list of authentication mechanisms available to the user. It includes
+Keystone federation protocols such as OpenID Connect and SAML. The list of
+choices is completely configurable, so as long as the id remains intact. Do not
+remove the credentials mechanism unless you are sure. Once removed, even admins
+will have no way to log into the system via the dashboard.</p>
+</div>
+<div class="section" id="openstack-cinder-features">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_CINDER_FEATURES</span></tt><a class="headerlink" href="#openstack-cinder-features" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{'enable_backup':</span> <span class="pre">False}</span></tt></p>
+<p>A dictionary of settings which can be used to enable optional services provided
+by cinder.  Currently only the backup service is available.</p>
+</div>
+<div class="section" id="openstack-neutron-network">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_NEUTRON_NETWORK</span></tt><a class="headerlink" href="#openstack-neutron-network" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>Default:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;enable_router&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s1">&#39;enable_distributed_router&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="s1">&#39;enable_ha_router&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="s1">&#39;enable_lb&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s1">&#39;enable_quotas&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="s1">&#39;enable_firewall&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s1">&#39;enable_vpn&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s1">&#39;profile_support&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+    <span class="s1">&#39;supported_provider_types&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">],</span>
+    <span class="s1">&#39;supported_vnic_types&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">],</span>
+    <span class="s1">&#39;segmentation_id_range&#39;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s1">&#39;enable_fip_topology_check&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s1">&#39;default_ipv4_subnet_pool_label&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+    <span class="s1">&#39;default_ipv6_subnet_pool_label&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A dictionary of settings which can be used to enable optional services provided
+by Neutron and configure Neutron specific features.  The following options are
+available.</p>
+<p><tt class="docutils literal"><span class="pre">enable_router</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Enable (True) or disable (False) the panels and menus related
+to router and Floating IP features. This option only affects
+when Neutron is enabled. If your Neutron deployment has no support for
+Layer-3 features, or you do not wish to provide the Layer-3
+features through the Dashboard, this should be set to <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">enable_distributed_router</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Enable or disable Neutron distributed virtual router (DVR) feature in
+the Router panel. For the DVR feature to be enabled, this option needs
+to be set to True and your Neutron deployment must support DVR. Even
+when your Neutron plugin (like ML2 plugin) supports DVR feature, DVR
+feature depends on l3-agent configuration, so deployers should set this
+option appropriately depending on your deployment.</p>
+<p><tt class="docutils literal"><span class="pre">enable_ha_router</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Enable or disable HA (High Availability) mode in Neutron virtual router
+in the Router panel. For the HA router mode to be enabled, this option needs
+to be set to True and your Neutron deployment must support HA router mode.
+Even when your Neutron plugin (like ML2 plugin) supports HA router mode,
+the feature depends on l3-agent configuration, so deployers should set this
+option appropriately depending on your deployment.</p>
+<p><tt class="docutils literal"><span class="pre">enable_lb</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>(Deprecated)</p>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Enables the load balancer panel. The load balancer panel will be enabled when
+this option is True and your Neutron deployment supports LBaaS. If you want
+to disable load balancer panel even when your Neutron supports LBaaS, set it to False.</p>
+<p>This option is now marked as &#8220;deprecated&#8221; and will be removed in Kilo or later release.
+The load balancer panel is now enabled only when LBaaS feature is available in Neutron
+and this option is no longer needed. We suggest not to use this option to disable the
+load balancer panel from now on.</p>
+<p><tt class="docutils literal"><span class="pre">enable_quotas</span></tt>:</p>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Enable support for Neutron quotas feature. To make this feature work
+appropriately, you need to use Neutron plugins with quotas extension support
+and quota_driver should be DbQuotaDriver (default config).</p>
+<p><tt class="docutils literal"><span class="pre">enable_firewall</span></tt>:</p>
+<p>(Deprecated)</p>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Enables the firewall panel. firewall panel will be enabled when this
+option is True and your Neutron deployment supports FWaaS. If you want
+to disable firewall panel even when your Neutron supports FWaaS, set
+it to False.</p>
+<p>This option is now marked as &#8220;deprecated&#8221; and will be removed in
+Kilo or later release. The firewall panel is now enabled only
+when FWaaS feature is available in Neutron and this option is no
+longer needed. We suggest not to use this option to disable the
+firewall panel from now on.</p>
+<p><tt class="docutils literal"><span class="pre">enable_vpn</span></tt>:</p>
+<p>(Deprecated)</p>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Enables the VPN panel. VPN panel will be enabled when this option is True
+and your Neutron deployment supports VPNaaS. If you want to disable
+VPN panel even when your Neutron supports VPNaaS, set it to False.</p>
+<p>This option is now marked as &#8220;deprecated&#8221; and will be removed in
+Kilo or later release. The VPN panel is now enabled only
+when VPNaaS feature is available in Neutron and this option is no
+longer needed. We suggest not to use this option to disable the
+VPN panel from now on.</p>
+<p><tt class="docutils literal"><span class="pre">profile_support</span></tt>:</p>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>This option specifies a type of network port profile support. Currently the
+available value is either <tt class="docutils literal"><span class="pre">None</span></tt> or <tt class="docutils literal"><span class="pre">&quot;cisco&quot;</span></tt>. <tt class="docutils literal"><span class="pre">None</span></tt> means to disable
+port profile support. <tt class="docutils literal"><span class="pre">cisco</span></tt> can be used with Neutron Cisco plugins.</p>
+<p><tt class="docutils literal"><span class="pre">supported_provider_types</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">[&quot;*&quot;]</span></tt></p>
+<p>For use with the provider network extension. Use this to explicitly set which
+provider network types are supported. Only the network types in this list will
+be available to choose from when creating a network. Network types include
+local, flat, vlan, gre, and vxlan. By default all provider network types will
+be available to choose from.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">['local',</span> <span class="pre">'flat',</span> <span class="pre">'gre']</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">supported_vnic_types</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default <tt class="docutils literal"><span class="pre">['*']</span></tt></p>
+<p>For use with the port binding extension. Use this to explicitly set which VNIC
+types are supported; only those listed will be shown when creating or editing
+a port. VNIC types include normal, direct and macvtap. By default all VNIC
+types will be available to choose from.</p>
+<p>Example <tt class="docutils literal"><span class="pre">['normal',</span> <span class="pre">'direct']</span></tt></p>
+<p>To disable VNIC type selection, set an empty list or None.</p>
+<p><tt class="docutils literal"><span class="pre">segmentation_id_range</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{}</span></tt></p>
+<p>For use with the provider network extension. This is a dictionary where each
+key is a provider network type and each value is a list containing two numbers.
+The first number is the minimum segmentation ID that is valid. The second
+number is the maximum segmentation ID. Pertains only to the vlan, gre, and
+vxlan network types. By default this option is not provided and each minimum
+and maximum value will be the default for the provider network type.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">{'vlan':</span> <span class="pre">[1024,</span> <span class="pre">2048],</span> <span class="pre">'gre':</span> <span class="pre">[4094,</span> <span class="pre">65536]}</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">enable_fip_topology_check</span></tt>:</p>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>The Default Neutron implementation needs a router with a gateway to associate a
+FIP. So by default a topology check will be performed by horizon to list only
+VM ports attached to a network which is itself attached to a router with an
+external gateway. This is to prevent from setting a FIP to a port which will
+fail with an error.
+Some Neutron vendors do not require it. Some can even attach a FIP to any port
+(e.g.: OpenContrail) owned by a tenant.
+Set to False if you want to be able to associate a FIP to an instance on a
+subnet with no router if your Neutron backend allows it.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p><tt class="docutils literal"><span class="pre">default_ipv4_subnet_pool_label</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt> (Disabled)</p>
+<p>Neutron can be configured with a default Subnet Pool to be used for IPv4
+subnet-allocation. Specify the label you wish to display in the Address pool
+selector on the create subnet step if you want to use this feature.</p>
+<p><tt class="docutils literal"><span class="pre">default_ipv6_subnet_pool_label</span></tt>:</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt> (Disabled)</p>
+<p>Neutron can be configured with a default Subnet Pool to be used for IPv6
+subnet-allocation. Specify the label you wish to display in the Address pool
+selector on the create subnet step if you want to use this feature.</p>
+<p>You must set this to enable IPv6 Prefix Delegation in a PD-capable environment.</p>
+</div>
+<div class="section" id="openstack-ssl-cacert">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_SSL_CACERT</span></tt><a class="headerlink" href="#openstack-ssl-cacert" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">None</span></tt></p>
+<p>When unset or set to <tt class="docutils literal"><span class="pre">None</span></tt> the default CA certificate on the system is used
+for SSL verification.</p>
+<p>When set with the path to a custom CA certificate file, this overrides use of
+the default system CA certificate. This custom certificate is used to verify all
+connections to openstack services when making API calls.</p>
+</div>
+<div class="section" id="openstack-ssl-no-verify">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_SSL_NO_VERIFY</span></tt><a class="headerlink" href="#openstack-ssl-no-verify" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.2(Folsom).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Disable SSL certificate checks in the OpenStack clients (useful for self-signed
+certificates).</p>
+</div>
+<div class="section" id="openstack-token-hash-algorithm">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_TOKEN_HASH_ALGORITHM</span></tt><a class="headerlink" href="#openstack-token-hash-algorithm" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;md5&quot;</span></tt></p>
+<p>The hash algorithm to use for authentication tokens. This must match the hash
+algorithm that the identity (Keystone) server and the auth_token middleware
+are using. Allowed values are the algorithms supported by Python&#8217;s hashlib
+library.</p>
+</div>
+<div class="section" id="openstack-token-hash-enabled">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_TOKEN_HASH_ENABLED</span></tt><a class="headerlink" href="#openstack-token-hash-enabled" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Hashing tokens from Keystone keeps the Horizon session data smaller, but it
+doesn&#8217;t work in some cases when using PKI tokens.  Uncomment this value and
+set it to False if using PKI tokens and there are 401 errors due to token
+hashing.</p>
+</div>
+<div class="section" id="policy-files">
+<h3><tt class="docutils literal"><span class="pre">POLICY_FILES</span></tt><a class="headerlink" href="#policy-files" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">{'identity':</span> <span class="pre">'keystone_policy.json',</span> <span class="pre">'compute':</span> <span class="pre">'nova_policy.json'}</span></tt></p>
+<p>This should essentially be the mapping of the contents of <tt class="docutils literal"><span class="pre">POLICY_FILES_PATH</span></tt>
+to service types.  When policy.json files are added to <tt class="docutils literal"><span class="pre">POLICY_FILES_PATH</span></tt>,
+they should be included here too.</p>
+</div>
+<div class="section" id="policy-files-path">
+<h3><tt class="docutils literal"><span class="pre">POLICY_FILES_PATH</span></tt><a class="headerlink" href="#policy-files-path" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default:  <tt class="docutils literal"><span class="pre">os.path.join(ROOT_PATH,</span> <span class="pre">&quot;conf&quot;)</span></tt></p>
+<p>Specifies where service based policy files are located.  These are used to
+define the policy rules actions are verified against.</p>
+</div>
+<div class="section" id="session-timeout">
+<h3><tt class="docutils literal"><span class="pre">SESSION_TIMEOUT</span></tt><a class="headerlink" href="#session-timeout" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;1800&quot;</span></tt></p>
+<dl class="docutils">
+<dt>Specifies the timespan in seconds inactivity, until a user is considered as</dt>
+<dd>logged out.</dd>
+</dl>
+</div>
+<div class="section" id="sahara-auto-ip-allocation-enabled">
+<h3><tt class="docutils literal"><span class="pre">SAHARA_AUTO_IP_ALLOCATION_ENABLED</span></tt><a class="headerlink" href="#sahara-auto-ip-allocation-enabled" title="Permalink to this headline">¶</a></h3>
+<p>Default:  <tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>This setting notifies the Data Processing (Sahara) system whether or not
+automatic IP allocation is enabled.  You would want to set this to True
+if you were running Nova Networking with auto_assign_floating_ip = True.</p>
+</div>
+<div class="section" id="trove-add-user-perms-and-trove-add-database-perms">
+<h3><tt class="docutils literal"><span class="pre">TROVE_ADD_USER_PERMS</span></tt> and <tt class="docutils literal"><span class="pre">TROVE_ADD_DATABASE_PERMS</span></tt><a class="headerlink" href="#trove-add-user-perms-and-trove-add-database-perms" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt></p>
+<p>Trove user and database extension support. By default, support for
+creating users and databases on database instances is turned on.
+To disable these extensions set the permission to something
+unusable such as <tt class="docutils literal"><span class="pre">[!]</span></tt>.</p>
+</div>
+<div class="section" id="webroot">
+<h3><tt class="docutils literal"><span class="pre">WEBROOT</span></tt><a class="headerlink" href="#webroot" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&quot;/&quot;</span></tt></p>
+<p>Specifies the location where the access to the dashboard is configured in
+the web server.</p>
+<p>For example, if you&#8217;re accessing the Dashboard via
+<a class="reference external" href="https:/">https:/</a>/&lt;your server&gt;/dashboard, you would set this to <tt class="docutils literal"><span class="pre">&quot;/dashboard/&quot;</span></tt>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Additional settings may be required in the config files of your webserver
+of choice. For example to make <tt class="docutils literal"><span class="pre">&quot;/dashboard/&quot;</span></tt> the web root in Apache,
+the <tt class="docutils literal"><span class="pre">&quot;sites-available/horizon.conf&quot;</span></tt> requires a couple of additional
+aliases set:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>Alias /dashboard/static %HORIZON_DIR%/static
+
+Alias /dashboard/media %HORIZON_DIR%/openstack_dashboard/static
+</pre></div>
+</div>
+<p class="last">Apache also requires changing your WSGIScriptAlias to reflect the desired
+path.  For example, you&#8217;d replace <tt class="docutils literal"><span class="pre">/</span></tt> with <tt class="docutils literal"><span class="pre">/dashboard</span></tt> for the
+alias.</p>
+</div>
+</div>
+<div class="section" id="static-root">
+<h3><tt class="docutils literal"><span class="pre">STATIC_ROOT</span></tt><a class="headerlink" href="#static-root" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">&lt;path_to_horizon&gt;/static</span></tt></p>
+<p>The absolute path to the directory where static files are collected when
+collectstatic is run.</p>
+<p>For more information see:
+<a class="reference external" href="https://docs.djangoproject.com/en/1.7/ref/settings/#static-root">https://docs.djangoproject.com/en/1.7/ref/settings/#static-root</a></p>
+</div>
+<div class="section" id="static-url">
+<h3><tt class="docutils literal"><span class="pre">STATIC_URL</span></tt><a class="headerlink" href="#static-url" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">/static/</span></tt></p>
+<p>URL that refers to files in STATIC_ROOT.</p>
+<p>By default this value is <tt class="docutils literal"><span class="pre">WEBROOT/static/</span></tt>.</p>
+<p>This value can be changed from the default. When changed, the alias in your
+webserver configuration should be updated to match.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The value for STATIC_URL must end in &#8216;/&#8217;.</p>
+</div>
+<p>This value is also available in the scss namespace with the variable name
+$static_url.  Make sure you run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">collectstatic</span></tt> and
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">compress</span></tt> after any changes to this value in settings.py.</p>
+<p>For your convenience, a custom theme for only setting the static url has been
+provided see: <tt class="docutils literal"><span class="pre">&quot;/horizon/openstack_dashboard/themes/webroot&quot;</span></tt></p>
+<p>For more information see:
+<a class="reference external" href="https://docs.djangoproject.com/en/1.7/ref/settings/#static-url">https://docs.djangoproject.com/en/1.7/ref/settings/#static-url</a></p>
+</div>
+<div class="section" id="disallow-iframe-embed">
+<h3><tt class="docutils literal"><span class="pre">DISALLOW_IFRAME_EMBED</span></tt><a class="headerlink" href="#disallow-iframe-embed" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>This setting can be used to defend against Clickjacking and prevent Horizon from
+being embedded within an iframe. Legacy browsers are still vulnerable to a
+Cross-Frame Scripting (XFS) vulnerability, so this option allows extra security
+hardening where iframes are not used in deployment. When set to true, a
+<tt class="docutils literal"><span class="pre">&quot;frame-buster&quot;</span></tt> script is inserted into the template header that prevents the
+web page from being framed and therefore defends against clickjacking.</p>
+<p>For more information see:
+<a class="reference external" href="http://tinyurl.com/anticlickjack">http://tinyurl.com/anticlickjack</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If your deployment requires the use of iframes, you can set this setting to
+<tt class="docutils literal"><span class="pre">False</span></tt> to exclude the frame-busting code and allow iframe embedding.</p>
+</div>
+</div>
+<div class="section" id="openstack-nova-extensions-blacklist">
+<h3><tt class="docutils literal"><span class="pre">OPENSTACK_NOVA_EXTENSIONS_BLACKLIST</span></tt><a class="headerlink" href="#openstack-nova-extensions-blacklist" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt></p>
+<p>Ignore all listed Nova extensions, and behave as if they were unsupported.
+Can be used to selectively disable certain costly extensions for performance
+reasons.</p>
+</div>
+</div>
+<div class="section" id="django-settings-partial">
+<h2>Django Settings (Partial)<a class="headerlink" href="#django-settings-partial" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This is not meant to be anywhere near a complete list of settings for
+Django. You should always consult the upstream documentation, especially
+with regards to deployment considerations and security best-practices.</p>
+</div>
+<p>There are a few key settings you should be aware of for development and the
+most basic of deployments. Further recommendations can be found in the
+Deploying Horizon section of this documentation.</p>
+<div class="section" id="allowed-hosts">
+<h3><tt class="docutils literal"><span class="pre">ALLOWED_HOSTS</span></tt><a class="headerlink" href="#allowed-hosts" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.2(Havana).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">['localhost']</span></tt></p>
+<p>This list should contain names (or IP addresses) of the host
+running the dashboard; if it&#8217;s being accessed via name, the
+DNS name (and probably short-name) should be added, if it&#8217;s accessed via
+IP address, that should be added. The setting may contain more than one entry.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">ALLOWED_HOSTS is required. If Horizon is running in production (DEBUG is False),
+set this with the list of host/domain names that the application can serve.
+For more information see:
+<a class="reference external" href="https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts">https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts</a></p>
+</div>
+</div>
+<div class="section" id="debug-and-template-debug">
+<h3><tt class="docutils literal"><span class="pre">DEBUG</span></tt> and <tt class="docutils literal"><span class="pre">TEMPLATE_DEBUG</span></tt><a class="headerlink" href="#debug-and-template-debug" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2011.2(Cactus).</span></p>
+</div>
+<p>Default: <tt class="docutils literal"><span class="pre">True</span></tt></p>
+<p>Controls whether unhandled exceptions should generate a generic 500 response
+or present the user with a pretty-formatted debug information page.</p>
+<p>This setting should <strong>always</strong> be set to <tt class="docutils literal"><span class="pre">False</span></tt> for production deployments
+as the debug page can display sensitive information to users and attackers
+alike.</p>
+</div>
+<div class="section" id="secret-key">
+<h3><tt class="docutils literal"><span class="pre">SECRET_KEY</span></tt><a class="headerlink" href="#secret-key" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2012.1(Essex).</span></p>
+</div>
+<p>This should absolutely be set to a unique (and secret) value for your
+deployment. Unless you are running a load-balancer with multiple Horizon
+installations behind it, each Horizon instance should have a unique secret key.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Setting a custom secret key:
+You can either set it to a specific value or you can let Horizon generate a
+default secret key that is unique on this machine, regardless of the
+amount of Python WSGI workers (if used behind Apache+mod_wsgi). However, there
+may be situations where you would want to set this explicitly, e.g. when
+multiple dashboard instances are distributed on different machines (usually
+behind a load-balancer). Either you have to make sure that a session gets all
+requests routed to the same dashboard instance or you set the same SECRET_KEY
+for all of them.</p>
+</div>
+<p>From horizon.utils import secret_key:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">secret_key</span><span class="o">.</span><span class="n">generate_or_read_from_file</span><span class="p">(</span>
+<span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LOCAL_PATH</span><span class="p">,</span> <span class="s1">&#39;.secret_key_store&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">local_settings.py.example</span></tt> file includes a quick-and-easy way to
+generate a secret key for a single installation.</p>
+</div>
+<div class="section" id="secure-proxy-ssl-header-csrf-cookie-secure-and-session-cookie-secure">
+<h3><tt class="docutils literal"><span class="pre">SECURE_PROXY_SSL_HEADER</span></tt>, <tt class="docutils literal"><span class="pre">CSRF_COOKIE_SECURE</span></tt> and <tt class="docutils literal"><span class="pre">SESSION_COOKIE_SECURE</span></tt><a class="headerlink" href="#secure-proxy-ssl-header-csrf-cookie-secure-and-session-cookie-secure" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2013.1(Grizzly).</span></p>
+</div>
+<p>These three settings should be configured if you are deploying Horizon with
+SSL. The values indicated in the default <tt class="docutils literal"><span class="pre">local_settings.py.example</span></tt> file
+are generally safe to use.</p>
+<p>When CSRF_COOKIE_SECURE or SESSION_COOKIE_SECURE are set to True, these attributes
+help protect the session cookies from cross-site scripting.</p>
+</div>
+<div class="section" id="add-installed-apps">
+<h3><tt class="docutils literal"><span class="pre">ADD_INSTALLED_APPS</span></tt><a class="headerlink" href="#add-installed-apps" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>A list of Django applications to be prepended to the <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>
+setting. Allows extending the list of installed applications without having
+to override it completely.</p>
+</div>
+</div>
+<div class="section" id="pluggable-settings">
+<span id="pluggable-settings-label"></span><h2>Pluggable Settings<a class="headerlink" href="#pluggable-settings" title="Permalink to this headline">¶</a></h2>
+<p>Horizon allows dashboards, panels and panel groups to be added without
+modifying the default settings. Pluggable settings are a mechanism to allow
+settings to be stored in separate files.  Those files are read at startup and
+used to modify the default settings.</p>
+<p>The default location for the dashboard configuration files is
+<tt class="docutils literal"><span class="pre">openstack_dashboard/enabled</span></tt>, with another directory,
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled</span></tt> for local overrides. Both sets of files
+will be loaded, but the settings in <tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled</span></tt> will
+overwrite the default ones. The settings are applied in alphabetical order of
+the filenames. If the same dashboard has configuration files in <tt class="docutils literal"><span class="pre">enabled</span></tt> and
+<tt class="docutils literal"><span class="pre">local/enabled</span></tt>, the local name will be used. Note, that since names of
+python modules can&#8217;t start with a digit, the files are usually named with a
+leading underscore and a number, so that you can control their order easily.</p>
+<p>Before we describe the specific use cases, the following keys can be used in
+any pluggable settings file:</p>
+<div class="section" id="add-exceptions">
+<h3><tt class="docutils literal"><span class="pre">ADD_EXCEPTIONS</span></tt><a class="headerlink" href="#add-exceptions" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>A dictionary of exception classes to be added to <tt class="docutils literal"><span class="pre">HORIZON['exceptions']</span></tt>.</p>
+</div>
+<div class="section" id="id2">
+<h3><tt class="docutils literal"><span class="pre">ADD_INSTALLED_APPS</span></tt><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>A list of applications to be prepended to <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>.
+This is needed to expose static files from a plugin.</p>
+</div>
+<div class="section" id="add-angular-modules">
+<h3><tt class="docutils literal"><span class="pre">ADD_ANGULAR_MODULES</span></tt><a class="headerlink" href="#add-angular-modules" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>A list of AngularJS modules to be loaded when Angular bootstraps. These modules
+are added as dependencies on the root Horizon application <tt class="docutils literal"><span class="pre">horizon</span></tt>.</p>
+</div>
+<div class="section" id="add-js-files">
+<h3><tt class="docutils literal"><span class="pre">ADD_JS_FILES</span></tt><a class="headerlink" href="#add-js-files" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>A list of javascript source files to be included in the compressed set of files that are
+loaded on every page. This is needed for AngularJS modules that are referenced in
+<tt class="docutils literal"><span class="pre">ADD_ANGULAR_MODULES</span></tt> and therefore need to be included in every page.</p>
+</div>
+<div class="section" id="add-js-spec-files">
+<h3><tt class="docutils literal"><span class="pre">ADD_JS_SPEC_FILES</span></tt><a class="headerlink" href="#add-js-spec-files" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2015.1(Kilo).</span></p>
+</div>
+<p>A list of javascript spec files to include for integration with the Jasmine spec runner.
+Jasmine is a behavior-driven development framework for testing JavaScript code.</p>
+</div>
+<div class="section" id="add-scss-files">
+<h3><tt class="docutils literal"><span class="pre">ADD_SCSS_FILES</span></tt><a class="headerlink" href="#add-scss-files" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>A list of scss files to be included in the compressed set of files that are
+loaded on every page. We recommend one scss file per dashboard, use &#64;import if
+you need to include additional scss files for panels.</p>
+</div>
+<div class="section" id="auto-discover-static-files">
+<span id="id3"></span><h3><tt class="docutils literal"><span class="pre">AUTO_DISCOVER_STATIC_FILES</span></tt><a class="headerlink" href="#auto-discover-static-files" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 8.0.0(Liberty).</span></p>
+</div>
+<p>If set to <tt class="docutils literal"><span class="pre">True</span></tt>, JavaScript files and static angular html template files will be
+automatically discovered from the <cite>static</cite> folder in each apps listed in ADD_INSTALLED_APPS.</p>
+<p>JavaScript source files will be ordered based on naming convention: files with extension
+<cite>.module.js</cite> listed first, followed by other JavaScript source files.</p>
+<p>JavaScript files for testing will also be ordered based on naming convention: files with extension
+<cite>.mock.js</cite> listed first, followed by files with extension <cite>.spec.js</cite>.</p>
+<p>If ADD_JS_FILES and/or ADD_JS_SPEC_FILES are also specified, files manually listed there will be
+appended to the auto-discovered files.</p>
+</div>
+<div class="section" id="disabled">
+<h3><tt class="docutils literal"><span class="pre">DISABLED</span></tt><a class="headerlink" href="#disabled" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>If set to <tt class="docutils literal"><span class="pre">True</span></tt>, this settings file will not be added to the settings.</p>
+</div>
+<div class="section" id="update-horizon-config">
+<h3><tt class="docutils literal"><span class="pre">UPDATE_HORIZON_CONFIG</span></tt><a class="headerlink" href="#update-horizon-config" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.2(Juno).</span></p>
+</div>
+<p>A dictionary of values that will replace the values in <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="pluggable-settings-for-dashboards">
+<h2>Pluggable Settings for Dashboards<a class="headerlink" href="#pluggable-settings-for-dashboards" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The following keys are specific to registering a dashboard:</p>
+<div class="section" id="dashboard">
+<h3><tt class="docutils literal"><span class="pre">DASHBOARD</span></tt><a class="headerlink" href="#dashboard" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The slug of the dashboard to be added to <tt class="docutils literal"><span class="pre">HORIZON['dashboards']</span></tt>. Required.</p>
+</div>
+<div class="section" id="default">
+<h3><tt class="docutils literal"><span class="pre">DEFAULT</span></tt><a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>If set to <tt class="docutils literal"><span class="pre">True</span></tt>, this dashboard will be set as the default dashboard.</p>
+</div>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p>To disable a dashboard locally, create a file
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled/_40_dashboard-name.py</span></tt> with the following
+content:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;&lt;dashboard-name&gt;&#39;</span>
+<span class="n">DISABLED</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>To add a Tuskar-UI (Infrastructure) dashboard, you have to install it, and then
+create a file <tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled/_50_tuskar.py</span></tt> with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tuskar_ui</span> <span class="kn">import</span> <span class="n">exceptions</span>
+
+<span class="n">DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;infrastructure&#39;</span>
+<span class="n">ADD_INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;tuskar_ui.infrastructure&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">ADD_EXCEPTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;recoverable&#39;</span><span class="p">:</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">RECOVERABLE</span><span class="p">,</span>
+    <span class="s1">&#39;not_found&#39;</span><span class="p">:</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span>
+    <span class="s1">&#39;unauthorized&#39;</span><span class="p">:</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">UNAUTHORIZED</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pluggable-settings-for-panels">
+<h2>Pluggable Settings for Panels<a class="headerlink" href="#pluggable-settings-for-panels" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The following keys are specific to registering or removing a panel:</p>
+<div class="section" id="panel">
+<h3><tt class="docutils literal"><span class="pre">PANEL</span></tt><a class="headerlink" href="#panel" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The slug of the panel to be added to <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt>. Required.</p>
+</div>
+<div class="section" id="panel-dashboard">
+<h3><tt class="docutils literal"><span class="pre">PANEL_DASHBOARD</span></tt><a class="headerlink" href="#panel-dashboard" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The slug of the dashboard the <tt class="docutils literal"><span class="pre">PANEL</span></tt> associated with. Required.</p>
+</div>
+<div class="section" id="panel-group">
+<h3><tt class="docutils literal"><span class="pre">PANEL_GROUP</span></tt><a class="headerlink" href="#panel-group" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The slug of the panel group the <tt class="docutils literal"><span class="pre">PANEL</span></tt> is associated with. If you want the
+panel to show up without a panel group, use the panel group &#8220;default&#8221;.</p>
+</div>
+<div class="section" id="default-panel">
+<h3><tt class="docutils literal"><span class="pre">DEFAULT_PANEL</span></tt><a class="headerlink" href="#default-panel" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>If set, it will update the default panel of the <tt class="docutils literal"><span class="pre">PANEL_DASHBOARD</span></tt>.</p>
+</div>
+<div class="section" id="add-panel">
+<h3><tt class="docutils literal"><span class="pre">ADD_PANEL</span></tt><a class="headerlink" href="#add-panel" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>Python panel class of the <tt class="docutils literal"><span class="pre">PANEL</span></tt> to be added.</p>
+</div>
+<div class="section" id="remove-panel">
+<h3><tt class="docutils literal"><span class="pre">REMOVE_PANEL</span></tt><a class="headerlink" href="#remove-panel" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>If set to <tt class="docutils literal"><span class="pre">True</span></tt>, the PANEL will be removed from PANEL_DASHBOARD/PANEL_GROUP.</p>
+</div>
+<div class="section" id="id4">
+<h3>Examples<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>To add a new panel to the Admin panel group in Admin dashboard, create a file
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled/_60_admin_add_panel.py</span></tt> with the following
+content:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PANEL</span> <span class="o">=</span> <span class="s1">&#39;plugin_panel&#39;</span>
+<span class="n">PANEL_DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">PANEL_GROUP</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">ADD_PANEL</span> <span class="o">=</span> <span class="s1">&#39;test_panels.plugin_panel.panel.PluginPanel&#39;</span>
+</pre></div>
+</div>
+<p>To remove Info panel from Admin panel group in Admin dashboard locally, create
+a file <tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled/_70_admin_remove_panel.py</span></tt> with
+the following content:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PANEL</span> <span class="o">=</span> <span class="s1">&#39;info&#39;</span>
+<span class="n">PANEL_DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">PANEL_GROUP</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">REMOVE_PANEL</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>To change the default panel of Admin dashboard to Instances panel, create a file
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled/_80_admin_default_panel.py</span></tt> with the
+following content:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PANEL</span> <span class="o">=</span> <span class="s1">&#39;instances&#39;</span>
+<span class="n">PANEL_DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">PANEL_GROUP</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">DEFAULT_PANEL</span> <span class="o">=</span> <span class="s1">&#39;instances&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="pluggable-settings-for-panel-groups">
+<h2>Pluggable Settings for Panel Groups<a class="headerlink" href="#pluggable-settings-for-panel-groups" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The following keys are specific to registering a panel group:</p>
+<div class="section" id="id5">
+<h3><tt class="docutils literal"><span class="pre">PANEL_GROUP</span></tt><a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The slug of the panel group to be added to <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt>. Required.</p>
+</div>
+<div class="section" id="panel-group-name">
+<h3><tt class="docutils literal"><span class="pre">PANEL_GROUP_NAME</span></tt><a class="headerlink" href="#panel-group-name" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The display name of the PANEL_GROUP. Required.</p>
+</div>
+<div class="section" id="panel-group-dashboard">
+<h3><tt class="docutils literal"><span class="pre">PANEL_GROUP_DASHBOARD</span></tt><a class="headerlink" href="#panel-group-dashboard" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 2014.1(Icehouse).</span></p>
+</div>
+<p>The slug of the dashboard the <tt class="docutils literal"><span class="pre">PANEL_GROUP</span></tt> associated with. Required.</p>
+</div>
+<div class="section" id="id6">
+<h3>Examples<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>To add a new panel group to the Admin dashboard, create a file
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled/_90_admin_add_panel_group.py</span></tt> with the
+following content:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">PANEL_GROUP</span> <span class="o">=</span> <span class="s1">&#39;plugin_panel_group&#39;</span>
+<span class="n">PANEL_GROUP_NAME</span> <span class="o">=</span> <span class="s1">&#39;Plugin Panel Group&#39;</span>
+<span class="n">PANEL_GROUP_DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Settings and Configuration</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#horizon-settings">Horizon Settings</a><ul>
+<li><a class="reference internal" href="#dashboards"><tt class="docutils literal"><span class="pre">dashboards</span></tt></a></li>
+<li><a class="reference internal" href="#default-dashboard"><tt class="docutils literal"><span class="pre">default_dashboard</span></tt></a></li>
+<li><a class="reference internal" href="#user-home"><tt class="docutils literal"><span class="pre">user_home</span></tt></a></li>
+<li><a class="reference internal" href="#ajax-queue-limit"><tt class="docutils literal"><span class="pre">ajax_queue_limit</span></tt></a></li>
+<li><a class="reference internal" href="#ajax-poll-interval"><tt class="docutils literal"><span class="pre">ajax_poll_interval</span></tt></a></li>
+<li><a class="reference internal" href="#auto-fade-alerts"><tt class="docutils literal"><span class="pre">auto_fade_alerts</span></tt></a></li>
+<li><a class="reference internal" href="#help-url"><tt class="docutils literal"><span class="pre">help_url</span></tt></a></li>
+<li><a class="reference internal" href="#exceptions"><tt class="docutils literal"><span class="pre">exceptions</span></tt></a></li>
+<li><a class="reference internal" href="#modal-backdrop"><tt class="docutils literal"><span class="pre">modal_backdrop</span></tt></a></li>
+<li><a class="reference internal" href="#disable-password-reveal"><tt class="docutils literal"><span class="pre">disable_password_reveal</span></tt></a></li>
+<li><a class="reference internal" href="#password-validator"><tt class="docutils literal"><span class="pre">password_validator</span></tt></a></li>
+<li><a class="reference internal" href="#password-autocomplete"><tt class="docutils literal"><span class="pre">password_autocomplete</span></tt></a></li>
+<li><a class="reference internal" href="#simple-ip-management"><tt class="docutils literal"><span class="pre">simple_ip_management</span></tt></a></li>
+<li><a class="reference internal" href="#angular-modules"><tt class="docutils literal"><span class="pre">angular_modules</span></tt></a></li>
+<li><a class="reference internal" href="#js-files"><tt class="docutils literal"><span class="pre">js_files</span></tt></a></li>
+<li><a class="reference internal" href="#js-spec-files"><tt class="docutils literal"><span class="pre">js_spec_files</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#openstack-settings-partial">OpenStack Settings (Partial)</a><ul>
+<li><a class="reference internal" href="#authentication-urls"><tt class="docutils literal"><span class="pre">AUTHENTICATION_URLS</span></tt></a></li>
+<li><a class="reference internal" href="#api-result-limit"><tt class="docutils literal"><span class="pre">API_RESULT_LIMIT</span></tt></a></li>
+<li><a class="reference internal" href="#api-result-page-size"><tt class="docutils literal"><span class="pre">API_RESULT_PAGE_SIZE</span></tt></a></li>
+<li><a class="reference internal" href="#available-regions"><tt class="docutils literal"><span class="pre">AVAILABLE_REGIONS</span></tt></a></li>
+<li><a class="reference internal" href="#console-type"><tt class="docutils literal"><span class="pre">CONSOLE_TYPE</span></tt></a></li>
+<li><a class="reference internal" href="#swift-file-transfer-chunk-size"><tt class="docutils literal"><span class="pre">SWIFT_FILE_TRANSFER_CHUNK_SIZE</span></tt></a></li>
+<li><a class="reference internal" href="#instance-log-length"><tt class="docutils literal"><span class="pre">INSTANCE_LOG_LENGTH</span></tt></a></li>
+<li><a class="reference internal" href="#create-instance-flavor-sort"><tt class="docutils literal"><span class="pre">CREATE_INSTANCE_FLAVOR_SORT</span></tt></a></li>
+<li><a class="reference internal" href="#custom-theme-path"><tt class="docutils literal"><span class="pre">CUSTOM_THEME_PATH</span></tt></a></li>
+<li><a class="reference internal" href="#default-theme-path"><tt class="docutils literal"><span class="pre">DEFAULT_THEME_PATH</span></tt></a></li>
+<li><a class="reference internal" href="#dropdown-max-items"><tt class="docutils literal"><span class="pre">DROPDOWN_MAX_ITEMS</span></tt></a></li>
+<li><a class="reference internal" href="#enforce-password-check"><tt class="docutils literal"><span class="pre">ENFORCE_PASSWORD_CHECK</span></tt></a></li>
+<li><a class="reference internal" href="#images-list-filter-tenants"><tt class="docutils literal"><span class="pre">IMAGES_LIST_FILTER_TENANTS</span></tt></a></li>
+<li><a class="reference internal" href="#image-reserved-custom-properties"><tt class="docutils literal"><span class="pre">IMAGE_RESERVED_CUSTOM_PROPERTIES</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-api-versions"><tt class="docutils literal"><span class="pre">OPENSTACK_API_VERSIONS</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-enable-password-retrieve"><tt class="docutils literal"><span class="pre">OPENSTACK_ENABLE_PASSWORD_RETRIEVE</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-endpoint-type"><tt class="docutils literal"><span class="pre">OPENSTACK_ENDPOINT_TYPE</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-host"><tt class="docutils literal"><span class="pre">OPENSTACK_HOST</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-hypervisor-features"><tt class="docutils literal"><span class="pre">OPENSTACK_HYPERVISOR_FEATURES</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-image-backend"><tt class="docutils literal"><span class="pre">OPENSTACK_IMAGE_BACKEND</span></tt></a></li>
+<li><a class="reference internal" href="#image-custom-property-titles"><tt class="docutils literal"><span class="pre">IMAGE_CUSTOM_PROPERTY_TITLES</span></tt></a></li>
+<li><a class="reference internal" href="#horizon-images-allow-upload"><tt class="docutils literal"><span class="pre">HORIZON_IMAGES_ALLOW_UPLOAD</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-keystone-backend"><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_BACKEND</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-keystone-default-domain"><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_DEFAULT_DOMAIN</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-keystone-default-role"><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_DEFAULT_ROLE</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-keystone-admin-roles"><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_ADMIN_ROLES</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-keystone-multidomain-support"><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-keystone-url"><tt class="docutils literal"><span class="pre">OPENSTACK_KEYSTONE_URL</span></tt></a></li>
+<li><a class="reference internal" href="#websso-enabled"><tt class="docutils literal"><span class="pre">WEBSSO_ENABLED</span></tt></a></li>
+<li><a class="reference internal" href="#websso-initial-choice"><tt class="docutils literal"><span class="pre">WEBSSO_INITIAL_CHOICE</span></tt></a></li>
+<li><a class="reference internal" href="#websso-choices"><tt class="docutils literal"><span class="pre">WEBSSO_CHOICES</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-cinder-features"><tt class="docutils literal"><span class="pre">OPENSTACK_CINDER_FEATURES</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-neutron-network"><tt class="docutils literal"><span class="pre">OPENSTACK_NEUTRON_NETWORK</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-ssl-cacert"><tt class="docutils literal"><span class="pre">OPENSTACK_SSL_CACERT</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-ssl-no-verify"><tt class="docutils literal"><span class="pre">OPENSTACK_SSL_NO_VERIFY</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-token-hash-algorithm"><tt class="docutils literal"><span class="pre">OPENSTACK_TOKEN_HASH_ALGORITHM</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-token-hash-enabled"><tt class="docutils literal"><span class="pre">OPENSTACK_TOKEN_HASH_ENABLED</span></tt></a></li>
+<li><a class="reference internal" href="#policy-files"><tt class="docutils literal"><span class="pre">POLICY_FILES</span></tt></a></li>
+<li><a class="reference internal" href="#policy-files-path"><tt class="docutils literal"><span class="pre">POLICY_FILES_PATH</span></tt></a></li>
+<li><a class="reference internal" href="#session-timeout"><tt class="docutils literal"><span class="pre">SESSION_TIMEOUT</span></tt></a></li>
+<li><a class="reference internal" href="#sahara-auto-ip-allocation-enabled"><tt class="docutils literal"><span class="pre">SAHARA_AUTO_IP_ALLOCATION_ENABLED</span></tt></a></li>
+<li><a class="reference internal" href="#trove-add-user-perms-and-trove-add-database-perms"><tt class="docutils literal"><span class="pre">TROVE_ADD_USER_PERMS</span></tt> and <tt class="docutils literal"><span class="pre">TROVE_ADD_DATABASE_PERMS</span></tt></a></li>
+<li><a class="reference internal" href="#webroot"><tt class="docutils literal"><span class="pre">WEBROOT</span></tt></a></li>
+<li><a class="reference internal" href="#static-root"><tt class="docutils literal"><span class="pre">STATIC_ROOT</span></tt></a></li>
+<li><a class="reference internal" href="#static-url"><tt class="docutils literal"><span class="pre">STATIC_URL</span></tt></a></li>
+<li><a class="reference internal" href="#disallow-iframe-embed"><tt class="docutils literal"><span class="pre">DISALLOW_IFRAME_EMBED</span></tt></a></li>
+<li><a class="reference internal" href="#openstack-nova-extensions-blacklist"><tt class="docutils literal"><span class="pre">OPENSTACK_NOVA_EXTENSIONS_BLACKLIST</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#django-settings-partial">Django Settings (Partial)</a><ul>
+<li><a class="reference internal" href="#allowed-hosts"><tt class="docutils literal"><span class="pre">ALLOWED_HOSTS</span></tt></a></li>
+<li><a class="reference internal" href="#debug-and-template-debug"><tt class="docutils literal"><span class="pre">DEBUG</span></tt> and <tt class="docutils literal"><span class="pre">TEMPLATE_DEBUG</span></tt></a></li>
+<li><a class="reference internal" href="#secret-key"><tt class="docutils literal"><span class="pre">SECRET_KEY</span></tt></a></li>
+<li><a class="reference internal" href="#secure-proxy-ssl-header-csrf-cookie-secure-and-session-cookie-secure"><tt class="docutils literal"><span class="pre">SECURE_PROXY_SSL_HEADER</span></tt>, <tt class="docutils literal"><span class="pre">CSRF_COOKIE_SECURE</span></tt> and <tt class="docutils literal"><span class="pre">SESSION_COOKIE_SECURE</span></tt></a></li>
+<li><a class="reference internal" href="#add-installed-apps"><tt class="docutils literal"><span class="pre">ADD_INSTALLED_APPS</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pluggable-settings">Pluggable Settings</a><ul>
+<li><a class="reference internal" href="#add-exceptions"><tt class="docutils literal"><span class="pre">ADD_EXCEPTIONS</span></tt></a></li>
+<li><a class="reference internal" href="#id2"><tt class="docutils literal"><span class="pre">ADD_INSTALLED_APPS</span></tt></a></li>
+<li><a class="reference internal" href="#add-angular-modules"><tt class="docutils literal"><span class="pre">ADD_ANGULAR_MODULES</span></tt></a></li>
+<li><a class="reference internal" href="#add-js-files"><tt class="docutils literal"><span class="pre">ADD_JS_FILES</span></tt></a></li>
+<li><a class="reference internal" href="#add-js-spec-files"><tt class="docutils literal"><span class="pre">ADD_JS_SPEC_FILES</span></tt></a></li>
+<li><a class="reference internal" href="#add-scss-files"><tt class="docutils literal"><span class="pre">ADD_SCSS_FILES</span></tt></a></li>
+<li><a class="reference internal" href="#auto-discover-static-files"><tt class="docutils literal"><span class="pre">AUTO_DISCOVER_STATIC_FILES</span></tt></a></li>
+<li><a class="reference internal" href="#disabled"><tt class="docutils literal"><span class="pre">DISABLED</span></tt></a></li>
+<li><a class="reference internal" href="#update-horizon-config"><tt class="docutils literal"><span class="pre">UPDATE_HORIZON_CONFIG</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pluggable-settings-for-dashboards">Pluggable Settings for Dashboards</a><ul>
+<li><a class="reference internal" href="#dashboard"><tt class="docutils literal"><span class="pre">DASHBOARD</span></tt></a></li>
+<li><a class="reference internal" href="#default"><tt class="docutils literal"><span class="pre">DEFAULT</span></tt></a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pluggable-settings-for-panels">Pluggable Settings for Panels</a><ul>
+<li><a class="reference internal" href="#panel"><tt class="docutils literal"><span class="pre">PANEL</span></tt></a></li>
+<li><a class="reference internal" href="#panel-dashboard"><tt class="docutils literal"><span class="pre">PANEL_DASHBOARD</span></tt></a></li>
+<li><a class="reference internal" href="#panel-group"><tt class="docutils literal"><span class="pre">PANEL_GROUP</span></tt></a></li>
+<li><a class="reference internal" href="#default-panel"><tt class="docutils literal"><span class="pre">DEFAULT_PANEL</span></tt></a></li>
+<li><a class="reference internal" href="#add-panel"><tt class="docutils literal"><span class="pre">ADD_PANEL</span></tt></a></li>
+<li><a class="reference internal" href="#remove-panel"><tt class="docutils literal"><span class="pre">REMOVE_PANEL</span></tt></a></li>
+<li><a class="reference internal" href="#id4">Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pluggable-settings-for-panel-groups">Pluggable Settings for Panel Groups</a><ul>
+<li><a class="reference internal" href="#id5"><tt class="docutils literal"><span class="pre">PANEL_GROUP</span></tt></a></li>
+<li><a class="reference internal" href="#panel-group-name"><tt class="docutils literal"><span class="pre">PANEL_GROUP_NAME</span></tt></a></li>
+<li><a class="reference internal" href="#panel-group-dashboard"><tt class="docutils literal"><span class="pre">PANEL_GROUP_DASHBOARD</span></tt></a></li>
+<li><a class="reference internal" href="#id6">Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="deployment.html"
+                                  title="previous chapter">Deploying Horizon</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="customizing.html"
+                                  title="next chapter">Customizing Horizon</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/settings.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="customizing.html" title="Customizing Horizon"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="deployment.html" title="Deploying Horizon"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

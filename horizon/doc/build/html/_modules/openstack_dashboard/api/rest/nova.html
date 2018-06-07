@@ -1,0 +1,453 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.rest.nova &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.rest.nova</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2014, Rackspace, US, Inc.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;API over the nova service.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">http</span> <span class="k">as</span> <span class="n">utils_http</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">json_encoder</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">urls</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">rest_utils</span>
+
+
+<span class="nd">@urls.register</span>
+<span class="k">class</span> <span class="nc">Keypairs</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Keypairs"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Keypairs">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for nova keypairs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/keypairs/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Keypairs.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Keypairs.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a list of keypairs associated with the current logged-in</span>
+<span class="sd">        account.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">keypair_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Keypairs.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Keypairs.post">[docs]</a>        <span class="sd">&quot;&quot;&quot;Create a keypair.</span>
+
+<span class="sd">        Create a keypair using the parameters supplied in the POST</span>
+<span class="sd">        application/json object. The parameters are:</span>
+
+<span class="sd">        :param name: the name to give the keypair</span>
+<span class="sd">        :param public_key: (optional) a key to import</span>
+
+<span class="sd">        This returns the new keypair object on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;public_key&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">keypair_import</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                          <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;public_key&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">keypair_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/nova/keypairs/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">utils_http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">AvailabilityZones</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="AvailabilityZones"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.AvailabilityZones">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for nova availability zones.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/availzones/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="AvailabilityZones.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.AvailabilityZones.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a list of availability zones.</span>
+
+<span class="sd">        The following get parameters may be passed in the GET</span>
+<span class="sd">        request:</span>
+
+<span class="sd">        :param detailed: If this equals &quot;true&quot; then the result will</span>
+<span class="sd">            include more detail.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">detailed</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;detailed&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">availability_zone_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">detailed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Limits</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Limits"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Limits">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for nova limits.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/limits/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">json_encoder</span><span class="o">=</span><span class="n">json_encoder</span><span class="o">.</span><span class="n">NaNJSONEncoder</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Limits.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Limits.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get an object describing the current project limits.</span>
+
+<span class="sd">        Note: the Horizon API doesn&#39;t support any other project (tenant) but</span>
+<span class="sd">        the underlying client does...</span>
+
+<span class="sd">        The following get parameters may be passed in the GET</span>
+<span class="sd">        request:</span>
+
+<span class="sd">        :param reserved: This may be set to &quot;true&quot; but it&#39;s not</span>
+<span class="sd">            clear what the result of that is.</span>
+
+<span class="sd">        The result is an object with limits as properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reserved</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reserved&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">tenant_absolute_limits</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">reserved</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Servers</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Servers"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Servers">[docs]</a>    <span class="sd">&quot;&quot;&quot;API over all servers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/servers/$&#39;</span>
+
+    <span class="n">_optional_create</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;block_device_mapping&#39;</span><span class="p">,</span> <span class="s1">&#39;block_device_mapping_v2&#39;</span><span class="p">,</span> <span class="s1">&#39;nics&#39;</span><span class="p">,</span> <span class="s1">&#39;meta&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;availability_zone&#39;</span><span class="p">,</span> <span class="s1">&#39;instance_count&#39;</span><span class="p">,</span> <span class="s1">&#39;admin_pass&#39;</span><span class="p">,</span> <span class="s1">&#39;disk_config&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;config_drive&#39;</span>
+    <span class="p">]</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Servers.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Servers.post">[docs]</a>        <span class="sd">&quot;&quot;&quot;Create a server.</span>
+
+<span class="sd">        Create a server using the parameters supplied in the POST</span>
+<span class="sd">        application/json object. The required parameters as specified by</span>
+<span class="sd">        the underlying novaclient are:</span>
+
+<span class="sd">        :param name: The new server name.</span>
+<span class="sd">        :param source_id: The ID of the image to use.</span>
+<span class="sd">        :param flavor_id: The ID of the flavor to use.</span>
+<span class="sd">        :param key_name: (optional extension) name of previously created</span>
+<span class="sd">                      keypair to inject into the instance.</span>
+<span class="sd">        :param user_data: user data to pass to be exposed by the metadata</span>
+<span class="sd">                      server this can be a file type object as well or a</span>
+<span class="sd">                      string.</span>
+<span class="sd">        :param security_groups: An array of one or more objects with a &quot;name&quot;</span>
+<span class="sd">            attribute.</span>
+
+<span class="sd">        Other parameters are accepted as per the underlying novaclient:</span>
+<span class="sd">        &quot;block_device_mapping&quot;, &quot;block_device_mapping_v2&quot;, &quot;nics&quot;, &quot;meta&quot;,</span>
+<span class="sd">        &quot;availability_zone&quot;, &quot;instance_count&quot;, &quot;admin_pass&quot;, &quot;disk_config&quot;,</span>
+<span class="sd">        &quot;config_drive&quot;</span>
+
+<span class="sd">        This returns the new server object on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;source_id&#39;</span><span class="p">],</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;flavor_id&#39;</span><span class="p">],</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;key_name&#39;</span><span class="p">],</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">],</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;security_groups&#39;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">AjaxError</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;missing required parameter &#39;</span>
+                                       <span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optional_create</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">:</span>
+                <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="n">new</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_create</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/nova/servers/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">utils_http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">new</span><span class="o">.</span><span class="n">id</span><span class="p">),</span>
+            <span class="n">new</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Server"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Server">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for retrieving a single server</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/servers/(?P&lt;server_id&gt;.+|default)$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">server_id</span><span class="p">):</span>
+<div class="viewcode-block" id="Server.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Server.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a specific server</span>
+
+<span class="sd">        http://localhost/api/nova/servers/1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">server_id</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Extensions</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Extensions"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Extensions">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for nova extensions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/extensions/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Extensions.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Extensions.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a list of extensions.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;. Each item is</span>
+<span class="sd">        an image.</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/nova/extensions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">list_extensions</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Flavors</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Flavors"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Flavors">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for nova flavors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/flavors/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Flavors.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Flavors.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a list of flavors.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;. Each item is</span>
+<span class="sd">        an flavor. By default this will return the flavors for the user&#39;s</span>
+<span class="sd">        current project. If the user is admin, public flavors will also be</span>
+<span class="sd">        returned.</span>
+
+<span class="sd">        :param is_public: For a regular user, set to True to see all public</span>
+<span class="sd">            flavors. For an admin user, set to False to not see public flavors.</span>
+<span class="sd">        :param get_extras: Also retrieve the extra specs.</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/nova/flavors?is_public=true</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_public</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_public&#39;</span><span class="p">)</span>
+        <span class="n">is_public</span> <span class="o">=</span> <span class="p">(</span><span class="n">is_public</span> <span class="ow">and</span> <span class="n">is_public</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">)</span>
+        <span class="n">get_extras</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;get_extras&#39;</span><span class="p">)</span>
+        <span class="n">get_extras</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">get_extras</span> <span class="ow">and</span> <span class="n">get_extras</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">)</span>
+        <span class="n">flavors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="n">is_public</span><span class="p">,</span>
+                                       <span class="n">get_extras</span><span class="o">=</span><span class="n">get_extras</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">flavor</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">get_extras</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;extras&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flavor</span><span class="o">.</span><span class="n">extras</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Flavor</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Flavor"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Flavor">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for retrieving a single flavor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/flavors/(?P&lt;flavor_id&gt;[^/]+)/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+<div class="viewcode-block" id="Flavor.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.Flavor.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a specific flavor</span>
+
+<span class="sd">        :param get_extras: Also retrieve the extra specs.</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/nova/flavors/1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">get_extras</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;get_extras&#39;</span><span class="p">)</span>
+        <span class="n">get_extras</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">get_extras</span> <span class="ow">and</span> <span class="n">get_extras</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">)</span>
+        <span class="n">flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">get_extras</span><span class="o">=</span><span class="n">get_extras</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">flavor</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">get_extras</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;extras&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flavor</span><span class="o">.</span><span class="n">extras</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">FlavorExtraSpecs</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="FlavorExtraSpecs"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.FlavorExtraSpecs">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for managing flavor extra specs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/flavors/(?P&lt;flavor_id&gt;[^/]+)/extra-specs/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+<div class="viewcode-block" id="FlavorExtraSpecs.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.FlavorExtraSpecs.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a specific flavor&#39;s extra specs</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/nova/flavors/1/extra-specs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get_extras</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+<div class="viewcode-block" id="FlavorExtraSpecs.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.FlavorExtraSpecs.patch">[docs]</a>        <span class="sd">&quot;&quot;&quot;Update a specific flavor&#39;s extra specs.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;removed&#39;</span><span class="p">):</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_extra_delete</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;removed&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_extra_set</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;updated&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">AggregateExtraSpecs</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="AggregateExtraSpecs"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.AggregateExtraSpecs">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for managing aggregate extra specs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;nova/aggregates/(?P&lt;aggregate_id&gt;[^/]+)/extra-specs/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">):</span>
+<div class="viewcode-block" id="AggregateExtraSpecs.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.AggregateExtraSpecs.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a specific aggregate&#39;s extra specs</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/nova/flavors/1/extra-specs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">aggregate_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">)</span><span class="o">.</span><span class="n">metadata</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">):</span>
+<div class="viewcode-block" id="AggregateExtraSpecs.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.nova.html#openstack_dashboard.api.rest.nova.AggregateExtraSpecs.patch">[docs]</a>        <span class="sd">&quot;&quot;&quot;Update a specific aggregate&#39;s extra specs.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">updated</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;updated&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;removed&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;removed&#39;</span><span class="p">):</span>
+                <span class="n">updated</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">aggregate_set_metadata</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">aggregate_id</span><span class="p">,</span> <span class="n">updated</span><span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon.forms.fields Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The horizon.utils.html Module" href="horizon.utils.html.html" />
+    <link rel="prev" title="The horizon.forms Module" href="horizon.forms.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-horizon-forms-fields-module">
+<h1>The <a class="reference internal" href="../../ref/forms.html#module-horizon.forms.fields" title="horizon.forms.fields"><tt class="xref py py-mod docutils literal"><span class="pre">horizon.forms.fields</span></tt></a> Module<a class="headerlink" href="#the-horizon-forms-fields-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">DynamicChoiceField</tt><big>(</big><em>add_item_link=None</em>, <em>add_item_link_args=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#DynamicChoiceField"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.forms.fields.ChoiceField</span></tt></p>
+<p>A subclass of <tt class="docutils literal"><span class="pre">ChoiceField</span></tt> with additional properties that make
+dynamically updating its elements easier.</p>
+<p>Notably, the field declaration takes an extra argument, <tt class="docutils literal"><span class="pre">add_item_link</span></tt>
+which may be a string or callable defining the URL that should be used
+for the &#8220;add&#8221; link associated with the field.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">widget</tt></dt>
+<dd><p>alias of <a class="reference internal" href="../../ref/forms.html#horizon.forms.fields.DynamicSelectWidget" title="horizon.forms.fields.DynamicSelectWidget"><tt class="xref py py-class docutils literal"><span class="pre">DynamicSelectWidget</span></tt></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">DynamicSelectWidget</tt><big>(</big><em>attrs=None</em>, <em>choices=()</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#DynamicSelectWidget"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.forms.widgets.Select</span></tt></p>
+<p>A subclass of the <tt class="docutils literal"><span class="pre">Select</span></tt> widget which renders extra attributes for
+use in callbacks to handle dynamic changes to the available choices.</p>
+<dl class="method">
+<dt>
+<tt class="descname">get_add_item_url</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#DynamicSelectWidget.get_add_item_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">render</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#DynamicSelectWidget.render"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">DynamicTypedChoiceField</tt><big>(</big><em>add_item_link=None</em>, <em>add_item_link_args=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#DynamicTypedChoiceField"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.fields.DynamicChoiceField" title="horizon.forms.fields.DynamicChoiceField"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.fields.DynamicChoiceField</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">django.forms.fields.TypedChoiceField</span></tt></p>
+<p>Simple mix of <tt class="docutils literal"><span class="pre">DynamicChoiceField</span></tt> and <tt class="docutils literal"><span class="pre">TypedChoiceField</span></tt>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">IPField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#IPField"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.forms.fields.Field</span></tt></p>
+<p>Form field for entering IP/range values, with validation.
+Supports IPv4/IPv6 in the format:
+.. xxx.xxx.xxx.xxx
+.. xxx.xxx.xxx.xxx/zz
+.. ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+.. ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/zz
+and all compressed forms. Also the short forms
+are supported:
+xxx/yy
+xxx.xxx/yy</p>
+<dl class="attribute">
+<dt id="horizon.forms.fields.IPField.version">
+<tt class="descname">version</tt><a class="headerlink" href="#horizon.forms.fields.IPField.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies which IP version to validate,
+valid values are 1 (fields.IPv4), 2 (fields.IPv6) or
+both - 3 (fields.IPv4 | fields.IPv6).
+Defaults to IPv4 (1)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.IPField.mask">
+<tt class="descname">mask</tt><a class="headerlink" href="#horizon.forms.fields.IPField.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean flag to validate subnet masks along with IP address.
+E.g: 10.0.0.1/32</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.IPField.mask_range_from">
+<tt class="descname">mask_range_from</tt><a class="headerlink" href="#horizon.forms.fields.IPField.mask_range_from" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">Subnet range limitation, e.g. 16</tt></dt>
+<dt>
+<tt class="descname">That means the input mask will be checked to be in the range</tt></dt>
+<dt>
+<tt class="descname">16:max_value. Useful to limit the subnet ranges</tt></dt>
+<dt>
+<tt class="descname">to A/B/C-class networks.</tt></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#IPField.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">invalid_format_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bf236310&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">invalid_mask_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bf236390&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">invalid_version_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bf236350&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">max_v4_mask</tt><em class="property"> = 32</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">max_v6_mask</tt><em class="property"> = 128</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#IPField.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">MultiIPField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#MultiIPField"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.fields.IPField" title="horizon.forms.fields.IPField"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.fields.IPField</span></tt></a></p>
+<p>Extends IPField to allow comma-separated lists of addresses.</p>
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#MultiIPField.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">validate</tt><big>(</big><em>value</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#MultiIPField.validate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">SelectWidget</tt><big>(</big><em>attrs=None</em>, <em>choices=()</em>, <em>data_attrs=()</em>, <em>transform=None</em>, <em>transform_html_attrs=None</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#SelectWidget"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.forms.widgets.Select</span></tt></p>
+<p>Customizable select widget, that allows to render
+data-xxx attributes from choices. This widget also
+allows user to specify additional html attributes
+for choices.</p>
+<dl class="attribute">
+<dt id="horizon.forms.fields.SelectWidget.data_attrs">
+<tt class="descname">data_attrs</tt><a class="headerlink" href="#horizon.forms.fields.SelectWidget.data_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies object properties to serialize as
+data-xxx attribute. If passed (&#8216;id&#8217;, ),
+this will be rendered as:
+&lt;option data-id=&#8221;123&#8221;&gt;option_value&lt;/option&gt;
+where 123 is the value of choice_value.id</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.SelectWidget.transform">
+<tt class="descname">transform</tt><a class="headerlink" href="#horizon.forms.fields.SelectWidget.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable used to render the display value
+from the option object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.SelectWidget.transform_html_attrs">
+<tt class="descname">transform_html_attrs</tt><a class="headerlink" href="#horizon.forms.fields.SelectWidget.transform_html_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable used to render additional HTML attributes
+for the option object. It returns a dictionary
+containing the html attributes and their values.
+For example, to define a title attribute for the
+choices:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>helpText = { &#39;Apple&#39;: &#39;This is a fruit&#39;,
+          &#39;Carrot&#39;: &#39;This is a vegetable&#39; }
+
+def get_title(data):
+    text = helpText.get(data, None)
+    if text:
+        return {&#39;title&#39;: text}
+    else:
+        return {}
+
+....
+....
+
+widget=forms.SelectWidget( attrs={&#39;class&#39;: &#39;switchable&#39;,
+                                 &#39;data-slug&#39;: &#39;source&#39;},
+                        transform_html_attrs=get_title )
+
+self.fields[&lt;field name&gt;].choices =
+    ([
+        (&#39;apple&#39;,&#39;Apple&#39;),
+        (&#39;carrot&#39;,&#39;Carrot&#39;)
+    ])
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">render_option</tt><big>(</big><em>selected_choices</em>, <em>option_value</em>, <em>option_label</em><big>)</big><a class="reference internal" href="../../_modules/horizon/forms/fields.html#SelectWidget.render_option"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.forms.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon.forms</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.utils.html.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon.utils.html</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/horizon/horizon.forms.fields.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.utils.html.html" title="The horizon.utils.html Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.forms.html" title="The horizon.forms Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

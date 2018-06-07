@@ -1,0 +1,20 @@
+{% extends 'murano_base.html' %}
+{% load i18n %}
+{% load static %}
+{% load compress %}
+{% block title %}{% trans "Environments" %}{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title=_("Environments") %}
+{% endblock page_header %}
+
+{% block main %}
+  {{ table.render }}
+{% endblock %}
+
+{% block css %}
+  {{ block.super }}
+  {% compress css %}
+    <link href="{% static 'muranodashboard/css/catalog.css' %}" type='text/css' media='screen' rel='stylesheet' />
+  {% endcompress %}
+{% endblock %}

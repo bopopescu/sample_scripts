@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.vpn.forms Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.volumes.views Module" href="openstack_dashboard.dashboards.project.volumes.views.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.vpn.panel Module" href="openstack_dashboard.dashboards.project.vpn.panel.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-vpn-forms-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.vpn.forms</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-vpn-forms-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.forms.</tt><tt class="descname">UpdateIKEPolicy</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIKEPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b8317dd0&gt;), ('ikepolicy_id', &lt;django.forms.fields.CharField object at 0x7ff3b611e650&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b611e3d0&gt;), ('auth_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b611e390&gt;), ('encryption_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b611e9d0&gt;), ('ike_version', &lt;django.forms.fields.ChoiceField object at 0x7ff3b72b2110&gt;), ('lifetime_units', &lt;django.forms.fields.ChoiceField object at 0x7ff3b655b510&gt;), ('lifetime_value', &lt;django.forms.fields.IntegerField object at 0x7ff3b655b990&gt;), ('pfs', &lt;django.forms.fields.ChoiceField object at 0x7ff3b83aa450&gt;), ('phase1_negotiation_mode', &lt;django.forms.fields.ChoiceField object at 0x7ff3bbfbb810&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b8317dd0&gt;), ('ikepolicy_id', &lt;django.forms.fields.CharField object at 0x7ff3b611e650&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b611e3d0&gt;), ('auth_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b611e390&gt;), ('encryption_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b611e9d0&gt;), ('ike_version', &lt;django.forms.fields.ChoiceField object at 0x7ff3b72b2110&gt;), ('lifetime_units', &lt;django.forms.fields.ChoiceField object at 0x7ff3b655b510&gt;), ('lifetime_value', &lt;django.forms.fields.IntegerField object at 0x7ff3b655b990&gt;), ('pfs', &lt;django.forms.fields.ChoiceField object at 0x7ff3b83aa450&gt;), ('phase1_negotiation_mode', &lt;django.forms.fields.ChoiceField object at 0x7ff3bbfbb810&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:vpn:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIKEPolicy.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.forms.</tt><tt class="descname">UpdateIPSecPolicy</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIPSecPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b5d5cc50&gt;), ('ipsecpolicy_id', &lt;django.forms.fields.CharField object at 0x7ff3b5d5c710&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b5d5ca10&gt;), ('auth_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5d5cf10&gt;), ('encapsulation_mode', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5d5c410&gt;), ('encryption_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b61444d0&gt;), ('lifetime_units', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6144450&gt;), ('lifetime_value', &lt;django.forms.fields.IntegerField object at 0x7ff3b6144c10&gt;), ('pfs', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6caeb50&gt;), ('transform_protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b618ab50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b5d5cc50&gt;), ('ipsecpolicy_id', &lt;django.forms.fields.CharField object at 0x7ff3b5d5c710&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b5d5ca10&gt;), ('auth_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5d5cf10&gt;), ('encapsulation_mode', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5d5c410&gt;), ('encryption_algorithm', &lt;django.forms.fields.ChoiceField object at 0x7ff3b61444d0&gt;), ('lifetime_units', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6144450&gt;), ('lifetime_value', &lt;django.forms.fields.IntegerField object at 0x7ff3b6144c10&gt;), ('pfs', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6caeb50&gt;), ('transform_protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b618ab50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:vpn:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIPSecPolicy.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.forms.</tt><tt class="descname">UpdateIPSecSiteConnection</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIPSecSiteConnection"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b618a910&gt;), ('ipsecsiteconnection_id', &lt;django.forms.fields.CharField object at 0x7ff3b655b790&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b655b410&gt;), ('peer_address', &lt;horizon.forms.fields.IPField object at 0x7ff3bbf0a990&gt;), ('peer_id', &lt;horizon.forms.fields.IPField object at 0x7ff3bbf0a2d0&gt;), ('peer_cidrs', &lt;horizon.forms.fields.MultiIPField object at 0x7ff3b64ef110&gt;), ('psk', &lt;django.forms.fields.CharField object at 0x7ff3b64efcd0&gt;), ('mtu', &lt;django.forms.fields.IntegerField object at 0x7ff3b6251bd0&gt;), ('dpd_action', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5b2b990&gt;), ('dpd_interval', &lt;django.forms.fields.IntegerField object at 0x7ff3b5b2b910&gt;), ('dpd_timeout', &lt;django.forms.fields.IntegerField object at 0x7ff3b5b2be90&gt;), ('initiator', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5b2b410&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3ba2e4fd0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIPSecSiteConnection.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b618a910&gt;), ('ipsecsiteconnection_id', &lt;django.forms.fields.CharField object at 0x7ff3b655b790&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b655b410&gt;), ('peer_address', &lt;horizon.forms.fields.IPField object at 0x7ff3bbf0a990&gt;), ('peer_id', &lt;horizon.forms.fields.IPField object at 0x7ff3bbf0a2d0&gt;), ('peer_cidrs', &lt;horizon.forms.fields.MultiIPField object at 0x7ff3b64ef110&gt;), ('psk', &lt;django.forms.fields.CharField object at 0x7ff3b64efcd0&gt;), ('mtu', &lt;django.forms.fields.IntegerField object at 0x7ff3b6251bd0&gt;), ('dpd_action', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5b2b990&gt;), ('dpd_interval', &lt;django.forms.fields.IntegerField object at 0x7ff3b5b2b910&gt;), ('dpd_timeout', &lt;django.forms.fields.IntegerField object at 0x7ff3b5b2be90&gt;), ('initiator', &lt;django.forms.fields.ChoiceField object at 0x7ff3b5b2b410&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3ba2e4fd0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:vpn:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateIPSecSiteConnection.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.forms.</tt><tt class="descname">UpdateVPNService</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateVPNService"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3bac73ed0&gt;), ('vpnservice_id', &lt;django.forms.fields.CharField object at 0x7ff3b6aa97d0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b7b57a90&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b617fa50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3bac73ed0&gt;), ('vpnservice_id', &lt;django.forms.fields.CharField object at 0x7ff3b6aa97d0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b7b57a90&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b617fa50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:vpn:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/forms.html#UpdateVPNService.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.vpn.panel.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.vpn.panel</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.volumes.views.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.volumes.views</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.forms.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.volumes.views.html" title="The openstack_dashboard.dashboards.project.volumes.views Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.vpn.panel.html" title="The openstack_dashboard.dashboards.project.vpn.panel Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,994 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>horizon.workflows.base &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="horizon.workflows" href="../workflows.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for horizon.workflows.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">urlresolvers</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django.forms.forms</span> <span class="kn">import</span> <span class="n">NON_FIELD_ERRORS</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">linebreaks</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">safe</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">slugify</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.encoding</span> <span class="kn">import</span> <span class="n">force_text</span>
+<span class="kn">from</span> <span class="nn">django.utils.importlib</span> <span class="kn">import</span> <span class="n">import_module</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon.templatetags.horizon</span> <span class="kn">import</span> <span class="n">has_permissions</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">html</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WorkflowContext"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.WorkflowContext">[docs]</a><span class="k">class</span> <span class="nc">WorkflowContext</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workflow</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WorkflowContext</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workflow</span> <span class="o">=</span> <span class="n">workflow</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WorkflowContext</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workflow</span><span class="o">.</span><span class="n">_trigger_handlers</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WorkflowContext.set"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.WorkflowContext.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WorkflowContext.unset"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.WorkflowContext.unset">[docs]</a>    <span class="k">def</span> <span class="nf">unset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__delitem__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ActionMetaclass"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.ActionMetaclass">[docs]</a><span class="k">class</span> <span class="nc">ActionMetaclass</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">DeclarativeFieldsMetaclass</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="c1"># Pop Meta for later processing</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;Meta&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="c1"># Create our new class</span>
+        <span class="n">cls</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ActionMetaclass</span><span class="p">,</span> <span class="n">mcs</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+        <span class="c1"># Process options from Meta</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="s2">&quot;slug&quot;</span><span class="p">,</span> <span class="n">slugify</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">permissions</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="s2">&quot;permissions&quot;</span><span class="p">,</span> <span class="p">())</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">progress_message</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span>
+                                       <span class="s2">&quot;progress_message&quot;</span><span class="p">,</span>
+                                       <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Processing...&quot;</span><span class="p">))</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="s2">&quot;help_text&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">help_text_template</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">opts</span><span class="p">,</span> <span class="s2">&quot;help_text_template&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span>
+
+</div>
+<span class="nd">@six.python_2_unicode_compatible</span>
+<span class="nd">@six.add_metaclass</span><span class="p">(</span><span class="n">ActionMetaclass</span><span class="p">)</span>
+<div class="viewcode-block" id="Action"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Action">[docs]</a><span class="k">class</span> <span class="nc">Action</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An ``Action`` represents an atomic logical interaction you can have with</span>
+<span class="sd">    the system. This is easier to understand with a conceptual example: in the</span>
+<span class="sd">    context of a &quot;launch instance&quot; workflow, actions would include &quot;naming</span>
+<span class="sd">    the instance&quot;, &quot;selecting an image&quot;, and ultimately &quot;launching the</span>
+<span class="sd">    instance&quot;.</span>
+
+<span class="sd">    Because ``Actions`` are always interactive, they always provide form</span>
+<span class="sd">    controls, and thus inherit from Django&#39;s ``Form`` class. However, they</span>
+<span class="sd">    have some additional intelligence added to them:</span>
+
+<span class="sd">    * ``Actions`` are aware of the permissions required to complete them.</span>
+
+<span class="sd">    * ``Actions`` have a meta-level concept of &quot;help text&quot; which is meant to be</span>
+<span class="sd">      displayed in such a way as to give context to the action regardless of</span>
+<span class="sd">      where the action is presented in a site or workflow.</span>
+
+<span class="sd">    * ``Actions`` understand how to handle their inputs and produce outputs,</span>
+<span class="sd">      much like :class:`~horizon.forms.SelfHandlingForm` does now.</span>
+
+<span class="sd">    ``Action`` classes may define the following attributes in a ``Meta``</span>
+<span class="sd">    class within them:</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        The verbose name for this action. Defaults to the name of the class.</span>
+
+<span class="sd">    .. attribute:: slug</span>
+
+<span class="sd">        A semi-unique slug for this action. Defaults to the &quot;slugified&quot; name</span>
+<span class="sd">        of the class.</span>
+
+<span class="sd">    .. attribute:: permissions</span>
+
+<span class="sd">        A list of permission names which this action requires in order to be</span>
+<span class="sd">        completed. Defaults to an empty list (``[]``).</span>
+
+<span class="sd">    .. attribute:: help_text</span>
+
+<span class="sd">        A string of simple help text to be displayed alongside the Action&#39;s</span>
+<span class="sd">        fields.</span>
+
+<span class="sd">    .. attribute:: help_text_template</span>
+
+<span class="sd">        A path to a template which contains more complex help text to be</span>
+<span class="sd">        displayed alongside the Action&#39;s fields. In conjunction with</span>
+<span class="sd">        :meth:`~horizon.workflows.Action.get_help_text` method you can</span>
+<span class="sd">        customize your help text template to display practically anything.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;handle&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;The action </span><span class="si">%s</span><span class="s2"> must define a handle method.&quot;</span>
+                                 <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_populate_choices</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">required_css_class</span> <span class="o">=</span> <span class="s1">&#39;required&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">force_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_populate_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">bound_field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">meth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;populate_</span><span class="si">%s</span><span class="s2">_choices&quot;</span> <span class="o">%</span> <span class="n">field_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">meth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="n">meth</span><span class="p">):</span>
+                <span class="n">bound_field</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">meth</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Action.get_help_text"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Action.get_help_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_help_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the help text for this step.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">extra_context</span> <span class="o">=</span> <span class="n">extra_context</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">help_text_template</span><span class="p">:</span>
+            <span class="n">tmpl</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">help_text_template</span><span class="p">)</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">RequestContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">extra_context</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="n">tmpl</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="n">linebreaks</span><span class="p">(</span><span class="n">force_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">help_text</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">safe</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Action.add_action_error"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Action.add_action_error">[docs]</a>    <span class="k">def</span> <span class="nf">add_action_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds an error to the Action&#39;s Step based on API issues.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">[</span><span class="n">NON_FIELD_ERRORS</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">message</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="Action.handle"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Action.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handles any requisite processing for this action. The method should</span>
+<span class="sd">        return either ``None`` or a dictionary of data to be passed to</span>
+<span class="sd">        :meth:`~horizon.workflows.Step.contribute`.</span>
+
+<span class="sd">        Returns ``None`` by default, effectively making it a no-op.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+</div></div>
+<div class="viewcode-block" id="MembershipAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.MembershipAction">[docs]</a><span class="k">class</span> <span class="nc">MembershipAction</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An action that allows a user to add/remove members from a group.</span>
+
+<span class="sd">    Extend the Action class with additional helper method for membership</span>
+<span class="sd">    management.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MembershipAction.get_default_role_field_name"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.MembershipAction.get_default_role_field_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_role_field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;default_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="o">+</span> <span class="s2">&quot;_role&quot;</span>
+</div>
+<div class="viewcode-block" id="MembershipAction.get_member_field_name"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.MembershipAction.get_member_field_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_member_field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="o">+</span> <span class="s2">&quot;_role_&quot;</span> <span class="o">+</span> <span class="n">role_id</span>
+
+</div></div>
+<span class="nd">@six.python_2_unicode_compatible</span>
+<div class="viewcode-block" id="Step"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step">[docs]</a><span class="k">class</span> <span class="nc">Step</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A step is a wrapper around an action which defines its context in a</span>
+<span class="sd">    workflow. It knows about details such as:</span>
+
+<span class="sd">    * The workflow&#39;s context data (data passed from step to step).</span>
+
+<span class="sd">    * The data which must be present in the context to begin this step (the</span>
+<span class="sd">      step&#39;s dependencies).</span>
+
+<span class="sd">    * The keys which will be added to the context data upon completion of the</span>
+<span class="sd">      step.</span>
+
+<span class="sd">    * The connections between this step&#39;s fields and changes in the context</span>
+<span class="sd">      data (e.g. if that piece of data changes, what needs to be updated in</span>
+<span class="sd">      this step).</span>
+
+<span class="sd">    A ``Step`` class has the following attributes:</span>
+
+<span class="sd">    .. attribute:: action_class</span>
+
+<span class="sd">        The :class:`~horizon.workflows.Action` class which this step wraps.</span>
+
+<span class="sd">    .. attribute:: depends_on</span>
+
+<span class="sd">        A list of context data keys which this step requires in order to</span>
+<span class="sd">        begin interaction.</span>
+
+<span class="sd">    .. attribute:: contributes</span>
+
+<span class="sd">        A list of keys which this step will contribute to the workflow&#39;s</span>
+<span class="sd">        context data. Optional keys should still be listed, even if their</span>
+<span class="sd">        values may be set to ``None``.</span>
+
+<span class="sd">    .. attribute:: connections</span>
+
+<span class="sd">        A dictionary which maps context data key names to lists of callbacks.</span>
+<span class="sd">        The callbacks may be functions, dotted python paths to functions</span>
+<span class="sd">        which may be imported, or dotted strings beginning with ``&quot;self&quot;``</span>
+<span class="sd">        to indicate methods on the current ``Step`` instance.</span>
+
+<span class="sd">    .. attribute:: before</span>
+
+<span class="sd">        Another ``Step`` class. This optional attribute is used to provide</span>
+<span class="sd">        control over workflow ordering when steps are dynamically added to</span>
+<span class="sd">        workflows. The workflow mechanism will attempt to place the current</span>
+<span class="sd">        step before the step specified in the attribute.</span>
+
+<span class="sd">    .. attribute:: after</span>
+
+<span class="sd">        Another ``Step`` class. This attribute has the same purpose as</span>
+<span class="sd">        :meth:`~horizon.workflows.Step.before` except that it will instead</span>
+<span class="sd">        attempt to place the current step after the given step.</span>
+
+<span class="sd">    .. attribute:: help_text</span>
+
+<span class="sd">        A string of simple help text which will be prepended to the ``Action``</span>
+<span class="sd">        class&#39; help text if desired.</span>
+
+<span class="sd">    .. attribute:: template_name</span>
+
+<span class="sd">        A path to a template which will be used to render this step. In</span>
+<span class="sd">        general the default common template should be used. Default:</span>
+<span class="sd">        ``&quot;horizon/common/_workflow_step.html&quot;``.</span>
+
+<span class="sd">    .. attribute:: has_errors</span>
+
+<span class="sd">        A boolean value which indicates whether or not this step has any</span>
+<span class="sd">        errors on the action within it or in the scope of the workflow. This</span>
+<span class="sd">        attribute will only accurately reflect this status after validation</span>
+<span class="sd">        has occurred.</span>
+
+<span class="sd">    .. attribute:: slug</span>
+
+<span class="sd">        Inherited from the ``Action`` class.</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        Inherited from the ``Action`` class.</span>
+
+<span class="sd">    .. attribute:: permissions</span>
+
+<span class="sd">        Inherited from the ``Action`` class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">depends_on</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">connections</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">before</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">after</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_workflow_step.html&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">force_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workflow</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Step</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span> <span class="o">=</span> <span class="n">workflow</span>
+
+        <span class="n">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_class</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_class</span><span class="p">,</span> <span class="n">Action</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;action_class not specified for </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">cls</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_class</span><span class="o">.</span><span class="n">slug</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_class</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">permissions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_class</span><span class="o">.</span><span class="n">permissions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_errors</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># We want a dict, but don&#39;t want to declare a mutable type on the</span>
+            <span class="c1"># class directly.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Gather our connection handlers and make sure they exist.</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">handlers</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># TODO(gabriel): This is a poor substitute for broader handling</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handlers</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The connection handlers for </span><span class="si">%s</span><span class="s2"> must be a &quot;</span>
+                                <span class="s2">&quot;list or tuple.&quot;</span> <span class="o">%</span> <span class="n">cls</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">possible_handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">possible_handler</span><span class="p">):</span>
+                    <span class="c1"># If it&#39;s callable we know the function exists and is valid</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">possible_handler</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">possible_handler</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Connection handlers must be either &quot;</span>
+                                    <span class="s2">&quot;callables or strings.&quot;</span><span class="p">)</span>
+                <span class="n">bits</span> <span class="o">=</span> <span class="n">possible_handler</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;self&quot;</span><span class="p">:</span>
+                    <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span>
+                    <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">root</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">bit</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;The connection handler </span><span class="si">%s</span><span class="s2"> &quot;</span>
+                                                 <span class="s2">&quot;could not be found on </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                                                 <span class="o">%</span> <span class="p">(</span><span class="n">possible_handler</span><span class="p">,</span> <span class="n">cls</span><span class="p">))</span>
+                    <span class="n">handler</span> <span class="o">=</span> <span class="n">root</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># Import by name from local module not supported</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Importing a local function as a string &quot;</span>
+                                     <span class="s2">&quot;is not supported for the connection &quot;</span>
+                                     <span class="s2">&quot;handler </span><span class="si">%s</span><span class="s2"> on </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                                     <span class="o">%</span> <span class="p">(</span><span class="n">possible_handler</span><span class="p">,</span> <span class="n">cls</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Try a general import</span>
+                    <span class="n">module_name</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+                        <span class="n">handler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Could not import </span><span class="si">%s</span><span class="s2"> from the &quot;</span>
+                                          <span class="s2">&quot;module </span><span class="si">%s</span><span class="s2"> as a connection &quot;</span>
+                                          <span class="s2">&quot;handler on </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                                          <span class="o">%</span> <span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">cls</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Could not import </span><span class="si">%s</span><span class="s2"> from the &quot;</span>
+                                             <span class="s2">&quot;module </span><span class="si">%s</span><span class="s2"> as a connection &quot;</span>
+                                             <span class="s2">&quot;handler on </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                                             <span class="o">%</span> <span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">cls</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Step.action"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_action&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Hook in the action context customization.</span>
+                <span class="n">workflow_context</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+                <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_action_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                      <span class="n">workflow_context</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">context</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Problem instantiating action class.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action</span>
+</div>
+<div class="viewcode-block" id="Step.prepare_action_context"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.prepare_action_context">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_action_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allows for customization of how the workflow context is passed to</span>
+<span class="sd">        the action; this is the reverse of what &quot;contribute&quot; does to make the</span>
+<span class="sd">        action outputs sane for the workflow. Changes to the context are not</span>
+<span class="sd">        saved globally here. They are localized to the action.</span>
+
+<span class="sd">        Simply returns the unaltered context by default.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="Step.get_id"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.get_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the ID for this step. Suitable for use in HTML markup.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">__</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_verify_contributions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contributes</span><span class="p">:</span>
+            <span class="c1"># Make sure we don&#39;t skip steps based on weird behavior of</span>
+            <span class="c1"># POST query dicts.</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">and</span> <span class="n">field</span><span class="o">.</span><span class="n">required</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">failed_to_contribute</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contributes</span><span class="p">)</span>
+        <span class="n">failed_to_contribute</span> <span class="o">-=</span> <span class="nb">set</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">failed_to_contribute</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">WorkflowError</span><span class="p">(</span><span class="s2">&quot;The following expected data was &quot;</span>
+                                           <span class="s2">&quot;not added to the workflow context &quot;</span>
+                                           <span class="s2">&quot;by the step </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                                           <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span>
+                                              <span class="n">failed_to_contribute</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="Step.contribute"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds the data listed in ``contributes`` to the workflow&#39;s shared</span>
+<span class="sd">        context. By default, the context is simply updated with all the data</span>
+<span class="sd">        returned by the action.</span>
+
+<span class="sd">        Note that even if the value of one of the ``contributes`` keys is</span>
+<span class="sd">        not present (e.g. optional) the key should still be added to the</span>
+<span class="sd">        context with a value of ``None``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contributes</span><span class="p">:</span>
+                <span class="n">context</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="Step.render"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renders the step.&quot;&quot;&quot;</span>
+        <span class="n">step_template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">)</span>
+        <span class="n">extra_context</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span>
+                         <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="p">}</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">RequestContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">extra_context</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">step_template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Step.get_help_text"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.get_help_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_help_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the help text for this step.&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">linebreaks</span><span class="p">(</span><span class="n">force_text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">help_text</span><span class="p">))</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">get_help_text</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">safe</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Step.add_step_error"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.add_step_error">[docs]</a>    <span class="k">def</span> <span class="nf">add_step_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds an error to the Step based on API issues.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">add_action_error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Step.has_required_fields"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Step.has_required_fields">[docs]</a>    <span class="k">def</span> <span class="nf">has_required_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns True if action contains any required fields.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">required</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+</div></div>
+<div class="viewcode-block" id="WorkflowMetaclass"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.WorkflowMetaclass">[docs]</a><span class="k">class</span> <span class="nc">WorkflowMetaclass</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WorkflowMetaclass</span><span class="p">,</span> <span class="n">mcs</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;_cls_registry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="UpdateMembersStep"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.UpdateMembersStep">[docs]</a><span class="k">class</span> <span class="nc">UpdateMembersStep</span><span class="p">(</span><span class="n">Step</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A step that allows a user to add/remove members from a group.</span>
+
+<span class="sd">    .. attribute:: show_roles</span>
+
+<span class="sd">        Set to False to disable the display of the roles dropdown.</span>
+
+<span class="sd">    .. attribute:: available_list_title</span>
+
+<span class="sd">        The title used for the available list column.</span>
+
+<span class="sd">    .. attribute:: members_list_title</span>
+
+<span class="sd">        The title used for the members list column.</span>
+
+<span class="sd">    .. attribute:: no_available_text</span>
+
+<span class="sd">        The placeholder text used when the available list is empty.</span>
+
+<span class="sd">    .. attribute:: no_members_text</span>
+
+<span class="sd">        The placeholder text used when the members list is empty.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_workflow_step_update_members.html&quot;</span>
+    <span class="n">show_roles</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">available_list_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;All available&quot;</span><span class="p">)</span>
+    <span class="n">members_list_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Members&quot;</span><span class="p">)</span>
+    <span class="n">no_available_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;None available.&quot;</span><span class="p">)</span>
+    <span class="n">no_members_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No members.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateMembersStep.get_member_field_name"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.UpdateMembersStep.get_member_field_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_member_field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_class</span><span class="p">,</span> <span class="n">MembershipAction</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">get_member_field_name</span><span class="p">(</span><span class="n">role_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="o">+</span> <span class="s2">&quot;_role_&quot;</span> <span class="o">+</span> <span class="n">role_id</span>
+
+</div></div>
+<span class="nd">@six.python_2_unicode_compatible</span>
+<span class="nd">@six.add_metaclass</span><span class="p">(</span><span class="n">WorkflowMetaclass</span><span class="p">)</span>
+<div class="viewcode-block" id="Workflow"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow">[docs]</a><span class="k">class</span> <span class="nc">Workflow</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">HTMLElement</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Workflow is a collection of Steps. Its interface is very</span>
+<span class="sd">    straightforward, but it is responsible for handling some very</span>
+<span class="sd">    important tasks such as:</span>
+
+<span class="sd">    * Handling the injection, removal, and ordering of arbitrary steps.</span>
+
+<span class="sd">    * Determining if the workflow can be completed by a given user at runtime</span>
+<span class="sd">      based on all available information.</span>
+
+<span class="sd">    * Dispatching connections between steps to ensure that when context data</span>
+<span class="sd">      changes all the applicable callback functions are executed.</span>
+
+<span class="sd">    * Verifying/validating the overall data integrity and subsequently</span>
+<span class="sd">      triggering the final method to complete the workflow.</span>
+
+<span class="sd">    The ``Workflow`` class has the following attributes:</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        The verbose name for this workflow which will be displayed to the user.</span>
+<span class="sd">        Defaults to the class name.</span>
+
+<span class="sd">    .. attribute:: slug</span>
+
+<span class="sd">        The unique slug for this workflow. Required.</span>
+
+<span class="sd">    .. attribute:: steps</span>
+
+<span class="sd">        Read-only access to the final ordered set of step instances for</span>
+<span class="sd">        this workflow.</span>
+
+<span class="sd">    .. attribute:: default_steps</span>
+
+<span class="sd">        A list of :class:`~horizon.workflows.Step` classes which serve as the</span>
+<span class="sd">        starting point for this workflow&#39;s ordered steps. Defaults to an empty</span>
+<span class="sd">        list (``[]``).</span>
+
+<span class="sd">    .. attribute:: finalize_button_name</span>
+
+<span class="sd">        The name which will appear on the submit button for the workflow&#39;s</span>
+<span class="sd">        form. Defaults to ``&quot;Save&quot;``.</span>
+
+<span class="sd">    .. attribute:: success_message</span>
+
+<span class="sd">        A string which will be displayed to the user upon successful completion</span>
+<span class="sd">        of the workflow. Defaults to</span>
+<span class="sd">        ``&quot;{{ workflow.name }} completed successfully.&quot;``</span>
+
+<span class="sd">    .. attribute:: failure_message</span>
+
+<span class="sd">        A string which will be displayed to the user upon failure to complete</span>
+<span class="sd">        the workflow. Defaults to ``&quot;{{ workflow.name }} did not complete.&quot;``</span>
+
+<span class="sd">    .. attribute:: depends_on</span>
+
+<span class="sd">        A roll-up list of all the ``depends_on`` values compiled from the</span>
+<span class="sd">        workflow&#39;s steps.</span>
+
+<span class="sd">    .. attribute:: contributions</span>
+
+<span class="sd">        A roll-up list of all the ``contributes`` values compiled from the</span>
+<span class="sd">        workflow&#39;s steps.</span>
+
+<span class="sd">    .. attribute:: template_name</span>
+
+<span class="sd">        Path to the template which should be used to render this workflow.</span>
+<span class="sd">        In general the default common template should be used. Default:</span>
+<span class="sd">        ``&quot;horizon/common/_workflow.html&quot;``.</span>
+
+<span class="sd">    .. attribute:: entry_point</span>
+
+<span class="sd">        The slug of the step which should initially be active when the</span>
+<span class="sd">        workflow is rendered. This can be passed in upon initialization of</span>
+<span class="sd">        the workflow, or set anytime after initialization but before calling</span>
+<span class="sd">        either ``get_entry_point`` or ``render``.</span>
+
+<span class="sd">    .. attribute:: redirect_param_name</span>
+
+<span class="sd">        The name of a parameter used for tracking the URL to redirect to upon</span>
+<span class="sd">        completion of the workflow. Defaults to ``&quot;next&quot;``.</span>
+
+<span class="sd">    .. attribute:: object</span>
+
+<span class="sd">        The object (if any) which this workflow relates to. In the case of</span>
+<span class="sd">        a workflow which creates a new resource the object would be the created</span>
+<span class="sd">        resource after the relevant creation steps have been undertaken. In</span>
+<span class="sd">        the case of a workflow which updates a resource it would be the</span>
+<span class="sd">        resource being updated after it has been retrieved.</span>
+
+<span class="sd">    .. attribute:: wizard</span>
+
+<span class="sd">        Whether to present the workflow as a wizard, with &quot;prev&quot; and &quot;next&quot;</span>
+<span class="sd">        buttons and validation after every step.</span>
+
+<span class="sd">    .. attribute:: fullscreen</span>
+
+<span class="sd">        If the workflow is presented in a modal, and this attribute is</span>
+<span class="sd">        set to True, then the ``fullscreen`` css class will be added so</span>
+<span class="sd">        the modal can take advantage of the available screen estate.</span>
+<span class="sd">        Defaults to ``False``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_workflow.html&quot;</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> completed successfully.&quot;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> did not complete.&quot;</span><span class="p">)</span>
+    <span class="n">redirect_param_name</span> <span class="o">=</span> <span class="s2">&quot;next&quot;</span>
+    <span class="n">multipart</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">wizard</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">fullscreen</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">_registerable_class</span> <span class="o">=</span> <span class="n">Step</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">context_seed</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">entry_point</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Workflow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;The workflow </span><span class="si">%s</span><span class="s2"> must have a slug.&quot;</span>
+                                 <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depends_on</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contributions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span> <span class="o">=</span> <span class="n">entry_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c1"># Put together our steps in order. Note that we pre-register</span>
+        <span class="c1"># non-default steps so that we can identify them and subsequently</span>
+        <span class="c1"># insert them in order correctly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">step_class</span><span class="p">,</span> <span class="n">step_class</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="k">for</span> <span class="n">step_class</span>
+                               <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">_cls_registry</span>
+                               <span class="k">if</span> <span class="n">step_class</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_steps</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gather_steps</span><span class="p">()</span>
+
+        <span class="c1"># Determine all the context data we need to end up with.</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">depends_on</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">depends_on</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">depends_on</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contributions</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">contributes</span><span class="p">)</span>
+
+        <span class="c1"># Initialize our context. For ease we can preseed it with a</span>
+        <span class="c1"># regular dictionary. This should happen after steps have been</span>
+        <span class="c1"># registered and ordered.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">WorkflowContext</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">context_seed</span> <span class="o">=</span> <span class="n">context_seed</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">clean_seed</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">context_seed</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                           <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">contributions</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">depends_on</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context_seed</span> <span class="o">=</span> <span class="n">clean_seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">clean_seed</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+                <span class="n">valid</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+                <span class="c1"># Be sure to use the CLEANED data if the workflow is valid.</span>
+                <span class="k">if</span> <span class="n">valid</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">cleaned_data</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Workflow.steps"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.steps">[docs]</a>    <span class="k">def</span> <span class="nf">steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_ordered_steps&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gather_steps</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ordered_steps</span>
+</div>
+<div class="viewcode-block" id="Workflow.get_step"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.get_step">[docs]</a>    <span class="k">def</span> <span class="nf">get_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the instantiated step matching the given slug.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">slug</span> <span class="o">==</span> <span class="n">slug</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">step</span>
+</div>
+    <span class="k">def</span> <span class="nf">_gather_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ordered_step_classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_steps</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">default_step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_steps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">default_step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">default_step</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ordered_steps</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">step_class</span><span class="p">]</span>
+                               <span class="k">for</span> <span class="n">step_class</span> <span class="ow">in</span> <span class="n">ordered_step_classes</span>
+                               <span class="k">if</span> <span class="n">has_permissions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">step_class</span><span class="p">])]</span>
+
+    <span class="k">def</span> <span class="nf">_order_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_steps</span><span class="p">))</span>
+        <span class="n">additional</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">additional</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">min_pos</span> <span class="o">=</span> <span class="n">steps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">after</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">min_pos</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">max_pos</span> <span class="o">=</span> <span class="n">steps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">before</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">max_pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">min_pos</span> <span class="o">&gt;</span> <span class="n">max_pos</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">WorkflowError</span><span class="p">(</span><span class="s2">&quot;The step </span><span class="si">%(new)s</span><span class="s2"> can&#39;t be &quot;</span>
+                                               <span class="s2">&quot;placed between the steps &quot;</span>
+                                               <span class="s2">&quot;</span><span class="si">%(after)s</span><span class="s2"> and </span><span class="si">%(before)s</span><span class="s2">; the &quot;</span>
+                                               <span class="s2">&quot;step </span><span class="si">%(before)s</span><span class="s2"> comes before &quot;</span>
+                                               <span class="s2">&quot;</span><span class="si">%(after)s</span><span class="s2">.&quot;</span>
+                                               <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;new&quot;</span><span class="p">:</span> <span class="n">additional</span><span class="p">,</span>
+                                                  <span class="s2">&quot;after&quot;</span><span class="p">:</span> <span class="n">step</span><span class="o">.</span><span class="n">after</span><span class="p">,</span>
+                                                  <span class="s2">&quot;before&quot;</span><span class="p">:</span> <span class="n">step</span><span class="o">.</span><span class="n">before</span><span class="p">})</span>
+            <span class="n">steps</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">max_pos</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">steps</span>
+
+<div class="viewcode-block" id="Workflow.get_entry_point"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.get_entry_point">[docs]</a>    <span class="k">def</span> <span class="nf">get_entry_point</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the slug of the step which the workflow should begin on.</span>
+
+<span class="sd">        This method takes into account both already-available data and errors</span>
+<span class="sd">        within the steps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If we have a valid specified entry point, use it.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entry_point</span>
+        <span class="c1"># Otherwise fall back to calculating the appropriate entry point.</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">has_errors</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">step</span><span class="o">.</span><span class="n">slug</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">step</span><span class="o">.</span><span class="n">_verify_contributions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">WorkflowError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">step</span><span class="o">.</span><span class="n">slug</span>
+        <span class="c1"># If nothing else, just return the first step.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">slug</span>
+</div>
+    <span class="k">def</span> <span class="nf">_trigger_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="p">[(</span><span class="n">step</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">step</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[])]</span>
+        <span class="k">for</span> <span class="n">slug</span><span class="p">,</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+            <span class="n">responses</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">slug</span><span class="p">,</span> <span class="n">handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">responses</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Workflow.register"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">step_class</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Registers a :class:`~horizon.workflows.Step` with the workflow.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">step_class</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only classes may be registered.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">step_class</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">_registerable_class</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only </span><span class="si">%s</span><span class="s1"> classes or subclasses may be registered.&#39;</span>
+                             <span class="o">%</span> <span class="n">cls</span><span class="o">.</span><span class="n">_registerable_class</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">step_class</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">_cls_registry</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">_cls_registry</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">step_class</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Workflow.unregister"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.unregister">[docs]</a>    <span class="k">def</span> <span class="nf">unregister</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">step_class</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unregisters a :class:`~horizon.workflows.Step` from the workflow.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">_cls_registry</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">step_class</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">base</span><span class="o">.</span><span class="n">NotRegistered</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> is not registered&#39;</span> <span class="o">%</span> <span class="n">cls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">_unregister</span><span class="p">(</span><span class="n">step_class</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Workflow.validate"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hook for custom context data validation. Should return a boolean</span>
+<span class="sd">        value or raise :class:`~horizon.exceptions.WorkflowValidationError`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Workflow.is_valid"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.is_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Verified that all required data is present in the context and</span>
+<span class="sd">        calls the ``validate`` method to allow for finer-grained checks</span>
+<span class="sd">        on the context data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">depends_on</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">WorkflowValidationError</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to complete the workflow. The values </span><span class="si">%s</span><span class="s2"> are &quot;</span>
+                <span class="s2">&quot;required but not present.&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">))</span>
+
+        <span class="c1"># Validate each step. Cycle through all of them to catch all errors</span>
+        <span class="c1"># in one pass before returning.</span>
+        <span class="n">steps_valid</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">steps_valid</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">step</span><span class="o">.</span><span class="n">has_errors</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">steps_valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">steps_valid</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Workflow.finalize"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finalizes a workflow by running through all the actions in order</span>
+<span class="sd">        and calling their ``handle`` methods. Returns ``True`` on full success,</span>
+<span class="sd">        or ``False`` for a partial success, e.g. there were non-critical</span>
+<span class="sd">        errors. (If it failed completely the function wouldn&#39;t return.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">partial</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">True</span> <span class="ow">or</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">elif</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">False</span><span class="p">:</span>
+                    <span class="n">partial</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">step</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span> <span class="ow">or</span> <span class="p">{},</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">partial</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">):</span>
+            <span class="n">partial</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">partial</span>
+</div>
+<div class="viewcode-block" id="Workflow.handle"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handles any final processing for this workflow. Should return a</span>
+<span class="sd">        boolean value indicating success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Workflow.get_success_url"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a URL to redirect the user to upon completion. By default it</span>
+<span class="sd">        will attempt to parse a ``success_url`` attribute on the workflow,</span>
+<span class="sd">        which can take the form of a reversible URL pattern name, or a</span>
+<span class="sd">        standard HTTP URL.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">NoReverseMatch</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+</div>
+<div class="viewcode-block" id="Workflow.format_status_message"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Hook to allow customization of the message returned to the user</span>
+<span class="sd">        upon successful or unsuccessful completion of the workflow.</span>
+
+<span class="sd">        By default it simply inserts the workflow&#39;s name into the message</span>
+<span class="sd">        string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">message</span>
+</div>
+<div class="viewcode-block" id="Workflow.render"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renders the workflow.&quot;&quot;&quot;</span>
+        <span class="n">workflow_template</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">)</span>
+        <span class="n">extra_context</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;workflow&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">is_ajax</span><span class="p">():</span>
+            <span class="n">extra_context</span><span class="p">[</span><span class="s1">&#39;modal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">RequestContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">extra_context</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">workflow_template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Workflow.get_absolute_url"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.get_absolute_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the canonical URL for this workflow.</span>
+
+<span class="sd">        This is used for the POST action attribute on the form element</span>
+<span class="sd">        wrapping the workflow.</span>
+
+<span class="sd">        For convenience it defaults to the value of</span>
+<span class="sd">        ``request.get_full_path()`` with any query string stripped off,</span>
+<span class="sd">        e.g. the path at which the workflow was requested.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Workflow.add_error_to_step"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.base.html#horizon.workflows.base.Workflow.add_error_to_step">[docs]</a>    <span class="k">def</span> <span class="nf">add_error_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds an error to the workflow&#39;s Step with the</span>
+<span class="sd">        specified slug based on API issues. This is useful</span>
+<span class="sd">        when you wish for API errors to appear as errors on</span>
+<span class="sd">        the form rather than using the messages framework.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_step</span><span class="p">(</span><span class="n">slug</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">step</span><span class="p">:</span>
+            <span class="n">step</span><span class="o">.</span><span class="n">add_step_error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../horizon.html" >horizon</a> &raquo;</li>
+          <li><a href="../workflows.html" accesskey="U">horizon.workflows</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

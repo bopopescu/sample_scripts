@@ -1,0 +1,910 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.loadbalancers.workflows Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.loadbalancers.panel Module" href="openstack_dashboard.dashboards.project.loadbalancers.panel.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.loadbalancers.utils Module" href="openstack_dashboard.dashboards.project.loadbalancers.utils.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-loadbalancers-workflows-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.loadbalancers.workflows</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-loadbalancers-workflows-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddMember</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMember"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.loadbalancers.workflows.AddMemberStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8970110&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b89700d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMember.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8970890&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addmember'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8970090&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:loadbalancers:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddMemberAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMemberAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('pool_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6491ad0&gt;), ('member_type', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6491e50&gt;), ('members', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b64918d0&gt;), ('address', &lt;horizon.forms.fields.IPField object at 0x7ff3b6491310&gt;), ('weight', &lt;django.forms.fields.IntegerField object at 0x7ff3b6491690&gt;), ('protocol_port', &lt;django.forms.fields.IntegerField object at 0x7ff3b6491dd0&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64913d0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMemberAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('pool_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6491ad0&gt;), ('member_type', &lt;django.forms.fields.ChoiceField object at 0x7ff3b6491e50&gt;), ('members', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b64918d0&gt;), ('address', &lt;horizon.forms.fields.IPField object at 0x7ff3b6491310&gt;), ('weight', &lt;django.forms.fields.IntegerField object at 0x7ff3b6491690&gt;), ('protocol_port', &lt;django.forms.fields.IntegerField object at 0x7ff3b6491dd0&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64913d0&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8970c10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8970a10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8970d10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addmemberaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddMemberStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMemberStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddMemberAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMemberStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('pool_id', 'member_type', 'members', 'address', 'protocol_port', 'weight', 'admin_state_up')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddMonitor</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMonitor"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.loadbalancers.workflows.AddMonitorStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dfd10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dff10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMonitor.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dfd90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addmonitor'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dfa50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:loadbalancers:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddMonitorAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMonitorAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('type', &lt;django.forms.fields.ChoiceField object at 0x7ff3b8970490&gt;), ('delay', &lt;django.forms.fields.IntegerField object at 0x7ff3b92d5310&gt;), ('timeout', &lt;django.forms.fields.IntegerField object at 0x7ff3b9301490&gt;), ('max_retries', &lt;django.forms.fields.IntegerField object at 0x7ff3b927eb50&gt;), ('http_method', &lt;django.forms.fields.ChoiceField object at 0x7ff3b72aac50&gt;), ('url_path', &lt;django.forms.fields.CharField object at 0x7ff3b72aaf50&gt;), ('expected_codes', &lt;django.forms.fields.RegexField object at 0x7ff3b72aa5d0&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b72aab90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMonitorAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('type', &lt;django.forms.fields.ChoiceField object at 0x7ff3b8970490&gt;), ('delay', &lt;django.forms.fields.IntegerField object at 0x7ff3b92d5310&gt;), ('timeout', &lt;django.forms.fields.IntegerField object at 0x7ff3b9301490&gt;), ('max_retries', &lt;django.forms.fields.IntegerField object at 0x7ff3b927eb50&gt;), ('http_method', &lt;django.forms.fields.ChoiceField object at 0x7ff3b72aac50&gt;), ('url_path', &lt;django.forms.fields.CharField object at 0x7ff3b72aaf50&gt;), ('expected_codes', &lt;django.forms.fields.RegexField object at 0x7ff3b72aa5d0&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b72aab90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b95febd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b95fea10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83df810&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addmonitoraction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddMonitorStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMonitorStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddMonitorAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddMonitorStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('type', 'delay', 'timeout', 'max_retries', 'http_method', 'url_path', 'expected_codes', 'admin_state_up')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddPMAssociation</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPMAssociation"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.loadbalancers.workflows.AddPMAssociationStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83df9d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83df690&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPMAssociation.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83df750&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addassociation'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dff50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:loadbalancers:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddPMAssociationAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPMAssociationAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('monitor_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b83dfe90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('monitor_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b83dfe90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dfa10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83df290&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_monitor_id_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPMAssociationAction.populate_monitor_id_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b83dfb10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addpmassociationaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddPMAssociationStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPMAssociationStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddPMAssociationAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPMAssociationStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('monitor_id',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">depends_on</tt><em class="property"> = ('pool_id', 'pool_name', 'pool_monitors')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddPool</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPool"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.loadbalancers.workflows.AddPoolStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b91c8790&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b91c8550&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPool.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPool.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b91c8890&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addpool'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b91c8810&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:loadbalancers:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddPoolAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPoolAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b64fc6d0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b64fcf10&gt;), ('provider', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fcc90&gt;), ('subnet_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fc150&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fc190&gt;), ('lb_method', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fcf90&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fcb10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b64fc6d0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b64fcf10&gt;), ('provider', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fcc90&gt;), ('subnet_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fc150&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fc190&gt;), ('lb_method', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fcf90&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b64fcb10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/loadbalancers/_create_pool_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b64fcbd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b91c81d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addpoolaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddPoolStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPoolStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddPoolAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddPoolStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('name', 'description', 'subnet_id', 'provider', 'protocol', 'lb_method', 'admin_state_up')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddVip</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVip"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.loadbalancers.workflows.AddVipStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8639610&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3be20a9d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVip.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVip.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8f2ef50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'addvip'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8639ad0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:loadbalancers:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddVipAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVipAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b91c8110&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b91c8ad0&gt;), ('subnet_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b91c8750&gt;), ('address', &lt;horizon.forms.fields.IPField object at 0x7ff3b91c83d0&gt;), ('protocol_port', &lt;django.forms.fields.IntegerField object at 0x7ff3b91c8f10&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b91c8c10&gt;), ('session_persistence', &lt;django.forms.fields.ChoiceField object at 0x7ff3ba68e650&gt;), ('cookie_name', &lt;django.forms.fields.CharField object at 0x7ff3ba68e8d0&gt;), ('connection_limit', &lt;django.forms.fields.IntegerField object at 0x7ff3b7f1be90&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b7f1bc50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVipAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b91c8110&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b91c8ad0&gt;), ('subnet_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b91c8750&gt;), ('address', &lt;horizon.forms.fields.IPField object at 0x7ff3b91c83d0&gt;), ('protocol_port', &lt;django.forms.fields.IntegerField object at 0x7ff3b91c8f10&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b91c8c10&gt;), ('session_persistence', &lt;django.forms.fields.ChoiceField object at 0x7ff3ba68e650&gt;), ('cookie_name', &lt;django.forms.fields.CharField object at 0x7ff3ba68e8d0&gt;), ('connection_limit', &lt;django.forms.fields.IntegerField object at 0x7ff3b7f1be90&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b7f1bc50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/loadbalancers/_create_vip_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7f1b110&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8f2e8d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'addvipaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">AddVipStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVipStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">AddVipAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#AddVipStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('name', 'description', 'subnet_id', 'address', 'protocol_port', 'protocol', 'session_persistence', 'cookie_name', 'connection_limit', 'admin_state_up')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">depends_on</tt><em class="property"> = ('pool_id', 'subnet')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">DeletePMAssociation</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#DeletePMAssociation"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.loadbalancers.workflows.DeletePMAssociationStep'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82db750&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82db050&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#DeletePMAssociation.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82dba50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'deleteassociation'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82db2d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:loadbalancers:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">DeletePMAssociationAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#DeletePMAssociationAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('monitor_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b83df390&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('monitor_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b83df390&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82dbc90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82dbd90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ('openstack.services.network',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_monitor_id_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#DeletePMAssociationAction.populate_monitor_id_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b82dbed0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'deletepmassociationaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.loadbalancers.workflows.</tt><tt class="descname">DeletePMAssociationStep</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#DeletePMAssociationStep"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">DeletePMAssociationAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/loadbalancers/workflows.html#DeletePMAssociationStep.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('monitor_id',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">depends_on</tt><em class="property"> = ('pool_id', 'pool_name', 'pool_monitors')</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.loadbalancers.utils.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.loadbalancers.utils</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.loadbalancers.panel.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.loadbalancers.panel</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.workflows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.loadbalancers.panel.html" title="The openstack_dashboard.dashboards.project.loadbalancers.panel Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.loadbalancers.utils.html" title="The openstack_dashboard.dashboards.project.loadbalancers.utils Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

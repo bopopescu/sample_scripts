@@ -1,0 +1,704 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.test.helpers &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.test.helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>  <span class="c1"># noqa</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<span class="kn">from</span> <span class="nn">ceilometerclient.v2</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">ceilometer_client</span>
+<span class="kn">from</span> <span class="nn">cinderclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">cinder_client</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.messages.storage</span> <span class="kn">import</span> <span class="n">default_storage</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.core.handlers</span> <span class="kn">import</span> <span class="n">wsgi</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">urlresolvers</span>
+<span class="kn">from</span> <span class="nn">django.test.client</span> <span class="kn">import</span> <span class="n">RequestFactory</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">django_test_utils</span>
+<span class="kn">from</span> <span class="nn">django.utils.importlib</span> <span class="kn">import</span> <span class="n">import_module</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">unittest</span>
+<span class="kn">import</span> <span class="nn">glanceclient</span>
+<span class="kn">from</span> <span class="nn">heatclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">heat_client</span>
+<span class="kn">import</span> <span class="nn">httplib2</span>
+<span class="kn">from</span> <span class="nn">keystoneclient.v2_0</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">keystone_client</span>
+<span class="kn">import</span> <span class="nn">mock</span>
+<span class="kn">from</span> <span class="nn">mox3</span> <span class="kn">import</span> <span class="n">mox</span>
+<span class="kn">from</span> <span class="nn">neutronclient.v2_0</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">neutron_client</span>
+<span class="kn">from</span> <span class="nn">novaclient.v2</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">nova_client</span>
+<span class="kn">from</span> <span class="nn">openstack_auth</span> <span class="kn">import</span> <span class="n">user</span>
+<span class="kn">from</span> <span class="nn">openstack_auth</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">moves</span>
+<span class="kn">from</span> <span class="nn">swiftclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">swift_client</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">conf</span>
+<span class="kn">from</span> <span class="nn">horizon.test</span> <span class="kn">import</span> <span class="n">helpers</span> <span class="k">as</span> <span class="n">horizon_helpers</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">context_processors</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.test.test_data</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">test_utils</span>
+
+
+<span class="c1"># Makes output of failing mox tests much easier to read.</span>
+<span class="n">wsgi</span><span class="o">.</span><span class="n">WSGIRequest</span><span class="o">.</span><span class="n">__repr__</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;&lt;class &#39;django.http.HttpRequest&#39;&gt;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">create_stubs</span><span class="p">(</span><span class="n">stubs_to_create</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;decorator to simplify setting up multiple stubs at once via mox</span>
+
+<span class="sd">    :param stubs_to_create: methods to stub in one or more modules</span>
+<span class="sd">    :type stubs_to_create: dict</span>
+
+<span class="sd">    The keys are python paths to the module containing the methods to mock.</span>
+
+<span class="sd">    To mock a method in openstack_dashboard/api/nova.py, the key is::</span>
+
+<span class="sd">        api.nova</span>
+
+<span class="sd">    The values are either a tuple of list of methods to mock in the module</span>
+<span class="sd">    indicated by the key.</span>
+
+<span class="sd">    For example::</span>
+
+<span class="sd">        (&#39;server_list&#39;,)</span>
+<span class="sd">            -or-</span>
+<span class="sd">        (&#39;flavor_list&#39;, &#39;server_list&#39;,)</span>
+<span class="sd">            -or-</span>
+<span class="sd">        [&#39;flavor_list&#39;, &#39;server_list&#39;]</span>
+
+<span class="sd">    Additionally, multiple modules can be mocked at once::</span>
+
+<span class="sd">        {</span>
+<span class="sd">            api.nova: (&#39;flavor_list&#39;, &#39;server_list&#39;),</span>
+<span class="sd">            api.glance: (&#39;image_list_detailed&#39;,),</span>
+<span class="sd">        }</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stubs_to_create</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;create_stub must be passed a dict, but a </span><span class="si">%s</span><span class="s2"> was &quot;</span>
+                        <span class="s2">&quot;given.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">stubs_to_create</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">inner_stub_out</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">instance_stub_out</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stubs_to_create</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">stubs_to_create</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span>
+                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">stubs_to_create</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The values of the create_stub &quot;</span>
+                                    <span class="s2">&quot;dict must be lists or tuples, but &quot;</span>
+                                    <span class="s2">&quot;is a </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                                    <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">stubs_to_create</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">stubs_to_create</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance_stub_out</span>
+    <span class="k">return</span> <span class="n">inner_stub_out</span>
+
+
+<span class="k">class</span> <span class="nc">RequestFactoryWithMessages</span><span class="p">(</span><span class="n">RequestFactory</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RequestFactoryWithMessages</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">_messages</span> <span class="o">=</span> <span class="n">default_storage</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span>
+
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RequestFactoryWithMessages</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">_messages</span> <span class="o">=</span> <span class="n">default_storage</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span>
+
+
+<span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SKIP_UNITTESTS&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                 <span class="s2">&quot;The SKIP_UNITTESTS env variable is set.&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="TestCase"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.TestCase">[docs]</a><span class="k">class</span> <span class="nc">TestCase</span><span class="p">(</span><span class="n">horizon_helpers</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Specialized base test case class for Horizon.</span>
+
+<span class="sd">    It gives access to numerous additional features:</span>
+
+<span class="sd">      * A full suite of test data through various attached objects and</span>
+<span class="sd">        managers (e.g. ``self.servers``, ``self.user``, etc.). See the</span>
+<span class="sd">        docs for</span>
+<span class="sd">        :class:`~openstack_dashboard.test.test_data.utils.TestData`</span>
+<span class="sd">        for more information.</span>
+<span class="sd">      * The ``mox`` mocking framework via ``self.mox``.</span>
+<span class="sd">      * A set of request context data via ``self.context``.</span>
+<span class="sd">      * A ``RequestFactory`` class which supports Django&#39;s ``contrib.messages``</span>
+<span class="sd">        framework via ``self.factory``.</span>
+<span class="sd">      * A ready-to-go request object via ``self.request``.</span>
+<span class="sd">      * The ability to override specific time data controls for easier testing.</span>
+<span class="sd">      * Several handy additional assertion methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">fake_conn_request</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;An external URI request tried to escape through &quot;</span>
+                            <span class="s2">&quot;an httplib2 client. Args: </span><span class="si">%s</span><span class="s2">, kwargs: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_real_conn_request</span> <span class="o">=</span> <span class="n">httplib2</span><span class="o">.</span><span class="n">Http</span><span class="o">.</span><span class="n">_conn_request</span>
+        <span class="n">httplib2</span><span class="o">.</span><span class="n">Http</span><span class="o">.</span><span class="n">_conn_request</span> <span class="o">=</span> <span class="n">fake_conn_request</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_real_context_processor</span> <span class="o">=</span> <span class="n">context_processors</span><span class="o">.</span><span class="n">openstack</span>
+        <span class="n">context_processors</span><span class="o">.</span><span class="n">openstack</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">request</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">patchers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_panel_mocks</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_setup_test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_setup_test_data</span><span class="p">()</span>
+        <span class="n">test_utils</span><span class="o">.</span><span class="n">load_test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;authorized_tenants&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tenants</span><span class="o">.</span><span class="n">list</span><span class="p">()}</span>
+
+    <span class="k">def</span> <span class="nf">_setup_factory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># For some magical reason we need a copy of this here.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">RequestFactoryWithMessages</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_setup_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_real_get_user</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span>
+        <span class="n">tenants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;authorized_tenants&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setActiveUser</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                           <span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                           <span class="n">domain_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="n">tenant_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tenant</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="n">service_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">service_catalog</span><span class="p">,</span>
+                           <span class="n">authorized_tenants</span><span class="o">=</span><span class="n">tenants</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_setup_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_setup_request</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span>
+
+<div class="viewcode-block" id="TestCase.add_panel_mocks"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.TestCase.add_panel_mocks">[docs]</a>    <span class="k">def</span> <span class="nf">add_panel_mocks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Global mocks on panels that get called on all views.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patchers</span><span class="p">[</span><span class="s1">&#39;aggregates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+            <span class="s1">&#39;openstack_dashboard.dashboards.admin&#39;</span>
+            <span class="s1">&#39;.aggregates.panel.Aggregates.can_access&#39;</span><span class="p">,</span>
+            <span class="n">mock</span><span class="o">.</span><span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patchers</span><span class="p">[</span><span class="s1">&#39;aggregates&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">httplib2</span><span class="o">.</span><span class="n">Http</span><span class="o">.</span><span class="n">_conn_request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_conn_request</span>
+        <span class="n">context_processors</span><span class="o">.</span><span class="n">openstack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_context_processor</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_get_user</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">stopall</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">tearDown</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">setActiveUser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">service_catalog</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">authorized_tenants</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">domain_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_user</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">User</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span>
+                             <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span>
+                             <span class="n">user</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
+                             <span class="n">domain_id</span><span class="o">=</span><span class="n">domain_id</span><span class="p">,</span>
+                             <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">,</span>
+                             <span class="n">service_catalog</span><span class="o">=</span><span class="n">service_catalog</span><span class="p">,</span>
+                             <span class="n">roles</span><span class="o">=</span><span class="n">roles</span><span class="p">,</span>
+                             <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+                             <span class="n">authorized_tenants</span><span class="o">=</span><span class="n">authorized_tenants</span><span class="p">,</span>
+                             <span class="n">endpoint</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">OPENSTACK_KEYSTONE_URL</span><span class="p">)</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span> <span class="o">=</span> <span class="n">get_user</span>
+
+<div class="viewcode-block" id="TestCase.assertRedirectsNoFollow"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.TestCase.assertRedirectsNoFollow">[docs]</a>    <span class="k">def</span> <span class="nf">assertRedirectsNoFollow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">expected_url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check for redirect.</span>
+
+<span class="sd">        Asserts that the given response issued a 302 redirect without</span>
+<span class="sd">        processing the view which is redirected to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;location&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                         <span class="p">(</span><span class="s1">&#39;Location&#39;</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">TESTSERVER</span> <span class="o">+</span> <span class="n">expected_url</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">302</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TestCase.assertNoFormErrors"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.TestCase.assertNoFormErrors">[docs]</a>    <span class="k">def</span> <span class="nf">assertNoFormErrors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">context_name</span><span class="o">=</span><span class="s2">&quot;form&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks for no form errors.</span>
+
+<span class="sd">        Asserts that the response either does not contain a form in its</span>
+<span class="sd">        context, or that if it does, that form has no errors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;context&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">context</span> <span class="ow">or</span> <span class="n">context_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">context</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="n">context_name</span><span class="p">]</span><span class="o">.</span><span class="n">_errors</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> \
+            <span class="s2">&quot;Unexpected errors were found on the form: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">errors</span>
+</div>
+<div class="viewcode-block" id="TestCase.assertFormErrors"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.TestCase.assertFormErrors">[docs]</a>    <span class="k">def</span> <span class="nf">assertFormErrors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">context_name</span><span class="o">=</span><span class="s2">&quot;form&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check for form errors.</span>
+
+<span class="sd">        Asserts that the response does contain a form in its</span>
+<span class="sd">        context, and that form has errors, if count were given,</span>
+<span class="sd">        it must match the exact numbers of errors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;context&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">context</span> <span class="ow">and</span> <span class="n">context_name</span> <span class="ow">in</span> <span class="n">context</span><span class="p">),</span> \
+            <span class="s2">&quot;The response did not contain a form.&quot;</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="n">context_name</span><span class="p">]</span><span class="o">.</span><span class="n">_errors</span>
+        <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="o">==</span> <span class="n">count</span><span class="p">,</span> \
+                <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> errors were found on the form, </span><span class="si">%d</span><span class="s2"> expected&quot;</span> <span class="o">%</span> \
+                <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">),</span> <span class="n">count</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">message</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">errors</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Expected message not found, instead found: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                          <span class="o">%</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">field_errors</span><span class="p">])</span> <span class="k">for</span>
+                             <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">field_errors</span><span class="p">)</span> <span class="ow">in</span> <span class="n">errors</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;No errors were found on the form&quot;</span>
+</div>
+<div class="viewcode-block" id="TestCase.assertStatusCode"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.TestCase.assertStatusCode">[docs]</a>    <span class="k">def</span> <span class="nf">assertStatusCode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">expected_code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates an expected status code.</span>
+
+<span class="sd">        Matches camel case of other assert functions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">expected_code</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s1">&#39;status code </span><span class="si">%r</span><span class="s1"> != </span><span class="si">%r</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+                                                <span class="n">expected_code</span><span class="p">,</span>
+                                                <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">assertItemsCollectionEqual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">items_list</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span>
+                         <span class="s1">&#39;{&quot;items&quot;: &#39;</span> <span class="o">+</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">items_list</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mock_rest_request</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">mock_args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;user.is_authenticated.return_value&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;is_ajax.return_value&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;policy.check.return_value&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+        <span class="p">}</span>
+        <span class="n">mock_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mock</span><span class="o">.</span><span class="n">Mock</span><span class="p">(</span><span class="o">**</span><span class="n">mock_args</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="BaseAdminViewTests"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.BaseAdminViewTests">[docs]</a><span class="k">class</span> <span class="nc">BaseAdminViewTests</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sets an active user with the &quot;admin&quot; role.</span>
+
+<span class="sd">    For testing admin-only views and functionality.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setActiveUser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;roles&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;roles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">admin</span><span class="o">.</span><span class="n">_info</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseAdminViewTests</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setActiveUser</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setSessionValues</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">SESSION_ENGINE</span> <span class="o">=</span> <span class="s1">&#39;django.contrib.sessions.backends.file&#39;</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">SESSION_ENGINE</span><span class="p">)</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">SessionStore</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">store</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">cookies</span><span class="p">[</span><span class="n">settings</span><span class="o">.</span><span class="n">SESSION_COOKIE_NAME</span><span class="p">]</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">session_key</span>
+
+</div>
+<div class="viewcode-block" id="APITestCase"><a class="viewcode-back" href="../../../ref/test.html#openstack_dashboard.test.helpers.APITestCase">[docs]</a><span class="k">class</span> <span class="nc">APITestCase</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Testing APIs.</span>
+
+<span class="sd">    For use with tests which deal with the underlying clients rather than</span>
+<span class="sd">    stubbing out the openstack_dashboard.api.* methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">patch_middleware_get_user</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">fake_keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Returns the stub keystoneclient.</span>
+
+<span class="sd">            Only necessary because the function takes too many arguments to</span>
+<span class="sd">            conveniently be a lambda.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub_keystoneclient</span><span class="p">()</span>
+
+        <span class="c1"># Store the original clients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_glanceclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">glanceclient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_keystoneclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystoneclient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_novaclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">novaclient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_neutronclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">neutronclient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_cinderclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">cinderclient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_heatclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">heatclient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_ceilometerclient</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ceilometer</span><span class="o">.</span><span class="n">ceilometerclient</span>
+
+        <span class="c1"># Replace the clients with our stubs.</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">glanceclient</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">request</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub_glanceclient</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystoneclient</span> <span class="o">=</span> <span class="n">fake_keystoneclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">novaclient</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">request</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub_novaclient</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">neutronclient</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">request</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub_neutronclient</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">cinderclient</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">request</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stub_cinderclient</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">heatclient</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">request</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">:</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">stub_heatclient</span><span class="p">())</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">ceilometer</span><span class="o">.</span><span class="n">ceilometerclient</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">request</span><span class="p">:</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">stub_ceilometerclient</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">tearDown</span><span class="p">()</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">glanceclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_glanceclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">novaclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_novaclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystoneclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_keystoneclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">neutronclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_neutronclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">cinderclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_cinderclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">heatclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_heatclient</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">ceilometer</span><span class="o">.</span><span class="n">ceilometerclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_ceilometerclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_novaclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;novaclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">nova_client</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">novaclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">nova_client</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">novaclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_cinderclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;cinderclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">cinder_client</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cinderclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">cinder_client</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cinderclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_keystoneclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;keystoneclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">keystone_client</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="c1"># NOTE(saschpe): Mock properties, MockObject.__init__ ignores them:</span>
+            <span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">auth_token</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span>
+            <span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">service_catalog</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">tenant_id</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+            <span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">tenant_name</span> <span class="o">=</span> <span class="s1">&#39;tenant_1&#39;</span>
+            <span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">management_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="o">.</span><span class="n">__dir__</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keystoneclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">keystone_client</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">keystoneclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_glanceclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;glanceclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">glanceclient</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">glanceclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">glanceclient</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">glanceclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_neutronclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;neutronclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">neutron_client</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neutronclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">neutron_client</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neutronclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_swiftclient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expected_calls</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;swiftclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">swift_client</span><span class="p">,</span> <span class="s1">&#39;Connection&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">swiftclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">swift_client</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">expected_calls</span><span class="p">:</span>
+                <span class="n">swift_client</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span>
+                                        <span class="n">mox</span><span class="o">.</span><span class="n">IgnoreArg</span><span class="p">(),</span>
+                                        <span class="bp">None</span><span class="p">,</span>
+                                        <span class="n">preauthtoken</span><span class="o">=</span><span class="n">mox</span><span class="o">.</span><span class="n">IgnoreArg</span><span class="p">(),</span>
+                                        <span class="n">preauthurl</span><span class="o">=</span><span class="n">mox</span><span class="o">.</span><span class="n">IgnoreArg</span><span class="p">(),</span>
+                                        <span class="n">cacert</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                        <span class="n">insecure</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                        <span class="n">auth_version</span><span class="o">=</span><span class="s2">&quot;2.0&quot;</span><span class="p">)</span> \
+                            <span class="o">.</span><span class="n">AndReturn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">swiftclient</span><span class="p">)</span>
+                <span class="n">expected_calls</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">swiftclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_heatclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;heatclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">heat_client</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">heatclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">CreateMock</span><span class="p">(</span><span class="n">heat_client</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">heatclient</span>
+
+    <span class="k">def</span> <span class="nf">stub_ceilometerclient</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;ceilometerclient&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">StubOutWithMock</span><span class="p">(</span><span class="n">ceilometer_client</span><span class="p">,</span> <span class="s1">&#39;Client&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ceilometerclient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span>\
+                <span class="n">CreateMock</span><span class="p">(</span><span class="n">ceilometer_client</span><span class="o">.</span><span class="n">Client</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ceilometerclient</span>
+
+</div>
+<span class="nd">@unittest.skipUnless</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;WITH_SELENIUM&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+                     <span class="s2">&quot;The WITH_SELENIUM env variable is not set.&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SeleniumTestCase</span><span class="p">(</span><span class="n">horizon_helpers</span><span class="o">.</span><span class="n">SeleniumTestCase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SeleniumTestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+        <span class="n">test_utils</span><span class="o">.</span><span class="n">load_test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mox</span> <span class="o">=</span> <span class="n">mox</span><span class="o">.</span><span class="n">Mox</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_real_get_user</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setActiveUser</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                           <span class="n">username</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                           <span class="n">tenant_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tenant</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="n">service_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">service_catalog</span><span class="p">,</span>
+                           <span class="n">authorized_tenants</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tenants</span><span class="o">.</span><span class="n">list</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patchers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patchers</span><span class="p">[</span><span class="s1">&#39;aggregates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+            <span class="s1">&#39;openstack_dashboard.dashboards.admin&#39;</span>
+            <span class="s1">&#39;.aggregates.panel.Aggregates.can_access&#39;</span><span class="p">,</span>
+            <span class="n">mock</span><span class="o">.</span><span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patchers</span><span class="p">[</span><span class="s1">&#39;aggregates&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HORIZON_TEST_RUN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;True&quot;</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">UnsetStubs</span><span class="p">()</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_get_user</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">stopall</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mox</span><span class="o">.</span><span class="n">VerifyAll</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HORIZON_TEST_RUN&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">setActiveUser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">service_catalog</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">roles</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                      <span class="n">authorized_tenants</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_user</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">User</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span>
+                             <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span>
+                             <span class="n">user</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
+                             <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">,</span>
+                             <span class="n">service_catalog</span><span class="o">=</span><span class="n">service_catalog</span><span class="p">,</span>
+                             <span class="n">roles</span><span class="o">=</span><span class="n">roles</span><span class="p">,</span>
+                             <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+                             <span class="n">authorized_tenants</span><span class="o">=</span><span class="n">authorized_tenants</span><span class="p">,</span>
+                             <span class="n">endpoint</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">OPENSTACK_KEYSTONE_URL</span><span class="p">)</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">get_user</span> <span class="o">=</span> <span class="n">get_user</span>
+
+
+<span class="k">class</span> <span class="nc">SeleniumAdminTestCase</span><span class="p">(</span><span class="n">SeleniumTestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Version of AdminTestCase for Selenium.</span>
+
+<span class="sd">    Sets an active user with the &quot;admin&quot; role for testing admin-only views and</span>
+<span class="sd">    functionality.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setActiveUser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;roles&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;roles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">admin</span><span class="o">.</span><span class="n">_info</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SeleniumAdminTestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setActiveUser</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">my_custom_sort</span><span class="p">(</span><span class="n">flavor</span><span class="p">):</span>
+    <span class="n">sort_order</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;m1.secret&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;m1.tiny&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;m1.massive&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;m1.metadata&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">sort_order</span><span class="p">[</span><span class="n">flavor</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">PluginTestCase</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test case for testing plugin system of Horizon.</span>
+
+<span class="sd">    For use with tests which deal with the pluggable dashboard and panel</span>
+<span class="sd">    configuration, it takes care of backing up and restoring the Horizon</span>
+<span class="sd">    configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PluginTestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_horizon_config</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">HORIZON_CONFIG</span>
+        <span class="n">conf</span><span class="o">.</span><span class="n">HORIZON_CONFIG</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">LazySettings</span><span class="p">()</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span><span class="o">.</span><span class="n">_urls</span><span class="p">()</span>
+        <span class="c1"># Store our original dashboards</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_dashboards</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="c1"># Gather up and store our original panels for each dashboard</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_panels</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_dashboards</span><span class="p">:</span>
+            <span class="n">panels</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span><span class="o">.</span><span class="n">_registry</span><span class="p">[</span><span class="n">dash</span><span class="p">]</span><span class="o">.</span><span class="n">_registry</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_panels</span><span class="p">[</span><span class="n">dash</span><span class="p">]</span> <span class="o">=</span> <span class="n">panels</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PluginTestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">tearDown</span><span class="p">()</span>
+        <span class="n">conf</span><span class="o">.</span><span class="n">HORIZON_CONFIG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">old_horizon_config</span>
+        <span class="c1"># Destroy our singleton and re-create it.</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">HorizonSite</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">del</span> <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">HorizonSite</span><span class="p">()</span>
+        <span class="c1"># Reload the convenience references to Horizon stored in __init__</span>
+        <span class="n">moves</span><span class="o">.</span><span class="n">reload_module</span><span class="p">(</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;horizon&quot;</span><span class="p">))</span>
+        <span class="c1"># Re-register our original dashboards and panels.</span>
+        <span class="c1"># This is necessary because autodiscovery only works on the first</span>
+        <span class="c1"># import, and calling reload introduces innumerable additional</span>
+        <span class="c1"># problems. Manual re-registration is the only good way for testing.</span>
+        <span class="k">for</span> <span class="n">dash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_dashboards</span><span class="p">:</span>
+            <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">dash</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">panel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discovered_panels</span><span class="p">[</span><span class="n">dash</span><span class="p">]:</span>
+                <span class="n">dash</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">panel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reload_urls</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_reload_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;CLeans up URLs.</span>
+
+<span class="sd">        Clears out the URL caches, reloads the root urls module, and</span>
+<span class="sd">        re-triggers the autodiscovery mechanism for Horizon. Allows URLs</span>
+<span class="sd">        to be re-calculated after registering new dashboards. Useful</span>
+<span class="sd">        only for testing and should never be used on a live site.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">urlresolvers</span><span class="o">.</span><span class="n">clear_url_caches</span><span class="p">()</span>
+        <span class="n">moves</span><span class="o">.</span><span class="n">reload_module</span><span class="p">(</span><span class="n">import_module</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">ROOT_URLCONF</span><span class="p">))</span>
+        <span class="n">base</span><span class="o">.</span><span class="n">Horizon</span><span class="o">.</span><span class="n">_urls</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">update_settings</span><span class="p">(</span><span class="n">django_test_utils</span><span class="o">.</span><span class="n">override_settings</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;override_settings which allows override an item in dict.</span>
+
+<span class="sd">    django original override_settings replaces a dict completely,</span>
+<span class="sd">    however OpenStack dashboard setting has many dictionary configuration</span>
+<span class="sd">    and there are test case where we want to override only one item in</span>
+<span class="sd">    a dictionary and keep other items in the dictionary.</span>
+<span class="sd">    This version of override_settings allows this if keep_dict is True.</span>
+
+<span class="sd">    If keep_dict False is specified, the original behavior of</span>
+<span class="sd">    Django override_settings is used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_dict</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">keep_dict</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">new_value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">new_value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)</span> <span class="ow">and</span>
+                        <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)):</span>
+                    <span class="n">copied</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="n">copied</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_value</span><span class="p">)</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">copied</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">update_settings</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

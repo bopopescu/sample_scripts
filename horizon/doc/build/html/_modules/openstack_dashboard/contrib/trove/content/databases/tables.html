@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.contrib.trove.content.databases.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.contrib.trove.content.databases.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">urlresolvers</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span> <span class="k">as</span> <span class="n">d_filters</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">horizon.templatetags</span> <span class="kn">import</span> <span class="n">sizeformat</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">filters</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.trove</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.trove.content.database_backups</span> \
+    <span class="kn">import</span> <span class="n">tables</span> <span class="k">as</span> <span class="n">backup_tables</span>
+
+
+<span class="n">ACTIVE_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,)</span>
+
+
+<div class="viewcode-block" id="TerminateInstance"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.TerminateInstance">[docs]</a><span class="k">class</span> <span class="nc">TerminateInstance</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Terminated instances are not recoverable.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="TerminateInstance.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.TerminateInstance.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Terminate Instance&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Terminate Instances&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="TerminateInstance.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.TerminateInstance.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Scheduled termination of Instance&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Scheduled termination of Instances&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;terminate&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;btn-danger&quot;</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;remove&quot;</span>
+
+<div class="viewcode-block" id="TerminateInstance.action"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.TerminateInstance.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">instance_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="RestartInstance"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.RestartInstance">[docs]</a><span class="k">class</span> <span class="nc">RestartInstance</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Restarted instances will lose any data not&quot;</span>
+                  <span class="s2">&quot; saved in persistent storage.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RestartInstance.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.RestartInstance.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Restart Instance&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Restart Instances&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RestartInstance.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.RestartInstance.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Restarted Instance&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Restarted Instances&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;restart&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;btn-danger&#39;</span><span class="p">,</span> <span class="s1">&#39;btn-reboot&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RestartInstance.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.RestartInstance.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">ACTIVE_STATES</span>
+                 <span class="ow">or</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;SHUTDOWN&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="RestartInstance.action"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.RestartInstance.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">instance_restart</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DetachReplica"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DetachReplica">[docs]</a><span class="k">class</span> <span class="nc">DetachReplica</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DetachReplica.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DetachReplica.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Detach Replica&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Detach Replicas&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DetachReplica.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DetachReplica.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Replica Detached&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Replicas Detached&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;detach_replica&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;btn-danger&#39;</span><span class="p">,</span> <span class="s1">&#39;btn-detach-replica&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DetachReplica.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DetachReplica.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">ACTIVE_STATES</span>
+                <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s1">&#39;replica_of&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="DetachReplica.action"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DetachReplica.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">instance_detach_replica</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteUser"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteUser">[docs]</a><span class="k">class</span> <span class="nc">DeleteUser</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteUser.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteUser.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete User&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Users&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteUser.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteUser.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted User&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Users&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteUser.delete"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteUser.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">datum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">user_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">datum</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Error deleting database user.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteDatabase"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteDatabase">[docs]</a><span class="k">class</span> <span class="nc">DeleteDatabase</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteDatabase.action_present"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteDatabase.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Database&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Databases&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteDatabase.action_past"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteDatabase.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted Database&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Databases&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteDatabase.delete"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DeleteDatabase.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">datum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">database_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">datum</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Error deleting database on instance.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="LaunchLink"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.LaunchLink">[docs]</a><span class="k">class</span> <span class="nc">LaunchLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;launch&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch Instance&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:databases:launch&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-launch&quot;</span><span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;cloud-upload&quot;</span>
+
+</div>
+<div class="viewcode-block" id="CreateBackup"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.CreateBackup">[docs]</a><span class="k">class</span> <span class="nc">CreateBackup</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;backup&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Backup&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:database_backups:create&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;camera&quot;</span>
+
+<div class="viewcode-block" id="CreateBackup.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.CreateBackup.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">ACTIVE_STATES</span> <span class="ow">and</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span><span class="s1">&#39;openstack.services.object-store&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="CreateBackup.get_link_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.CreateBackup.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datam</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">url</span> <span class="o">+</span> <span class="s2">&quot;?instance=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">datam</span><span class="o">.</span><span class="n">id</span>
+
+</div></div>
+<div class="viewcode-block" id="ResizeVolume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.ResizeVolume">[docs]</a><span class="k">class</span> <span class="nc">ResizeVolume</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;resize_volume&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Resize Volume&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:databases:resize_volume&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-resize&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResizeVolume.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.ResizeVolume.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">ACTIVE_STATES</span>
+</div>
+<div class="viewcode-block" id="ResizeVolume.get_link_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.ResizeVolume.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">datum</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">instance_id</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="ResizeInstance"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.ResizeInstance">[docs]</a><span class="k">class</span> <span class="nc">ResizeInstance</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;resize_instance&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Resize Instance&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:databases:resize_instance&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-resize&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResizeInstance.allowed"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.ResizeInstance.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">ACTIVE_STATES</span>
+                 <span class="ow">or</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;SHUTOFF&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ResizeInstance.get_link_url"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.ResizeInstance.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">datum</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">instance_id</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateRow"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.UpdateRow">[docs]</a><span class="k">class</span> <span class="nc">UpdateRow</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="UpdateRow.get_data"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.UpdateRow.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">instance_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">flavor</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">full_flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">flavor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">get_host</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span>
+
+</div></div>
+<div class="viewcode-block" id="get_datastore"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.get_datastore">[docs]</a><span class="k">def</span> <span class="nf">get_datastore</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;datastore&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">datastore</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not available&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_datastore_version"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.get_datastore_version">[docs]</a><span class="k">def</span> <span class="nf">get_datastore_version</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;datastore&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">datastore</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not available&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_host"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.get_host">[docs]</a><span class="k">def</span> <span class="nf">get_host</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;hostname&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">hostname</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;ip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">instance</span><span class="o">.</span><span class="n">ip</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">ip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not Assigned&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_size"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.get_size">[docs]</a><span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;full_flavor&quot;</span><span class="p">):</span>
+        <span class="n">size_string</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(name)s</span><span class="s2"> | </span><span class="si">%(RAM)s</span><span class="s2"> RAM&quot;</span><span class="p">)</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">instance</span><span class="o">.</span><span class="n">full_flavor</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s1">&#39;RAM&#39;</span><span class="p">:</span> <span class="n">sizeformat</span><span class="o">.</span><span class="n">mb_float_format</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">full_flavor</span><span class="o">.</span><span class="n">ram</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="n">size_string</span> <span class="o">%</span> <span class="n">vals</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not available&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_volume_size"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.get_volume_size">[docs]</a><span class="k">def</span> <span class="nf">get_volume_size</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">sizeformat</span><span class="o">.</span><span class="n">diskgbformat</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not available&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_databases"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.get_databases">[docs]</a><span class="k">def</span> <span class="nf">get_databases</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;access&quot;</span><span class="p">):</span>
+        <span class="n">databases</span> <span class="o">=</span> <span class="p">[</span><span class="n">db</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">access</span><span class="p">]</span>
+        <span class="n">databases</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">databases</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="InstancesTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.InstancesTable">[docs]</a><span class="k">class</span> <span class="nc">InstancesTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;BLOCKED&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;BUILD&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;FAILED&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;REBOOT&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;RESIZE&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;BACKUP&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;SHUTDOWN&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;RESTART_REQUIRED&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">STATUS_DISPLAY_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                 <span class="s2">u&quot;Active&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;BLOCKED&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                  <span class="s2">u&quot;Blocked&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;BUILD&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                <span class="s2">u&quot;Build&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;FAILED&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                 <span class="s2">u&quot;Failed&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;REBOOT&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                 <span class="s2">u&quot;Reboot&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;RESIZE&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                 <span class="s2">u&quot;Resize&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;BACKUP&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                 <span class="s2">u&quot;Backup&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;SHUTDOWN&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                   <span class="s2">u&quot;Shutdown&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                                <span class="s2">u&quot;Error&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;RESTART_REQUIRED&quot;</span><span class="p">,</span>
+         <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Database Instance&quot;</span><span class="p">,</span>
+                       <span class="s2">u&quot;Restart Required&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:databases:detail&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance Name&quot;</span><span class="p">))</span>
+    <span class="n">datastore</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_datastore</span><span class="p">,</span>
+                              <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Datastore&quot;</span><span class="p">))</span>
+    <span class="n">datastore_version</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_datastore_version</span><span class="p">,</span>
+                                      <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Datastore Version&quot;</span><span class="p">))</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_host</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Host&quot;</span><span class="p">))</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_size</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size&quot;</span><span class="p">),</span>
+                         <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s1">&#39;size&#39;</span><span class="p">})</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_volume_size</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Size&quot;</span><span class="p">),</span>
+                           <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s1">&#39;size&#39;</span><span class="p">})</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">),</span>
+                           <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                           <span class="n">status_choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+                           <span class="n">display_choices</span><span class="o">=</span><span class="n">STATUS_DISPLAY_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InstancesTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.InstancesTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;databases&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances&quot;</span><span class="p">)</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">UpdateRow</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">LaunchLink</span><span class="p">,</span> <span class="n">TerminateInstance</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">CreateBackup</span><span class="p">,</span>
+                       <span class="n">ResizeVolume</span><span class="p">,</span>
+                       <span class="n">ResizeInstance</span><span class="p">,</span>
+                       <span class="n">RestartInstance</span><span class="p">,</span>
+                       <span class="n">DetachReplica</span><span class="p">,</span>
+                       <span class="n">TerminateInstance</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="UsersTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.UsersTable">[docs]</a><span class="k">class</span> <span class="nc">UsersTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;User Name&quot;</span><span class="p">))</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Allowed Host&quot;</span><span class="p">))</span>
+    <span class="n">databases</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_databases</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Databases&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="UsersTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.UsersTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Users&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">DeleteUser</span><span class="p">]</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">DeleteUser</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="UsersTable.get_object_id"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.UsersTable.get_object_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">datum</span><span class="o">.</span><span class="n">name</span>
+
+</div></div>
+<div class="viewcode-block" id="DatabaseTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DatabaseTable">[docs]</a><span class="k">class</span> <span class="nc">DatabaseTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Database Name&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="DatabaseTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DatabaseTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;databases&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Databases&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">DeleteDatabase</span><span class="p">]</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">DeleteDatabase</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="DatabaseTable.get_object_id"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.DatabaseTable.get_object_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">datum</span><span class="o">.</span><span class="n">name</span>
+
+</div></div>
+<div class="viewcode-block" id="is_incremental"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.is_incremental">[docs]</a><span class="k">def</span> <span class="nf">is_incremental</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;parent_id&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">parent_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="InstanceBackupsTable"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.InstanceBackupsTable">[docs]</a><span class="k">class</span> <span class="nc">InstanceBackupsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:database_backups:detail&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">created</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;created&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Created&quot;</span><span class="p">),</span>
+                            <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="n">filters</span><span class="o">.</span><span class="n">parse_isotime</span><span class="p">])</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Download&quot;</span><span class="p">),</span>
+                             <span class="n">link</span><span class="o">=</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">locationRef</span><span class="p">,</span>
+                             <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Backup File&quot;</span><span class="p">))</span>
+    <span class="n">incremental</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">is_incremental</span><span class="p">,</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Incremental&quot;</span><span class="p">),</span>
+                                <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">d_filters</span><span class="o">.</span><span class="n">yesno</span><span class="p">,</span>
+                                         <span class="n">d_filters</span><span class="o">.</span><span class="n">capfirst</span><span class="p">))</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">),</span>
+        <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">status_choices</span><span class="o">=</span><span class="n">backup_tables</span><span class="o">.</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+        <span class="n">display_choices</span><span class="o">=</span><span class="n">backup_tables</span><span class="o">.</span><span class="n">STATUS_DISPLAY_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InstanceBackupsTable.Meta"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.databases.tables.html#openstack_dashboard.contrib.trove.content.databases.tables.InstanceBackupsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;backups&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Backups&quot;</span><span class="p">)</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">UpdateRow</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">backup_tables</span><span class="o">.</span><span class="n">LaunchLink</span><span class="p">,</span> <span class="n">backup_tables</span><span class="o">.</span><span class="n">DeleteBackup</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">backup_tables</span><span class="o">.</span><span class="n">RestoreLink</span><span class="p">,</span> <span class="n">backup_tables</span><span class="o">.</span><span class="n">DeleteBackup</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

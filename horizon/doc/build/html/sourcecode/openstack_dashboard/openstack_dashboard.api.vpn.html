@@ -1,0 +1,356 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.vpn Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.cinder Module" href="openstack_dashboard.api.cinder.html" />
+    <link rel="prev" title="The openstack_dashboard.api.keystone Module" href="openstack_dashboard.api.keystone.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-vpn-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.vpn</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-vpn-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">IKEPolicy</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#IKEPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron VPN IKEPolicy.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">IPSecPolicy</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#IPSecPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron VPN IPSecPolicy.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">IPSecSiteConnection</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#IPSecSiteConnection"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron IPSecSiteConnection.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">VPNService</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#VPNService"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron VPNService.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ikepolicy_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ikepolicy_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create IKEPolicy</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>name</strong> &#8211; name for IKEPolicy</li>
+<li><strong>description</strong> &#8211; description for IKEPolicy</li>
+<li><strong>auth_algorithm</strong> &#8211; authorization algorithm for IKEPolicy</li>
+<li><strong>encryption_algorithm</strong> &#8211; encryption algorithm for IKEPolicy</li>
+<li><strong>ike_version</strong> &#8211; IKE version for IKEPolicy</li>
+<li><strong>lifetime</strong> &#8211; Lifetime Units and Value for IKEPolicy</li>
+<li><strong>pfs</strong> &#8211; Perfect Forward Secrecy for IKEPolicy</li>
+<li><strong>phase1_negotiation_mode</strong> &#8211; IKE Phase1 negotiation mode for IKEPolicy</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ikepolicy_delete</tt><big>(</big><em>request</em>, <em>ikepolicy_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ikepolicy_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ikepolicy_get</tt><big>(</big><em>request</em>, <em>ikepolicy_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ikepolicy_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ikepolicy_list</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ikepolicy_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ikepolicy_update</tt><big>(</big><em>request</em>, <em>ikepolicy_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ikepolicy_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecpolicy_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecpolicy_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create IPSecPolicy</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>name</strong> &#8211; name for IPSecPolicy</li>
+<li><strong>description</strong> &#8211; description for IPSecPolicy</li>
+<li><strong>auth_algorithm</strong> &#8211; authorization algorithm for IPSecPolicy</li>
+<li><strong>encapsulation_mode</strong> &#8211; encapsulation mode for IPSecPolicy</li>
+<li><strong>encryption_algorithm</strong> &#8211; encryption algorithm for IPSecPolicy</li>
+<li><strong>lifetime</strong> &#8211; Lifetime Units and Value for IPSecPolicy</li>
+<li><strong>pfs</strong> &#8211; Perfect Forward Secrecy for IPSecPolicy</li>
+<li><strong>transform_protocol</strong> &#8211; Transform Protocol for IPSecPolicy</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecpolicy_delete</tt><big>(</big><em>request</em>, <em>ipsecpolicy_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecpolicy_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecpolicy_get</tt><big>(</big><em>request</em>, <em>ipsecpolicy_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecpolicy_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecpolicy_list</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecpolicy_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecpolicy_update</tt><big>(</big><em>request</em>, <em>ipsecpolicy_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecpolicy_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecsiteconnection_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecsiteconnection_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create IPSecSiteConnection</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>name</strong> &#8211; name for IPSecSiteConnection</li>
+<li><strong>description</strong> &#8211; description for IPSecSiteConnection</li>
+<li><strong>dpd</strong> &#8211; dead peer detection action, interval and timeout</li>
+<li><strong>ikepolicy_id</strong> &#8211; IKEPolicy associated with this connection</li>
+<li><strong>initiator</strong> &#8211; initiator state</li>
+<li><strong>ipsecpolicy_id</strong> &#8211; IPsecPolicy associated with this connection</li>
+<li><strong>mtu</strong> &#8211; MTU size for the connection</li>
+<li><strong>peer_address</strong> &#8211; Peer gateway public address</li>
+<li><strong>peer_cidrs</strong> &#8211; remote subnet(s) in CIDR format</li>
+<li><strong>peer_id</strong> &#8211; Peer router identity for authentication&#8221;</li>
+<li><strong>psk</strong> &#8211; Pre-Shared Key string</li>
+<li><strong>vpnservice_id</strong> &#8211; VPNService associated with this connection</li>
+<li><strong>admin_state_up</strong> &#8211; admin state (default on)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecsiteconnection_delete</tt><big>(</big><em>request</em>, <em>ipsecsiteconnection_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecsiteconnection_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecsiteconnection_get</tt><big>(</big><em>request</em>, <em>ipsecsiteconnection_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecsiteconnection_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecsiteconnection_list</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecsiteconnection_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">ipsecsiteconnection_update</tt><big>(</big><em>request</em>, <em>ipsecsiteconnection_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#ipsecsiteconnection_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">vpnservice_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#vpnservice_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create VPNService</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>admin_state_up</strong> &#8211; admin state (default on)</li>
+<li><strong>name</strong> &#8211; name for VPNService</li>
+<li><strong>description</strong> &#8211; description for VPNService</li>
+<li><strong>router_id</strong> &#8211; router id for router of VPNService</li>
+<li><strong>subnet_id</strong> &#8211; subnet id for subnet of VPNService</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">vpnservice_delete</tt><big>(</big><em>request</em>, <em>vpnservice_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#vpnservice_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">vpnservice_get</tt><big>(</big><em>request</em>, <em>vpnservice_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#vpnservice_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">vpnservice_list</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#vpnservice_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.vpn.</tt><tt class="descname">vpnservice_update</tt><big>(</big><em>request</em>, <em>vpnservice_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/vpn.html#vpnservice_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.keystone.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.keystone</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.cinder.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.cinder</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.vpn.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.cinder.html" title="The openstack_dashboard.api.cinder Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.keystone.html" title="The openstack_dashboard.api.keystone Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

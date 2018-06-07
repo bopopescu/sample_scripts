@@ -1,0 +1,15 @@
+{% extends 'horizon/common/_modal_form.html' %}
+{% load i18n %}
+{% load url from future %}
+
+{% block modal-body-right %}
+    <h3>{% trans 'Description:' %}</h3>
+    <p>
+        <strong>{% trans 'Environment Name' %}:</strong>
+        {% blocktrans %}Create a name for the environment{% endblocktrans %}
+    </p>
+    <p>
+        {% blocktrans %} An environment is a collection of instances that
+            are meant to operate under similar conditions.{% endblocktrans %}
+    </p>
+{% endblock %}

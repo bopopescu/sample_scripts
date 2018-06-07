@@ -1,0 +1,537 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.access_and_security.security_groups.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.access_and_security.security_groups.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">netaddr</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">ValidationError</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">validators</span> <span class="k">as</span> <span class="n">utils_validators</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.utils</span> <span class="kn">import</span> <span class="n">filters</span>
+
+
+<div class="viewcode-block" id="GroupBase"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.GroupBase">[docs]</a><span class="k">class</span> <span class="nc">GroupBase</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class to handle creation and update of security groups.</span>
+
+<span class="sd">    Children classes must define two attributes:</span>
+
+<span class="sd">    .. attribute:: success_message</span>
+
+<span class="sd">        A success message containing the placeholder %s,</span>
+<span class="sd">        which will be replaced by the group name.</span>
+
+<span class="sd">    .. attribute:: error_message</span>
+
+<span class="sd">        An error message containing the placeholder %s,</span>
+<span class="sd">        which will be replaced by the error message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span>
+                           <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span>
+                               <span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_printable_ascii</span><span class="p">])</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}))</span>
+
+    <span class="k">def</span> <span class="nf">_call_network_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Call the underlying network API: Nova-network or Neutron.</span>
+
+<span class="sd">        Used in children classes to create or update a group.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GroupBase.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.GroupBase.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_network_api</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_message</span> <span class="o">%</span> <span class="n">sg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sg</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:access_and_security:index&quot;</span><span class="p">)</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_message</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateGroup"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.CreateGroup">[docs]</a><span class="k">class</span> <span class="nc">CreateGroup</span><span class="p">(</span><span class="n">GroupBase</span><span class="p">):</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully created security group: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create security group: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_call_network_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">security_group_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="UpdateGroup"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.UpdateGroup">[docs]</a><span class="k">class</span> <span class="nc">UpdateGroup</span><span class="p">(</span><span class="n">GroupBase</span><span class="p">):</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully updated security group: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to update security group: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_call_network_api</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">security_group_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="AddRule"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.AddRule">[docs]</a><span class="k">class</span> <span class="nc">AddRule</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+    <span class="n">rule_menu</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Rule&#39;</span><span class="p">),</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                      <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;rule_menu&#39;</span><span class="p">}))</span>
+
+    <span class="c1"># &quot;direction&quot; field is enabled only when custom mode.</span>
+    <span class="c1"># It is because most common rules in local_settings.py is meaningful</span>
+    <span class="c1"># when its direction is &#39;ingress&#39;.</span>
+    <span class="n">direction</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;rule_menu&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-rule_menu-tcp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-udp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-icmp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-custom&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-all_tcp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-all_udp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-all_icmp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direction&#39;</span><span class="p">),</span>
+        <span class="p">}))</span>
+
+    <span class="n">ip_protocol</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;IP Protocol&#39;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enter an integer value between 0 and 255 &quot;</span>
+                    <span class="s2">&quot;(or -1 which means wildcard).&quot;</span><span class="p">),</span>
+        <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_ip_protocol</span><span class="p">],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;rule_menu&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-rule_menu-custom&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;IP Protocol&#39;</span><span class="p">)}))</span>
+
+    <span class="n">port_or_range</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Open Port&#39;</span><span class="p">),</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;port&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Port&#39;</span><span class="p">)),</span>
+                 <span class="p">(</span><span class="s1">&#39;range&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Port Range&#39;</span><span class="p">))],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;range&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;rule_menu&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-rule_menu-tcp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Open Port&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-rule_menu-udp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Open Port&#39;</span><span class="p">)}))</span>
+
+    <span class="n">port</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Port&quot;</span><span class="p">),</span>
+                              <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                              <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enter an integer value &quot;</span>
+                                          <span class="s2">&quot;between 1 and 65535.&quot;</span><span class="p">),</span>
+                              <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                  <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;range&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;data-range-port&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Port&#39;</span><span class="p">)}),</span>
+                              <span class="n">validators</span><span class="o">=</span><span class="p">[</span>
+                                  <span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_port_range</span><span class="p">])</span>
+
+    <span class="n">from_port</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;From Port&quot;</span><span class="p">),</span>
+                                   <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                   <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enter an integer value &quot;</span>
+                                               <span class="s2">&quot;between 1 and 65535.&quot;</span><span class="p">),</span>
+                                   <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                       <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;range&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-range-range&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;From Port&#39;</span><span class="p">)}),</span>
+                                   <span class="n">validators</span><span class="o">=</span><span class="p">[</span>
+                                       <span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_port_range</span><span class="p">])</span>
+
+    <span class="n">to_port</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;To Port&quot;</span><span class="p">),</span>
+                                 <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enter an integer value &quot;</span>
+                                             <span class="s2">&quot;between 1 and 65535.&quot;</span><span class="p">),</span>
+                                 <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                     <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;range&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;data-range-range&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;To Port&#39;</span><span class="p">)}),</span>
+                                 <span class="n">validators</span><span class="o">=</span><span class="p">[</span>
+                                     <span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_port_range</span><span class="p">])</span>
+
+    <span class="n">icmp_type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Type&quot;</span><span class="p">),</span>
+                                   <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                   <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enter a value for ICMP type &quot;</span>
+                                               <span class="s2">&quot;in the range (-1: 255)&quot;</span><span class="p">),</span>
+                                   <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                       <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;rule_menu&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-rule_menu-icmp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Type&#39;</span><span class="p">)}),</span>
+                                   <span class="n">validators</span><span class="o">=</span><span class="p">[</span>
+                                       <span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_port_range</span><span class="p">])</span>
+
+    <span class="n">icmp_code</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Code&quot;</span><span class="p">),</span>
+                                   <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                   <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enter a value for ICMP code &quot;</span>
+                                               <span class="s2">&quot;in the range (-1: 255)&quot;</span><span class="p">),</span>
+                                   <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                       <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;rule_menu&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-rule_menu-icmp&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Code&#39;</span><span class="p">)}),</span>
+                                   <span class="n">validators</span><span class="o">=</span><span class="p">[</span>
+                                       <span class="n">utils_validators</span><span class="o">.</span><span class="n">validate_port_range</span><span class="p">])</span>
+
+    <span class="n">remote</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Remote&#39;</span><span class="p">),</span>
+                               <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;cidr&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;CIDR&#39;</span><span class="p">)),</span>
+                                        <span class="p">(</span><span class="s1">&#39;sg&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Security Group&#39;</span><span class="p">))],</span>
+                               <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;To specify an allowed IP &#39;</span>
+                                           <span class="s1">&#39;range, select &amp;quot;CIDR&amp;quot;. &#39;</span>
+                                           <span class="s1">&#39;To allow access from all &#39;</span>
+                                           <span class="s1">&#39;members of another security &#39;</span>
+                                           <span class="s1">&#39;group select &amp;quot;Security &#39;</span>
+                                           <span class="s1">&#39;Group&amp;quot;.&#39;</span><span class="p">),</span>
+                               <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                   <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;remote&#39;</span><span class="p">}))</span>
+
+    <span class="n">cidr</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;CIDR&quot;</span><span class="p">),</span>
+                         <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                         <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+                         <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Classless Inter-Domain Routing &quot;</span>
+                                     <span class="s2">&quot;(e.g. 192.168.0.0/24)&quot;</span><span class="p">),</span>
+                         <span class="n">version</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">IPv4</span> <span class="o">|</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPv6</span><span class="p">,</span>
+                         <span class="n">mask</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                         <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+                             <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;remote&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;data-remote-cidr&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;CIDR&#39;</span><span class="p">)}))</span>
+
+    <span class="n">security_group</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Security Group&#39;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                       <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                           <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;remote&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;data-remote-sg&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Security &#39;</span>
+                                                               <span class="s1">&#39;Group&#39;</span><span class="p">)}))</span>
+    <span class="c1"># When cidr is used ethertype is determined from IP version of cidr.</span>
+    <span class="c1"># When source group, ethertype needs to be specified explicitly.</span>
+    <span class="n">ethertype</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Ether Type&#39;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;IPv4&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;IPv4&#39;</span><span class="p">)),</span>
+                                           <span class="p">(</span><span class="s1">&#39;IPv6&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;IPv6&#39;</span><span class="p">))],</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                      <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;ethertype&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;remote&#39;</span><span class="p">,</span>
+                                      <span class="s1">&#39;data-remote-sg&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Ether Type&#39;</span><span class="p">)}))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">sg_list</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;sg_list&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddRule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Determine if there are security groups available for the</span>
+        <span class="c1"># remote group option; add the choices and enable the option if so.</span>
+        <span class="k">if</span> <span class="n">sg_list</span><span class="p">:</span>
+            <span class="n">security_groups_choices</span> <span class="o">=</span> <span class="n">sg_list</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">security_groups_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No security groups available&quot;</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;security_group&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">security_groups_choices</span>
+
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">security_group_backend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="n">rules_dict</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;SECURITY_GROUP_RULES&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">common_rules</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">rules_dict</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">rules_dict</span>
+                        <span class="k">if</span> <span class="n">rules_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;backend&#39;</span><span class="p">,</span> <span class="n">backend</span><span class="p">)</span> <span class="o">==</span> <span class="n">backend</span><span class="p">]</span>
+        <span class="n">common_rules</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">custom_rules</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;tcp&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Custom TCP Rule&#39;</span><span class="p">)),</span>
+                        <span class="p">(</span><span class="s1">&#39;udp&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Custom UDP Rule&#39;</span><span class="p">)),</span>
+                        <span class="p">(</span><span class="s1">&#39;icmp&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Custom ICMP Rule&#39;</span><span class="p">))]</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;neutron&#39;</span><span class="p">:</span>
+            <span class="n">custom_rules</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;custom&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Other Protocol&#39;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;rule_menu&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">custom_rules</span> <span class="o">+</span> <span class="n">common_rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules_dict</span>
+
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s1">&#39;neutron&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;ingress&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Ingress&#39;</span><span class="p">)),</span>
+                                                <span class="p">(</span><span class="s1">&#39;egress&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Egress&#39;</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># direction and ethertype are not supported in Nova secgroup.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ethertype&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+            <span class="c1"># ip_protocol field is to specify arbitrary protocol number</span>
+            <span class="c1"># and it is available only for neutron security group.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ip_protocol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_update_and_pop_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">cleaned_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_clean_rule_icmp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">):</span>
+        <span class="n">icmp_type</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;icmp_type&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">icmp_code</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;icmp_code&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;ip_protocol&#39;</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">icmp_type</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The ICMP type is invalid.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">icmp_code</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The ICMP code is invalid.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">icmp_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The ICMP type not in range (-1, 255)&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">icmp_code</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The ICMP code not in range (-1, 255)&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;from_port&#39;</span><span class="p">,</span> <span class="n">icmp_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;to_port&#39;</span><span class="p">,</span> <span class="n">icmp_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;port&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_clean_rule_tcp_udp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">):</span>
+        <span class="n">port_or_range</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;port_or_range&quot;</span><span class="p">)</span>
+        <span class="n">from_port</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;from_port&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">to_port</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;to_port&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;ip_protocol&#39;</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;icmp_code&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;icmp_type&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">port_or_range</span> <span class="o">==</span> <span class="s2">&quot;port&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;from_port&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;to_port&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The specified port is invalid.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;port&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">from_port</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The &quot;from&quot; port number is invalid.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">to_port</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The &quot;to&quot; port number is invalid.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">to_port</span> <span class="o">&lt;</span> <span class="n">from_port</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The &quot;to&quot; port number must be greater than &#39;</span>
+                        <span class="s1">&#39;or equal to the &quot;from&quot; port number.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_apply_rule_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">):</span>
+        <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;ip_protocol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_menu</span><span class="p">][</span><span class="s1">&#39;ip_protocol&#39;</span><span class="p">]</span>
+        <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;from_port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_menu</span><span class="p">][</span><span class="s1">&#39;from_port&#39;</span><span class="p">])</span>
+        <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;to_port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_menu</span><span class="p">][</span><span class="s1">&#39;to_port&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">rule_menu</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;all_tcp&#39;</span><span class="p">,</span> <span class="s1">&#39;all_udp&#39;</span><span class="p">,</span> <span class="s1">&#39;all_icmp&#39;</span><span class="p">]:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="n">rule_menu</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;direction&#39;</span><span class="p">)</span>
+            <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">direction</span>
+
+    <span class="k">def</span> <span class="nf">_clean_rule_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="n">rule_menu</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rule_menu&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rule_menu</span> <span class="o">==</span> <span class="s1">&#39;icmp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clean_rule_icmp</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rule_menu</span> <span class="o">==</span> <span class="s1">&#39;tcp&#39;</span> <span class="ow">or</span> <span class="n">rule_menu</span> <span class="o">==</span> <span class="s1">&#39;udp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clean_rule_tcp_udp</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rule_menu</span> <span class="o">==</span> <span class="s1">&#39;custom&#39;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_rule_menu</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="n">rule_menu</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddRule.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.AddRule.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddRule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clean_rule_menu</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+
+        <span class="c1"># NOTE(amotoki): There are two cases where cleaned_data[&#39;direction&#39;]</span>
+        <span class="c1"># is empty: (1) Nova Security Group is used. Since &quot;direction&quot; is</span>
+        <span class="c1"># HiddenInput, direction field exists but its value is &#39;&#39;.</span>
+        <span class="c1"># (2) Template except all_* is used. In this case, the default value</span>
+        <span class="c1"># is None. To make sure &#39;direction&#39; field has &#39;ingress&#39; or &#39;egress&#39;,</span>
+        <span class="c1"># fill this field here if it is not specified.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]:</span>
+            <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ingress&#39;</span>
+
+        <span class="n">remote</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remote&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remote</span> <span class="o">==</span> <span class="s2">&quot;cidr&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;security_group&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_and_pop_error</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="s1">&#39;cidr&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="c1"># If cleaned_data does not contain a non-empty value, IPField already</span>
+        <span class="c1"># has validated it, so skip the further validation for cidr.</span>
+        <span class="c1"># In addition cleaned_data[&#39;cidr&#39;] is None means source_group is used.</span>
+        <span class="k">if</span> <span class="s1">&#39;cidr&#39;</span> <span class="ow">in</span> <span class="n">cleaned_data</span> <span class="ow">and</span> <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">cidr</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cidr</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;CIDR must be specified.&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If cidr is specified, ethertype is determined from IP address</span>
+                <span class="c1"># version. It is used only when Neutron is enabled.</span>
+                <span class="n">ip_ver</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="n">cidr</span><span class="p">)</span><span class="o">.</span><span class="n">version</span>
+                <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;ethertype&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;IPv6&#39;</span> <span class="k">if</span> <span class="n">ip_ver</span> <span class="o">==</span> <span class="mi">6</span> <span class="k">else</span> <span class="s1">&#39;IPv4&#39;</span>
+
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+<div class="viewcode-block" id="AddRule.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.html#openstack_dashboard.dashboards.project.access_and_security.security_groups.forms.AddRule.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">security_group_rule_create</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span>
+                <span class="n">filters</span><span class="o">.</span><span class="n">get_int_or_uuid</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;ethertype&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;ip_protocol&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_port&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;to_port&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">],</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;security_group&#39;</span><span class="p">])</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully added rule: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+                             <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">rule</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">rule</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:access_and_security:&quot;</span>
+                               <span class="s2">&quot;security_groups:detail&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]])</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to add rule to security group.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

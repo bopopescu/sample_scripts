@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>horizon.tabs.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="horizon.tabs" href="../tabs.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for horizon.tabs.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">horizon.tabs.base</span> <span class="kn">import</span> <span class="n">TableTab</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">views</span>
+
+
+<div class="viewcode-block" id="TabView"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabView">[docs]</a><span class="k">class</span> <span class="nc">TabView</span><span class="p">(</span><span class="n">views</span><span class="o">.</span><span class="n">HorizonTemplateView</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A generic class-based view for displaying a</span>
+<span class="sd">    :class:`horizon.tabs.TabGroup`.</span>
+
+<span class="sd">    This view handles selecting specific tabs and deals with AJAX requests</span>
+<span class="sd">    gracefully.</span>
+
+<span class="sd">    .. attribute:: tab_group_class</span>
+
+<span class="sd">        The only required attribute for ``TabView``. It should be a class which</span>
+<span class="sd">        inherits from :class:`horizon.tabs.TabGroup`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_tab_group</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group_class</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;You must set the tab_group_class attribute &quot;</span>
+                                 <span class="s2">&quot;on </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TabView.get_tabs"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabView.get_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the initialized tab group for this view.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tab_group</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tab_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group_class</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tab_group</span>
+</div>
+<div class="viewcode-block" id="TabView.get_context_data"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds the ``tab_group`` variable to the context data.&quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TabView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tab_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;tab_group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tab_group</span>
+            <span class="c1"># Make sure our data is pre-loaded to capture errors.</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;tab_group&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">load_tab_data</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="TabView.handle_tabbed_response"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabView.handle_tabbed_response">[docs]</a>    <span class="k">def</span> <span class="nf">handle_tabbed_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tab_group</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sends back an AJAX-appropriate response for the tab group if</span>
+<span class="sd">        required, otherwise renders the response as normal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">is_ajax</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">tab_group</span><span class="o">.</span><span class="n">selected</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">tab_group</span><span class="o">.</span><span class="n">selected</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">tab_group</span><span class="o">.</span><span class="n">render</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TabView.get"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_tabbed_response</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;tab_group&quot;</span><span class="p">],</span> <span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TabView.render_to_response"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabView.render_to_response">[docs]</a>    <span class="k">def</span> <span class="nf">render_to_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TabView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Because Django&#39;s TemplateView uses the TemplateResponse class</span>
+        <span class="c1"># to provide deferred rendering (which is usually helpful), if</span>
+        <span class="c1"># a tab group raises an Http302 redirect (from exceptions.handle for</span>
+        <span class="c1"># example) the exception is actually raised *after* the final pass</span>
+        <span class="c1"># of the exception-handling middleware.</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+</div></div>
+<div class="viewcode-block" id="TabbedTableView"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabbedTableView">[docs]</a><span class="k">class</span> <span class="nc">TabbedTableView</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">MultiTableMixin</span><span class="p">,</span> <span class="n">TabView</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TabbedTableView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_classes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_table_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="TabbedTableView.load_tabs"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabbedTableView.load_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">load_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads the tab group, and compiles the table instances for each</span>
+<span class="sd">        table attached to any :class:`horizon.tabs.TableTab` instances on</span>
+<span class="sd">        the tab group. This step is necessary before processing any</span>
+<span class="sd">        tab or table actions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tab_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">tabs</span> <span class="o">=</span> <span class="n">tab_group</span><span class="o">.</span><span class="n">get_tabs</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tabs</span> <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="n">TableTab</span><span class="p">)]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table_classes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tab</span><span class="o">.</span><span class="n">table_classes</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">_tables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_table_dict</span><span class="p">[</span><span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;table&#39;</span><span class="p">:</span> <span class="n">table</span><span class="p">,</span>
+                                                      <span class="s1">&#39;tab&#39;</span><span class="p">:</span> <span class="n">tab</span><span class="p">}</span>
+</div>
+<div class="viewcode-block" id="TabbedTableView.get_tables"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabbedTableView.get_tables">[docs]</a>    <span class="k">def</span> <span class="nf">get_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A no-op on this class. Tables are handled at the tab level.&quot;&quot;&quot;</span>
+        <span class="c1"># Override the base class implementation so that the MultiTableMixin</span>
+        <span class="c1"># doesn&#39;t freak out. We do the processing at the TableTab level.</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="TabbedTableView.handle_table"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabbedTableView.handle_table">[docs]</a>    <span class="k">def</span> <span class="nf">handle_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For the given dict containing a ``DataTable`` and a ``TableTab``</span>
+<span class="sd">        instance, it loads the table data for that tab and calls the</span>
+<span class="sd">        table&#39;s :meth:`~horizon.tables.DataTable.maybe_handle` method. The</span>
+<span class="sd">        return value will be the result of ``maybe_handle``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;table&#39;</span><span class="p">]</span>
+        <span class="n">tab</span> <span class="o">=</span> <span class="n">table_dict</span><span class="p">[</span><span class="s1">&#39;tab&#39;</span><span class="p">]</span>
+        <span class="n">tab</span><span class="o">.</span><span class="n">load_table_data</span><span class="p">()</span>
+        <span class="n">table_name</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">tab</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">has_prev_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_prev_data</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">tab</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">has_more_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_more_data</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">handled</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">maybe_handle</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">handled</span>
+</div>
+<div class="viewcode-block" id="TabbedTableView.get"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabbedTableView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_tabs</span><span class="p">()</span>
+        <span class="c1"># Gather our table instances. It&#39;s important that they&#39;re the</span>
+        <span class="c1"># actual instances and not the classes!</span>
+        <span class="n">table_instances</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;table&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="c1"># Early out before any tab or table data is loaded</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">table_instances</span><span class="p">:</span>
+            <span class="n">preempted</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">maybe_preempt</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">preempted</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">preempted</span>
+
+        <span class="c1"># If we have an action, determine if it belongs to one of our tables.</span>
+        <span class="c1"># We don&#39;t iterate through all of the tables&#39; maybes_handle</span>
+        <span class="c1"># methods; just jump to the one that&#39;s got the matching name.</span>
+        <span class="n">table_name</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">obj_id</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="o">.</span><span class="n">check_handler</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_dict</span><span class="p">:</span>
+            <span class="n">handled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table_dict</span><span class="p">[</span><span class="n">table_name</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">handled</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">handled</span>
+
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_tabbed_response</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;tab_group&quot;</span><span class="p">],</span> <span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TabbedTableView.post"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tabs.views.html#horizon.tabs.views.TabbedTableView.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Direct POST to its appropriate tab</span>
+        <span class="c1"># Note some table actions like filter do not have an &#39;action&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;action&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+            <span class="n">targetslug</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">tabs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get_tabs</span><span class="p">()</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">tab</span> <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="n">tabs</span> <span class="k">if</span> <span class="n">tab</span><span class="o">.</span><span class="n">slug</span> <span class="o">==</span> <span class="n">targetslug</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="c1"># Call POST on first match only. There shouldn&#39;t be a case</span>
+                <span class="c1"># where multiple tabs have the same slug and processing the</span>
+                <span class="c1"># request twice could lead to unpredictable behavior.</span>
+                <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># GET and POST handling are the same</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../horizon.html" >horizon</a> &raquo;</li>
+          <li><a href="../tabs.html" accesskey="U">horizon.tabs</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

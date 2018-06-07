@@ -1,0 +1,604 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.stacks.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.stacks.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">html</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.debug</span> <span class="kn">import</span> <span class="n">sensitive_variables</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">strutils</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.images</span> \
+    <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">image_utils</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">instance_utils</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_upload_form_attributes"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.create_upload_form_attributes">[docs]</a><span class="k">def</span> <span class="nf">create_upload_form_attributes</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">input_type</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates attribute dicts for the switchable upload form</span>
+
+<span class="sd">    :type prefix: str</span>
+<span class="sd">    :param prefix: prefix (environment, template) of field</span>
+<span class="sd">    :type input_type: str</span>
+<span class="sd">    :param input_type: field type (file, raw, url)</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :param name: translated text label to display to user</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    :return: an attribute set to pass to form build</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span> <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;source&#39;</span><span class="p">}</span>
+    <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;data-&#39;</span> <span class="o">+</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;source-&#39;</span> <span class="o">+</span> <span class="n">input_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">return</span> <span class="n">attributes</span>
+
+</div>
+<div class="viewcode-block" id="TemplateForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.TemplateForm">[docs]</a><span class="k">class</span> <span class="nc">TemplateForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TemplateForm.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.TemplateForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select Template&#39;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select a template to launch a stack.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># TODO(jomara) - update URL choice for template &amp; environment files</span>
+    <span class="c1"># w/ client side download when applicable</span></div>
+    <span class="n">base_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;File&#39;</span><span class="p">)),</span>
+                    <span class="p">(</span><span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direct Input&#39;</span><span class="p">))]</span>
+    <span class="n">url_choice</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;URL&#39;</span><span class="p">))]</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span> <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;templatesource&#39;</span><span class="p">}</span>
+    <span class="n">template_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template Source&#39;</span><span class="p">),</span>
+                                        <span class="n">choices</span><span class="o">=</span><span class="n">base_choices</span> <span class="o">+</span> <span class="n">url_choice</span><span class="p">,</span>
+                                        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">))</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">create_upload_form_attributes</span><span class="p">(</span>
+        <span class="s1">&#39;template&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;file&#39;</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template File&#39;</span><span class="p">))</span>
+    <span class="n">template_upload</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template File&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;A local template to upload.&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">create_upload_form_attributes</span><span class="p">(</span>
+        <span class="s1">&#39;template&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template URL&#39;</span><span class="p">))</span>
+    <span class="n">template_url</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template URL&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;An external (HTTP) URL to load the template from.&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">create_upload_form_attributes</span><span class="p">(</span>
+        <span class="s1">&#39;template&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;raw&#39;</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template Data&#39;</span><span class="p">))</span>
+    <span class="n">template_data</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Template Data&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The raw contents of the template.&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;envsource&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">}</span>
+    <span class="n">environment_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Environment Source&#39;</span><span class="p">),</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">base_choices</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">create_upload_form_attributes</span><span class="p">(</span>
+        <span class="s1">&#39;env&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;file&#39;</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Environment File&#39;</span><span class="p">))</span>
+    <span class="n">environment_upload</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Environment File&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;A local environment to upload.&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">create_upload_form_attributes</span><span class="p">(</span>
+        <span class="s1">&#39;env&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;raw&#39;</span><span class="p">,</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Environment Data&#39;</span><span class="p">))</span>
+    <span class="n">environment_data</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Environment Data&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The raw contents of the environment file.&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_view</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;next_view&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TemplateForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TemplateForm.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.TemplateForm.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TemplateForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">FILES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clean_uploaded_files</span><span class="p">(</span><span class="s1">&#39;template&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;template&#39;</span><span class="p">),</span> <span class="n">cleaned</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clean_uploaded_files</span><span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="p">),</span> <span class="n">cleaned</span><span class="p">,</span>
+                                  <span class="n">files</span><span class="p">)</span>
+
+        <span class="c1"># Validate the template and get back the params.</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;template_data&#39;</span><span class="p">]:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;template_data&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;template_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;template_url&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;environment_data&#39;</span><span class="p">]:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;environment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;environment_data&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">validated</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">template_validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;template_validate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">validated</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">cleaned</span>
+</div>
+<div class="viewcode-block" id="TemplateForm.clean_uploaded_files"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.TemplateForm.clean_uploaded_files">[docs]</a>    <span class="k">def</span> <span class="nf">clean_uploaded_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">field_label</span><span class="p">,</span> <span class="n">cleaned</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cleans Template &amp; Environment data from form upload.</span>
+
+<span class="sd">        Does some of the crunchy bits for processing uploads vs raw</span>
+<span class="sd">        data depending on what the user specified. Identical process</span>
+<span class="sd">        for environment data &amp; template data.</span>
+
+<span class="sd">        :type prefix: str</span>
+<span class="sd">        :param prefix: prefix (environment, template) of field</span>
+<span class="sd">        :type field_label: str</span>
+<span class="sd">        :param field_label: translated prefix str for messages</span>
+<span class="sd">        :type input_type: dict</span>
+<span class="sd">        :param prefix: existing cleaned fields from form</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        :return: cleaned dict including environment &amp; template data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">upload_str</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;_upload&quot;</span>
+        <span class="n">data_str</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;_data&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">cleaned</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;_url&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">cleaned</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;_data&#39;</span><span class="p">)</span>
+
+        <span class="n">has_upload</span> <span class="o">=</span> <span class="n">upload_str</span> <span class="ow">in</span> <span class="n">files</span>
+        <span class="c1"># Uploaded file handler</span>
+        <span class="k">if</span> <span class="n">has_upload</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+            <span class="n">log_template_name</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">upload_str</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;got upload </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">log_template_name</span><span class="p">)</span>
+
+            <span class="n">tpl</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">upload_str</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">tpl</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tpl</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;There was a problem parsing the&#39;</span>
+                            <span class="s1">&#39; </span><span class="si">%(prefix)s</span><span class="s1">: </span><span class="si">%(error)s</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="n">e</span><span class="p">}</span>
+                    <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">cleaned</span><span class="p">[</span><span class="n">data_str</span><span class="p">]</span> <span class="o">=</span> <span class="n">tpl</span>
+
+        <span class="c1"># URL handler</span>
+        <span class="k">elif</span> <span class="n">url</span> <span class="ow">and</span> <span class="p">(</span><span class="n">has_upload</span> <span class="ow">or</span> <span class="n">data</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Please specify a </span><span class="si">%s</span><span class="s1"> using only one source method.&#39;</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">field_label</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s1">&#39;template&#39;</span><span class="p">:</span>
+            <span class="c1"># Check for raw template input - blank environment allowed</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;You must specify a template via one of the &#39;</span>
+                        <span class="s1">&#39;available sources.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TemplateForm.create_kwargs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.TemplateForm.create_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">create_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;template_validate&#39;</span><span class="p">],</span>
+                  <span class="s1">&#39;environment_data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;environment_data&#39;</span><span class="p">],</span>
+                  <span class="s1">&#39;template_data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;template_data&#39;</span><span class="p">],</span>
+                  <span class="s1">&#39;template_url&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;template_url&#39;</span><span class="p">]}</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stack_id&#39;</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stack_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;stack_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+</div>
+<div class="viewcode-block" id="TemplateForm.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.TemplateForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_kwargs</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># NOTE (gabriel): This is a bit of a hack, essentially rewriting this</span>
+        <span class="c1"># request so that we can chain it as an input to the next view...</span>
+        <span class="c1"># but hey, it totally works.</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;GET&#39;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_view</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ChangeTemplateForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.ChangeTemplateForm">[docs]</a><span class="k">class</span> <span class="nc">ChangeTemplateForm</span><span class="p">(</span><span class="n">TemplateForm</span><span class="p">):</span>
+<div class="viewcode-block" id="ChangeTemplateForm.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.ChangeTemplateForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Edit Template&#39;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select a new template to re-launch a stack.&#39;</span><span class="p">)</span></div>
+    <span class="n">stack_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Stack ID&#39;</span><span class="p">),</span>
+                               <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+    <span class="n">stack_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Stack Name&#39;</span><span class="p">),</span>
+                                 <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span>
+                                                               <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+
+</div>
+<div class="viewcode-block" id="PreviewTemplateForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.PreviewTemplateForm">[docs]</a><span class="k">class</span> <span class="nc">PreviewTemplateForm</span><span class="p">(</span><span class="n">TemplateForm</span><span class="p">):</span>
+<div class="viewcode-block" id="PreviewTemplateForm.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.PreviewTemplateForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Preview Template&#39;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select a new template to preview a stack.&#39;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateStackForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.CreateStackForm">[docs]</a><span class="k">class</span> <span class="nc">CreateStackForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+
+    <span class="n">param_prefix</span> <span class="o">=</span> <span class="s1">&#39;__param_&#39;</span>
+
+<div class="viewcode-block" id="CreateStackForm.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.CreateStackForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Create Stack&#39;</span><span class="p">)</span>
+</div>
+    <span class="n">template_data</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">template_url</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">environment_data</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+    <span class="n">stack_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">RegexField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Stack Name&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Name of the stack to create.&#39;</span><span class="p">),</span>
+        <span class="n">regex</span><span class="o">=</span><span class="s2">r&quot;^[a-zA-Z][a-zA-Z0-9_.-]*$&quot;</span><span class="p">,</span>
+        <span class="n">error_messages</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;invalid&#39;</span><span class="p">:</span>
+                        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Name must start with a letter and may &#39;</span>
+                          <span class="s1">&#39;only contain letters, numbers, underscores, &#39;</span>
+                          <span class="s1">&#39;periods and hyphens.&#39;</span><span class="p">)})</span>
+    <span class="n">timeout_mins</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Creation Timeout (minutes)&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Stack creation timeout in minutes.&#39;</span><span class="p">))</span>
+    <span class="n">enable_rollback</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Rollback On Failure&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Enable rollback on create/update failure.&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">)</span>
+        <span class="c1"># special case: load template data from API, not passed in params</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;validate_me&#39;</span><span class="p">)):</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;validate_me&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateStackForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_parameter_fields</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_parameter_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_validate</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Password for user &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+            <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;This is required for operations to be performed &#39;</span>
+                        <span class="s1">&#39;throughout the lifecycle of the stack&#39;</span><span class="p">),</span>
+            <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="n">template_validate</span><span class="p">[</span><span class="s1">&#39;Description&#39;</span><span class="p">]</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">template_validate</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Parameters&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">template_validate</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ParameterGroups&#39;</span><span class="p">):</span>
+            <span class="n">params_in_order</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">template_validate</span><span class="p">[</span><span class="s1">&#39;ParameterGroups&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                    <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                        <span class="n">params_in_order</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">param</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="n">param</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># no parameter groups, simply sorted to make the order fixed</span>
+            <span class="n">params_in_order</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">param_key</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params_in_order</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">field_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span> <span class="o">+</span> <span class="n">param_key</span>
+            <span class="n">field_args</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;initial&#39;</span><span class="p">:</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Label&#39;</span><span class="p">,</span> <span class="n">param_key</span><span class="p">),</span>
+                <span class="s1">&#39;help_text&#39;</span><span class="p">:</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Description&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span>
+            <span class="p">}</span>
+
+            <span class="n">param_type</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">hidden</span> <span class="o">=</span> <span class="n">strutils</span><span class="o">.</span><span class="n">bool_from_string</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NoEcho&#39;</span><span class="p">,</span> <span class="s1">&#39;false&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s1">&#39;CustomConstraint&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_populate_custom_choices</span><span class="p">(</span>
+                    <span class="n">param</span><span class="p">[</span><span class="s1">&#39;CustomConstraint&#39;</span><span class="p">])</span>
+                <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">choices</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="o">**</span><span class="n">field_args</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="s1">&#39;AllowedValues&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                <span class="n">choices</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">param</span><span class="p">[</span><span class="s1">&#39;AllowedValues&#39;</span><span class="p">])</span>
+                <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">choices</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="o">**</span><span class="n">field_args</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">param_type</span> <span class="o">==</span> <span class="s1">&#39;Json&#39;</span> <span class="ow">and</span> <span class="s1">&#39;Default&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;initial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s1">&#39;Default&#39;</span><span class="p">])</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="o">**</span><span class="n">field_args</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">param_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;CommaDelimitedList&#39;</span><span class="p">,</span> <span class="s1">&#39;String&#39;</span><span class="p">,</span> <span class="s1">&#39;Json&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s1">&#39;MinLength&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                    <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;min_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s1">&#39;MinLength&#39;</span><span class="p">])</span>
+                    <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MinLength&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="s1">&#39;MaxLength&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                    <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;max_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s1">&#39;MaxLength&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">hidden</span><span class="p">:</span>
+                    <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;widget&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">()</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="o">**</span><span class="n">field_args</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">param_type</span> <span class="o">==</span> <span class="s1">&#39;Number&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;MinValue&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                    <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;min_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s1">&#39;MinValue&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="s1">&#39;MaxValue&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                    <span class="n">field_args</span><span class="p">[</span><span class="s1">&#39;max_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="s1">&#39;MaxValue&#39;</span><span class="p">])</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="o">**</span><span class="n">field_args</span><span class="p">)</span>
+
+            <span class="c1"># heat-api currently returns the boolean type in lowercase</span>
+            <span class="c1"># (see https://bugs.launchpad.net/heat/+bug/1361448)</span>
+            <span class="c1"># so for better compatibility both are checked here</span>
+            <span class="k">elif</span> <span class="n">param_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Boolean&#39;</span><span class="p">,</span> <span class="s1">&#39;boolean&#39;</span><span class="p">):</span>
+                <span class="n">field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="o">**</span><span class="n">field_args</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">field</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span>
+
+    <span class="nd">@sensitive_variables</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="CreateStackForm.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.CreateStackForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">prefix_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span><span class="p">)</span>
+        <span class="n">params_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">[</span><span class="n">prefix_length</span><span class="p">:],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                       <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span><span class="p">)]</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;stack_name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stack_name&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;timeout_mins&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timeout_mins&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;disable_rollback&#39;</span><span class="p">:</span> <span class="ow">not</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_rollback&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params_list</span><span class="p">),</span>
+            <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_data&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_data&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_url&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;environment_data&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;environment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;environment_data&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">stack_create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Stack creation started.&quot;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_populate_custom_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">custom_type</span> <span class="o">==</span> <span class="s1">&#39;neutron.network&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">network_field_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_type</span> <span class="o">==</span> <span class="s1">&#39;nova.keypair&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">keypair_field_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_type</span> <span class="o">==</span> <span class="s1">&#39;glance.image&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">image_utils</span><span class="o">.</span><span class="n">image_field_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_type</span> <span class="o">==</span> <span class="s1">&#39;nova.flavor&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">flavor_field_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+</div>
+<div class="viewcode-block" id="EditStackForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.EditStackForm">[docs]</a><span class="k">class</span> <span class="nc">EditStackForm</span><span class="p">(</span><span class="n">CreateStackForm</span><span class="p">):</span>
+
+<div class="viewcode-block" id="EditStackForm.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.EditStackForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Update Stack Parameters&#39;</span><span class="p">)</span>
+</div>
+    <span class="n">stack_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Stack ID&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+    <span class="n">stack_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Stack Name&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+
+    <span class="nd">@sensitive_variables</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="EditStackForm.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.EditStackForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">prefix_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span><span class="p">)</span>
+        <span class="n">params_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">[</span><span class="n">prefix_length</span><span class="p">:],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                       <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span><span class="p">)]</span>
+
+        <span class="n">stack_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stack_id&#39;</span><span class="p">)</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;stack_name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stack_name&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;timeout_mins&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timeout_mins&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;disable_rollback&#39;</span><span class="p">:</span> <span class="ow">not</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_rollback&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params_list</span><span class="p">),</span>
+            <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="c1"># if the user went directly to this form, resubmit the existing</span>
+        <span class="c1"># template data. otherwise, submit what they had from the first form</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_data&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_data&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_url&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_url&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parameters&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">stack_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">stack_id</span><span class="o">=</span><span class="n">stack_id</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Stack update started.&quot;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="PreviewStackForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.PreviewStackForm">[docs]</a><span class="k">class</span> <span class="nc">PreviewStackForm</span><span class="p">(</span><span class="n">CreateStackForm</span><span class="p">):</span>
+
+<div class="viewcode-block" id="PreviewStackForm.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.PreviewStackForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Preview Stack Parameters&#39;</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_view</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;next_view&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateStackForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PreviewStackForm.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.forms.html#openstack_dashboard.dashboards.project.stacks.forms.PreviewStackForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">prefix_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span><span class="p">)</span>
+        <span class="n">params_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">[</span><span class="n">prefix_length</span><span class="p">:],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                       <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param_prefix</span><span class="p">)]</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;stack_name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stack_name&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;timeout_mins&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timeout_mins&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;disable_rollback&#39;</span><span class="p">:</span> <span class="ow">not</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_rollback&#39;</span><span class="p">)),</span>
+            <span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params_list</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_data&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_data&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;template_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;template_url&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;environment_data&#39;</span><span class="p">):</span>
+            <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;environment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;environment_data&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stack_preview</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">stack_preview</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">)</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;GET&#39;</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_view</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">request</span><span class="p">,</span>
+                                            <span class="n">stack_preview</span><span class="o">=</span><span class="n">stack_preview</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

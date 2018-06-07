@@ -1,0 +1,466 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Quickstart &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="index.html" />
+    <link rel="next" title="Tutorial: Building a Dashboard using Horizon" href="topics/tutorial.html" />
+    <link rel="prev" title="Horizon Basics" href="intro.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This section has been tested for Horizon on Ubuntu (12.04-64) and Fedora-based (RHEL 6.4) distributions. Feel free to add notes and any changes according to your experiences or operating system.</p>
+</div>
+<div class="section" id="linux-systems">
+<h2>Linux Systems<a class="headerlink" href="#linux-systems" title="Permalink to this headline">¶</a></h2>
+<p>Install the prerequisite packages.</p>
+<p>On Ubuntu:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; sudo apt-get install git python-dev python-virtualenv libssl-dev libffi-dev
+</pre></div>
+</div>
+<p>On Fedora-based distributions (e.g., Fedora/RHEL/CentOS/Scientific Linux):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; sudo yum install gcc git-core python-devel python-virtualenv openssl-devel libffi-devel which
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<p>To setup a Horizon development environment simply clone the Horizon git
+repository from <a class="reference external" href="http://github.com/openstack/horizon">http://github.com/openstack/horizon</a> and execute the
+<tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> script from the root folder (see <a class="reference internal" href="ref/run_tests.html"><em>The run_tests.sh Script</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; git clone https://github.com/openstack/horizon.git
+&gt; cd horizon
+&gt; ./run_tests.sh
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Running <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> will build a virtualenv, <tt class="docutils literal"><span class="pre">.venv</span></tt>, where all the
+python dependencies for Horizon are installed and referenced. After the
+dependencies are installed, the unit test suites in the Horizon repo will be
+executed.  There should be no errors from the tests.</p>
+</div>
+<p>Next you will need to setup your Django application config by copying <tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py.example</span></tt> to <tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt>. To do this quickly you can use the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; cp openstack_dashboard/local/local_settings.py.example openstack_dashboard/local/local_settings.py
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To add new settings or customize existing settings, modify the <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> file.</p>
+</div>
+<p>Horizon assumes a single end-point for OpenStack services which defaults to
+the local host (127.0.0.1), as is the default in DevStack. If this is not the
+case change the <tt class="docutils literal"><span class="pre">OPENSTACK_HOST</span></tt> setting in the
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt> file, to the actual IP address
+of the OpenStack end-point Horizon should use.</p>
+<p>You can save changes you made to
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt> with the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; python manage.py migrate_settings --gendiff
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This creates a <tt class="docutils literal"><span class="pre">local_settings.diff</span></tt> file which is a diff between
+<tt class="docutils literal"><span class="pre">local_settings.py</span></tt> and <tt class="docutils literal"><span class="pre">local_settings.py.example</span></tt></p>
+</div>
+<p>If you upgrade Horizon, you might need to update your
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt> file with new parameters from
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py.example</span></tt> to do so, first update
+Horizon:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; git remote update &amp;&amp; git pull --ff-only origin master
+</pre></div>
+</div>
+<p>Then update your  <tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt> file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; mv openstack_dashboard/local/local_settings.py openstack_dashboard/local/local_settings.py.old
+&gt; python manage.py migrate_settings
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This applies <tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.diff</span></tt> on
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py.example</span></tt> to regenerate an
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt> file.
+The migration can sometimes have difficulties to migrate some settings, if
+this happens you will be warned with a conflict message pointing to an
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py_Some_DateTime.rej</span></tt> file.
+In this file, you will see the lines which could not be automatically
+changed and you will have to redo only these few changes manually instead
+of modifying the full
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py.example</span></tt> file.</p>
+</div>
+<p>When all settings have been migrated, it is safe to regenerate a clean diff in
+order to prevent Conflicts for future migrations:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; mv openstack_dashboard/local/local_settings.diff openstack_dashboard/local/local_settings.diff.old
+&gt; python manage.py migrate_settings --gendiff
+</pre></div>
+</div>
+<p>To start the Horizon development server use <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&gt; ./run_tests.sh --runserver localhost:9000
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The default port for runserver is 8000 which is already consumed by
+heat-api-cfn in DevStack. If not running in DevStack
+<cite>./run_tests.sh &#8211;runserver</cite> will start the test server at
+<cite>http://localhost:8000</cite>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> script provides wrappers around <tt class="docutils literal"><span class="pre">manage.py</span></tt>.
+For more information on manage.py which is a django, see
+<cite>https://docs.djangoproject.com/en/dev/ref/django-admin/</cite></p>
+</div>
+<p>Once the Horizon server is running, point a web browser to <a class="reference external" href="http://localhost:9000">http://localhost:9000</a>
+or to the IP and port the server is listening for.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">DevStack</span></tt> project (<a class="reference external" href="http://devstack.org/">http://devstack.org/</a>) can be used to install
+an OpenStack development environment from scratch. For a local.conf that
+enables most services that Horizon supports managing see
+<a class="reference internal" href="ref/local_conf.html"><em>local.conf</em></a></p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The minimum required set of OpenStack services running includes the
+following:</p>
+<ul class="simple">
+<li>Nova (compute, api, scheduler, and network)</li>
+<li>Glance</li>
+<li>Keystone</li>
+<li>Neutron (unless nova-network is used)</li>
+</ul>
+<p class="last">Horizon provides optional support for other services.
+See <a class="reference internal" href="topics/install.html#system-requirements-label"><em>System Requirements</em></a> for the supported services.
+If Keystone endpoint for a service is configured, Horizon detects it
+and enables its support automatically.</p>
+</div>
+</div>
+<div class="section" id="editing-horizon-s-source">
+<h2>Editing Horizon&#8217;s Source<a class="headerlink" href="#editing-horizon-s-source" title="Permalink to this headline">¶</a></h2>
+<p>Although DevStack installs and configures an instance of Horizon when running
+stack.sh, the preferred development setup follows the instructions above on the
+server/VM running DevStack. The are several advantages to maintaining a
+separate copy of the Horizon repo, rather than editing the devstack installed
+copy.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Source code changes aren&#8217;t as easily lost when running unstack.sh/stack.sh</li>
+<li>The development server picks up source code changes (other than JavaScript
+and CSS due to compression and compilation) while still running.</li>
+<li>Log messages and print statements go directly to the console.</li>
+<li>Debugging with pdb becomes much simpler to interact with.</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">JavaScript and CSS changes require a development server restart. Also,
+forcing a refresh of the page (e.g. using Shift-F5) in the browser is
+required to pull down non-cached versions of the CSS and JavaScript. The
+default setting in Horizon is to do compilation and compression of these
+files at server startup. If you have configured your local copy to do
+offline compression, more steps are required.</p>
+</div>
+</div>
+<div class="section" id="horizon-s-structure">
+<h2>Horizon&#8217;s Structure<a class="headerlink" href="#horizon-s-structure" title="Permalink to this headline">¶</a></h2>
+<p>This project is a bit different from other OpenStack projects in that it has
+two very distinct components underneath it: <tt class="docutils literal"><span class="pre">horizon</span></tt>, and
+<tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt>.</p>
+<p>The <tt class="docutils literal"><span class="pre">horizon</span></tt> directory holds the generic libraries and components that can
+be used in any Django project.</p>
+<p>The <tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt> directory contains a reference Django project that
+uses <tt class="docutils literal"><span class="pre">horizon</span></tt>.</p>
+<p>For development, both pieces share an environment which (by default) is
+built with the <tt class="docutils literal"><span class="pre">tools/install_venv.py</span></tt> script. That script creates a
+virtualenv and installs all the necessary packages.</p>
+<p>If dependencies are added to either <tt class="docutils literal"><span class="pre">horizon</span></tt> or <tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt>,
+they should be added to <tt class="docutils literal"><span class="pre">requirements.txt</span></tt>.</p>
+<blockquote>
+<div><div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">If you do anything which changes the environment (adding new dependencies
+or renaming directories are both great examples) be sure to increment the
+<tt class="docutils literal"><span class="pre">environment_version</span></tt> counter in <a class="reference internal" href="ref/run_tests.html"><em>run_tests.sh</em></a>.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="project">
+<h2>Project<a class="headerlink" href="#project" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dashboard-configuration">
+<h3>Dashboard configuration<a class="headerlink" href="#dashboard-configuration" title="Permalink to this headline">¶</a></h3>
+<p>To add a new dashboard to your project, you need to add a configuration file to
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/enabled</span></tt> directory. For more information on this,
+see <a class="reference internal" href="topics/settings.html#pluggable-settings-label"><em>Pluggable Settings</em></a>.</p>
+<p>There is also an alternative way to add a new dashboard, by adding it to
+Django&#8217;s <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt> setting. For more information about this, see
+<a class="reference internal" href="topics/settings.html#dashboards"><em>dashboards</em></a>. However, please note that the recommended way is to take
+advantage of the pluggable settings feature.</p>
+</div>
+<div class="section" id="urls">
+<h3>URLs<a class="headerlink" href="#urls" title="Permalink to this headline">¶</a></h3>
+<p>Then you add a single line to your project&#8217;s <tt class="docutils literal"><span class="pre">urls.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+</pre></div>
+</div>
+<p>Those urls are automatically constructed based on the registered Horizon apps.
+If a different URL structure is desired it can be constructed by hand.</p>
+</div>
+<div class="section" id="templates">
+<h3>Templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h3>
+<p>Pre-built template tags generate navigation. In your <tt class="docutils literal"><span class="pre">nav.html</span></tt>
+template you might have the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% load horizon %}
+
+&lt;div class=&#39;nav&#39;&gt;
+    {% horizon_main_nav %}
+&lt;/div&gt;
+</pre></div>
+</div>
+<p>And in your <tt class="docutils literal"><span class="pre">sidebar.html</span></tt> you might have:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% load horizon %}
+
+&lt;div class=&#39;sidebar&#39;&gt;
+    {% horizon_dashboard_nav %}
+&lt;/div&gt;
+</pre></div>
+</div>
+<p>These template tags are aware of the current &#8220;active&#8221; dashboard and panel
+via template context variables and will render accordingly.</p>
+</div>
+</div>
+<div class="section" id="application">
+<h2>Application<a class="headerlink" href="#application" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="structure">
+<h3>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<p>An application would have the following structure (we&#8217;ll use project as
+an example):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>project/
+|---__init__.py
+|---dashboard.py &lt;-----Registers the app with Horizon and sets dashboard properties
+|---overview/
+|---images/
+    |-- images
+    |-- __init__.py
+    |---panel.py &lt;-----Registers the panel in the app and defines panel properties
+    |-- snapshots/
+    |-- templates/
+    |-- tests.py
+    |-- urls.py
+    |-- views.py
+    ...
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="dashboard-classes">
+<h3>Dashboard Classes<a class="headerlink" href="#dashboard-classes" title="Permalink to this headline">¶</a></h3>
+<p>Inside of <tt class="docutils literal"><span class="pre">dashboard.py</span></tt> you would have a class definition and the registration
+process:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">horizon</span>
+
+<span class="o">....</span>
+<span class="c1"># ObjectStorePanels is an example for a PanelGroup</span>
+<span class="c1"># for panel classes in general, see below</span>
+<span class="k">class</span> <span class="nc">ObjectStorePanels</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">PanelGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;object_store&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Object Store&quot;</span><span class="p">)</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;containers&#39;</span><span class="p">,)</span>
+
+
+<span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Dashboard</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project&quot;</span><span class="p">)</span> <span class="c1"># Appears in navigation</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;project&quot;</span>    <span class="c1"># Appears in URL</span>
+    <span class="c1"># panels may be strings or refer to classes, such as</span>
+    <span class="c1"># ObjectStorePanels</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="n">BasePanels</span><span class="p">,</span> <span class="n">NetworkPanels</span><span class="p">,</span> <span class="n">ObjectStorePanels</span><span class="p">)</span>
+    <span class="n">default_panel</span> <span class="o">=</span> <span class="s1">&#39;overview&#39;</span>
+    <span class="o">...</span>
+
+<span class="n">horizon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Project</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="panel-classes">
+<h3>Panel Classes<a class="headerlink" href="#panel-classes" title="Permalink to this headline">¶</a></h3>
+<p>To connect a <a class="reference internal" href="ref/horizon.html#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> with a <a class="reference internal" href="ref/horizon.html#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> class
+you register it in a <tt class="docutils literal"><span class="pre">panel.py</span></tt> file like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">horizon</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project</span> <span class="kn">import</span> <span class="n">dashboard</span>
+
+
+<span class="k">class</span> <span class="nc">Images</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Images&quot;</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s1">&#39;images&#39;</span>
+    <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.roles.admin&#39;</span><span class="p">,</span> <span class="s1">&#39;my.other.permission&#39;</span><span class="p">,)</span>
+
+
+<span class="c1"># You could also register your panel with another application&#39;s dashboard</span>
+<span class="n">dashboard</span><span class="o">.</span><span class="n">Project</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Images</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>By default a <a class="reference internal" href="ref/horizon.html#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> class looks for a <tt class="docutils literal"><span class="pre">urls.py</span></tt> file in the
+same directory as <tt class="docutils literal"><span class="pre">panel.py</span></tt> to include in the rollup of url patterns from
+panels to dashboards to Horizon, resulting in a wholly extensible, configurable
+URL structure.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Quickstart</a><ul>
+<li><a class="reference internal" href="#linux-systems">Linux Systems</a></li>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#editing-horizon-s-source">Editing Horizon&#8217;s Source</a></li>
+<li><a class="reference internal" href="#horizon-s-structure">Horizon&#8217;s Structure</a></li>
+<li><a class="reference internal" href="#project">Project</a><ul>
+<li><a class="reference internal" href="#dashboard-configuration">Dashboard configuration</a></li>
+<li><a class="reference internal" href="#urls">URLs</a></li>
+<li><a class="reference internal" href="#templates">Templates</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#application">Application</a><ul>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#dashboard-classes">Dashboard Classes</a></li>
+<li><a class="reference internal" href="#panel-classes">Panel Classes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="intro.html"
+                                  title="previous chapter">Horizon Basics</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="topics/tutorial.html"
+                                  title="next chapter">Tutorial: Building a Dashboard using Horizon</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/quickstart.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="topics/tutorial.html" title="Tutorial: Building a Dashboard using Horizon"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Horizon Basics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

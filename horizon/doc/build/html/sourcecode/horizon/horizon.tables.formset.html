@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon.tables.formset Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The horizon.workflows.base Module" href="horizon.workflows.base.html" />
+    <link rel="prev" title="The horizon.tables.actions Module" href="horizon.tables.actions.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-horizon-tables-formset-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">horizon.tables.formset</span></tt> Module<a class="headerlink" href="#the-horizon-tables-formset-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.tables.formset.</tt><tt class="descname">FormsetCell</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetCell"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.Cell</span></tt></p>
+<p>A DataTable cell that knows about its field from the formset.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.tables.formset.</tt><tt class="descname">FormsetDataTable</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/tables.html#horizon.tables.formset.FormsetDataTableMixin" title="horizon.tables.formset.FormsetDataTableMixin"><tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.formset.FormsetDataTableMixin</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<p>A DataTable with support for Django Formsets.</p>
+<p>Note that <a class="reference internal" href="../../ref/tables.html#horizon.tables.DataTableOptions.row_class" title="horizon.tables.DataTableOptions.row_class"><tt class="xref py py-attr docutils literal"><span class="pre">horizon.tables.DataTableOptions.row_class</span></tt></a> and
+<tt class="xref py py-attr docutils literal"><span class="pre">horizon.tables.DataTaleOptions.cell_class</span></tt> are overwritten in this
+class, so setting them in <tt class="docutils literal"><span class="pre">Meta</span></tt> has no effect.</p>
+<dl class="attribute">
+<dt id="horizon.tables.formset.FormsetDataTable.formset_class">
+<tt class="descname">formset_class</tt><a class="headerlink" href="#horizon.tables.formset.FormsetDataTable.formset_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class made with <tt class="docutils literal"><span class="pre">django.forms.formsets.formset_factory</span></tt>
+containing the definition of the formset to use with this data table.</p>
+<p>The columns that are named the same as the formset fields will be
+replaced with form widgets in the table. Any hidden fields from the
+formset will also be included. The fields that are not hidden and
+don&#8217;t correspond to any column will not be included in the form.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_actions</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_columns</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.tables.formset.</tt><tt class="descname">FormsetDataTableMixin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTableMixin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>A mixin for DataTable to support Django Formsets.</p>
+<p>This works the same as the <tt class="docutils literal"><span class="pre">FormsetDataTable</span></tt> below, but can be used
+to add to existing DataTable subclasses.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">formset_class</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_empty_row</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_empty_row"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a row with no data, for adding at the end of the table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_formset</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_formset"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Provide the formset corresponding to this DataTable.</p>
+<p>Use this to validate the formset and to get the submitted data back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_object_id</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_object_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_required_columns</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_required_columns"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Lists names of columns that have required fields.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_rows</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_rows"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the row data for this table broken out by columns.</p>
+<p>The row objects get an additional <tt class="docutils literal"><span class="pre">form</span></tt> parameter, with the
+formset form corresponding to that row.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.tables.formset.</tt><tt class="descname">FormsetRow</tt><big>(</big><em>column</em>, <em>datum</em>, <em>form</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetRow"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.Row</span></tt></p>
+<p>A DataTable row that knows about its form from the formset.</p>
+<dl class="method">
+<dt>
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tables/formset.html#FormsetRow.render"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_path</tt><em class="property"> = 'horizon/common/_formset_table_row.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.tables.actions.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon.tables.actions</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.workflows.base.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon.workflows.base</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/horizon/horizon.tables.formset.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.workflows.base.html" title="The horizon.workflows.base Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.tables.actions.html" title="The horizon.tables.actions Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

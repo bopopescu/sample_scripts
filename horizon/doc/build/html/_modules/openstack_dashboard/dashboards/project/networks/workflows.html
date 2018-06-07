@@ -1,0 +1,721 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.networks.workflows &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.networks.workflows</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 NEC Corporation</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">import</span> <span class="nn">netaddr</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.networks.subnets</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CreateNetworkInfoAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetworkInfoAction">[docs]</a><span class="k">class</span> <span class="nc">CreateNetworkInfoAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">net_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                               <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network Name&quot;</span><span class="p">),</span>
+                               <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+    <span class="n">net_profile_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network Profile&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                       <span class="n">widget</span><span class="o">=</span><span class="n">widget</span><span class="p">)</span>
+
+    <span class="n">admin_state</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="bp">True</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;UP&#39;</span><span class="p">)),</span>
+                                             <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;DOWN&#39;</span><span class="p">))],</span>
+                                    <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin State&quot;</span><span class="p">),</span>
+                                    <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                    <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;The state to start&quot;</span>
+                                                <span class="s2">&quot; the network in.&quot;</span><span class="p">))</span>
+    <span class="n">with_subnet</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Subnet&quot;</span><span class="p">),</span>
+                                     <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                         <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;with_subnet&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;data-hide-tab&#39;</span><span class="p">:</span> <span class="s1">&#39;create_network__&#39;</span>
+                                                          <span class="s1">&#39;createsubnetinfo&#39;</span>
+                                                          <span class="s1">&#39;action,&#39;</span>
+                                                          <span class="s1">&#39;create_network__&#39;</span>
+                                                          <span class="s1">&#39;createsubnetdetail&#39;</span>
+                                                          <span class="s1">&#39;action,&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;data-hide-on-checked&#39;</span><span class="p">:</span> <span class="s1">&#39;false&#39;</span>
+                                     <span class="p">}),</span>
+                                     <span class="n">initial</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                     <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateNetworkInfoAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                      <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;net_profile_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_network_profile_choices</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+
+<div class="viewcode-block" id="CreateNetworkInfoAction.get_network_profile_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetworkInfoAction.get_network_profile_choices">[docs]</a>    <span class="k">def</span> <span class="nf">get_network_profile_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">profile_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select a profile&quot;</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_profiles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">):</span>
+            <span class="n">profile_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">profile</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">profile_choices</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">type_p</span><span class="p">):</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">profiles</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">profile_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_p</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network Profiles could not be retrieved.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">profiles</span>
+    <span class="c1"># TODO(absubram): Add ability to view network profile information</span>
+    <span class="c1"># in the network detail if a profile is used.</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create a new network. &quot;</span>
+                      <span class="s2">&quot;In addition, a subnet associated with the network &quot;</span>
+                      <span class="s2">&quot;can be created in the next panel.&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CreateNetworkInfo"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetworkInfo">[docs]</a><span class="k">class</span> <span class="nc">CreateNetworkInfo</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">CreateNetworkInfoAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;net_name&quot;</span><span class="p">,</span> <span class="s2">&quot;admin_state&quot;</span><span class="p">,</span> <span class="s2">&quot;net_profile_id&quot;</span><span class="p">,</span> <span class="s2">&quot;with_subnet&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CreateSubnetInfoAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetInfoAction">[docs]</a><span class="k">class</span> <span class="nc">CreateSubnetInfoAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">subnet_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                  <span class="p">}),</span>
+                                  <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Subnet Name&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">address_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network Address Source&#39;</span><span class="p">),</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;manual&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Enter Network Address manually&#39;</span><span class="p">)),</span>
+                 <span class="p">(</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Allocate Network Address from a pool&#39;</span><span class="p">))],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+
+    <span class="n">subnetpool</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Address pool&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched switchable&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;subnetpool&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-source-subnetpool&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Address pool&#39;</span><span class="p">)},</span>
+            <span class="n">data_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;prefixes&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;ip_version&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;min_prefixlen&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;max_prefixlen&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;default_prefixlen&#39;</span><span class="p">),</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">prefixes</span><span class="p">))</span>
+                                <span class="k">if</span> <span class="s1">&#39;prefixes&#39;</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">)),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">prefixlen</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                  <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                  <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;subnetpool&#39;</span><span class="p">,</span>
+                                  <span class="p">}),</span>
+                                  <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network Mask&#39;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">cidr</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network Address&quot;</span><span class="p">),</span>
+                         <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                         <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                         <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                             <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;data-source-manual&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network Address&quot;</span><span class="p">),</span>
+                         <span class="p">}),</span>
+                         <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network address in CIDR format &quot;</span>
+                                     <span class="s2">&quot;(e.g. 192.168.0.0/24, 2001:DB8::/48)&quot;</span><span class="p">),</span>
+                         <span class="n">version</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">IPv4</span> <span class="o">|</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPv6</span><span class="p">,</span>
+                         <span class="n">mask</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">ip_version</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;IPv4&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;IPv6&#39;</span><span class="p">)],</span>
+                                   <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                       <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;ipversion&#39;</span><span class="p">,</span>
+                                   <span class="p">}),</span>
+                                   <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP Version&quot;</span><span class="p">),</span>
+                                   <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">gateway_ip</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Gateway IP&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source gateway_ip&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-source-manual&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Gateway IP&quot;</span><span class="p">)</span>
+        <span class="p">}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP address of Gateway (e.g. 192.168.0.254) &quot;</span>
+                    <span class="s2">&quot;The default value is the first IP of the &quot;</span>
+                    <span class="s2">&quot;network address &quot;</span>
+                    <span class="s2">&quot;(e.g. 192.168.0.1 for 192.168.0.0/24, &quot;</span>
+                    <span class="s2">&quot;2001:DB8::1 for 2001:DB8::/48). &quot;</span>
+                    <span class="s2">&quot;If you use the default, leave blank. &quot;</span>
+                    <span class="s2">&quot;If you do not want to use a gateway, &quot;</span>
+                    <span class="s2">&quot;check &#39;Disable Gateway&#39; below.&quot;</span><span class="p">),</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">IPv4</span> <span class="o">|</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPv6</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">no_gateway</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Disable Gateway&quot;</span><span class="p">),</span>
+                                    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                        <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;gateway_ip&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;data-hide-on-checked&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span>
+                                    <span class="p">}),</span>
+                                    <span class="n">initial</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                    <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Specify &quot;Network Address&quot;, &quot;Address pool&quot; or &#39;</span>
+            <span class="s1">&#39;clear &quot;Create Subnet&quot; checkbox.&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Subnet&quot;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Create a subnet associated with the network. &#39;</span>
+                      <span class="s1">&#39;Advanced configuration is available by clicking on the &#39;</span>
+                      <span class="s1">&#39;&quot;Subnet Details&quot; tab.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateSubnetInfoAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                                                     <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;with_subnet&#39;</span> <span class="ow">in</span> <span class="n">context</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;with_subnet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+                <span class="n">initial</span><span class="o">=</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;with_subnet&#39;</span><span class="p">],</span>
+                <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_NEUTRON_NETWORK&#39;</span><span class="p">,</span>
+                       <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_ipv6&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ip_version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ip_version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="mi">4</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_extension_supported</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="s1">&#39;subnet_allocation&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_subnetpool_choices</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hide_subnetpool_choices</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hide_subnetpool_choices</span><span class="p">()</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to initialize subnetpools&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Pre-populate prefixlen choices to satisfy Django</span>
+            <span class="c1"># ChoiceField Validation. This is overridden w/data from</span>
+            <span class="c1"># subnetpool on select.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;prefixlen&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> \
+                <span class="nb">zip</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+            <span class="c1"># Populate data-fields for switching the prefixlen field</span>
+            <span class="c1"># when user selects a subnetpool other than</span>
+            <span class="c1"># &quot;Provider default pool&quot;</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;data-subnetpool-&#39;</span> <span class="o">+</span> <span class="nb">id</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;prefixlen&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network Mask&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hide_subnetpool_choices</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CreateSubnetInfoAction.get_subnetpool_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetInfoAction.get_subnetpool_choices">[docs]</a>    <span class="k">def</span> <span class="nf">get_subnetpool_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">subnetpool_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select a pool&#39;</span><span class="p">))]</span>
+        <span class="n">default_ipv6_subnet_pool_label</span> <span class="o">=</span> \
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_NEUTRON_NETWORK&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s1">&#39;default_ipv6_subnet_pool_label&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">default_ipv4_subnet_pool_label</span> <span class="o">=</span> \
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_NEUTRON_NETWORK&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s1">&#39;default_ipv4_subnet_pool_label&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">default_ipv6_subnet_pool_label</span><span class="p">:</span>
+            <span class="n">subnetpool_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ip_version&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+                               <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">default_ipv6_subnet_pool_label</span><span class="p">}</span>
+            <span class="n">subnetpool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">SubnetPool</span><span class="p">(</span><span class="n">subnetpool_dict</span><span class="p">)</span>
+            <span class="n">subnetpool_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">subnetpool</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">default_ipv4_subnet_pool_label</span><span class="p">:</span>
+            <span class="n">subnetpool_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ip_version&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                               <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">default_ipv4_subnet_pool_label</span><span class="p">}</span>
+            <span class="n">subnetpool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">SubnetPool</span><span class="p">(</span><span class="n">subnetpool_dict</span><span class="p">)</span>
+            <span class="n">subnetpool_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">subnetpool</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">subnetpool</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnetpool_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="n">subnetpool_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">subnetpool</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">subnetpool</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">subnetpool_choices</span>
+</div>
+<div class="viewcode-block" id="CreateSubnetInfoAction.hide_subnetpool_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetInfoAction.hide_subnetpool_choices">[docs]</a>    <span class="k">def</span> <span class="nf">hide_subnetpool_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;address_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;prefixlen&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">_check_subnet_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">,</span> <span class="n">is_create</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="n">cidr</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cidr&#39;</span><span class="p">)</span>
+        <span class="n">ip_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ip_version&#39;</span><span class="p">))</span>
+        <span class="n">gateway_ip</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gateway_ip&#39;</span><span class="p">)</span>
+        <span class="n">no_gateway</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;no_gateway&#39;</span><span class="p">)</span>
+        <span class="n">address_source</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address_source&#39;</span><span class="p">)</span>
+
+        <span class="c1"># When creating network from a pool it is allowed to supply empty</span>
+        <span class="c1"># subnetpool_id signalling that Neutron should choose the default</span>
+        <span class="c1"># pool configured by the operator. This is also part of the IPv6</span>
+        <span class="c1"># Prefix Delegation Workflow.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cidr</span> <span class="ow">and</span> <span class="n">address_source</span> <span class="o">!=</span> <span class="s1">&#39;subnetpool&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cidr</span><span class="p">:</span>
+            <span class="n">subnet</span> <span class="o">=</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="n">cidr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">subnet</span><span class="o">.</span><span class="n">version</span> <span class="o">!=</span> <span class="n">ip_version</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network Address and IP version are inconsistent.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">ip_version</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">subnet</span><span class="o">.</span><span class="n">prefixlen</span> <span class="o">==</span> <span class="mi">32</span><span class="p">)</span> <span class="ow">or</span> \
+                    <span class="p">(</span><span class="n">ip_version</span> <span class="o">==</span> <span class="mi">6</span> <span class="ow">and</span> <span class="n">subnet</span><span class="o">.</span><span class="n">prefixlen</span> <span class="o">==</span> <span class="mi">128</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;The subnet in the Network Address is &quot;</span>
+                        <span class="s2">&quot;too small (/</span><span class="si">%s</span><span class="s2">).&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">subnet</span><span class="o">.</span><span class="n">prefixlen</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">no_gateway</span> <span class="ow">and</span> <span class="n">gateway_ip</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">gateway_ip</span><span class="p">)</span><span class="o">.</span><span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">ip_version</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Gateway IP and IP version are inconsistent.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_create</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">no_gateway</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">gateway_ip</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Specify IP address of gateway or &#39;</span>
+                    <span class="s1">&#39;check &quot;Disable Gateway&quot;.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateSubnetInfoAction.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetInfoAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreateSubnetInfoAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="n">with_subnet</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;with_subnet&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">with_subnet</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cleaned_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_subnet_data</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateSubnetInfo"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetInfo">[docs]</a><span class="k">class</span> <span class="nc">CreateSubnetInfo</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">CreateSubnetInfoAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;subnet_name&quot;</span><span class="p">,</span> <span class="s2">&quot;cidr&quot;</span><span class="p">,</span> <span class="s2">&quot;ip_version&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;gateway_ip&quot;</span><span class="p">,</span> <span class="s2">&quot;no_gateway&quot;</span><span class="p">,</span> <span class="s2">&quot;subnetpool&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;prefixlen&quot;</span><span class="p">,</span> <span class="s2">&quot;address_source&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CreateSubnetDetailAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetDetailAction">[docs]</a><span class="k">class</span> <span class="nc">CreateSubnetDetailAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">enable_dhcp</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enable DHCP&quot;</span><span class="p">),</span>
+                                     <span class="n">initial</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ipv6_modes</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IPv6 Address Configuration Mode&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;ipversion&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-ipversion-6&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;IPv6 Address Configuration Mode&quot;</span><span class="p">),</span>
+        <span class="p">}),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">IPV6_DEFAULT_MODE</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Specifies how IPv6 addresses and additional information &quot;</span>
+                    <span class="s2">&quot;are configured. We can specify SLAAC/DHCPv6 stateful/&quot;</span>
+                    <span class="s2">&quot;DHCPv6 stateless provided by OpenStack, &quot;</span>
+                    <span class="s2">&quot;or specify no option. &quot;</span>
+                    <span class="s2">&quot;&#39;No options specified&#39; means addresses are configured &quot;</span>
+                    <span class="s2">&quot;manually or configured by a non-OpenStack system.&quot;</span><span class="p">))</span>
+    <span class="n">allocation_pools</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Allocation Pools&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP address allocation pools. Each entry is: &quot;</span>
+                    <span class="s2">&quot;start_ip_address,end_ip_address &quot;</span>
+                    <span class="s2">&quot;(e.g., 192.168.1.100,192.168.1.120) &quot;</span>
+                    <span class="s2">&quot;and one entry per line.&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">dns_nameservers</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;DNS Name Servers&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP address list of DNS name servers for this subnet. &quot;</span>
+                    <span class="s2">&quot;One entry per line.&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">host_routes</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Host Routes&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Additional routes announced to the hosts. &quot;</span>
+                    <span class="s2">&quot;Each entry is: destination_cidr,nexthop &quot;</span>
+                    <span class="s2">&quot;(e.g., 192.168.200.0/24,10.56.1.254) &quot;</span>
+                    <span class="s2">&quot;and one entry per line.&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Subnet Details&quot;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Specify additional attributes for the subnet.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateSubnetDetailAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                                                       <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_NEUTRON_NETWORK&#39;</span><span class="p">,</span>
+                       <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable_ipv6&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ipv6_modes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CreateSubnetDetailAction.populate_ipv6_modes_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetDetailAction.populate_ipv6_modes_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_ipv6_modes_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">value</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (Default)&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">label</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">utils</span><span class="o">.</span><span class="n">IPV6_DEFAULT_MODE</span>
+                <span class="k">else</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">utils</span><span class="o">.</span><span class="n">IPV6_MODE_CHOICES</span><span class="p">]</span>
+</div>
+    <span class="k">def</span> <span class="nf">_convert_ip_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">field_name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPAddress</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">netaddr</span><span class="o">.</span><span class="n">AddrFormatError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(field_name)s</span><span class="s1">: Invalid IP address (value=</span><span class="si">%(ip)s</span><span class="s1">)&#39;</span><span class="p">)</span>
+                   <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="n">field_name</span><span class="p">,</span> <span class="s1">&#39;ip&#39;</span><span class="p">:</span> <span class="n">ip</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_convert_ip_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">field_name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">netaddr</span><span class="o">.</span><span class="n">IPNetwork</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">netaddr</span><span class="o">.</span><span class="n">AddrFormatError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(field_name)s</span><span class="s1">: Invalid IP address (value=</span><span class="si">%(network)s</span><span class="s1">)&#39;</span><span class="p">)</span>
+                   <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;field_name&#39;</span><span class="p">:</span> <span class="n">field_name</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">network</span><span class="p">})</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_allocation_pools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allocation_pools</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">allocation_pools</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Start and end addresses must be specified &#39;</span>
+                        <span class="s1">&#39;(value=</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">p</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_convert_ip_address</span><span class="p">(</span><span class="n">ip</span><span class="p">,</span> <span class="s2">&quot;allocation_pools&quot;</span><span class="p">)</span>
+                          <span class="k">for</span> <span class="n">ip</span> <span class="ow">in</span> <span class="n">pool</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Start address is larger than end address &#39;</span>
+                        <span class="s1">&#39;(value=</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">p</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_dns_nameservers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dns_nameservers</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="n">dns_nameservers</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+            <span class="n">ns</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ns</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_ip_address</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="s2">&quot;dns_nameservers&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_host_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host_routes</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">host_routes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">r</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">route</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">route</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Host Routes format error: &#39;</span>
+                        <span class="s1">&#39;Destination CIDR and nexthop must be specified &#39;</span>
+                        <span class="s1">&#39;(value=</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">r</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_ip_network</span><span class="p">(</span><span class="n">route</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;host_routes&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_ip_address</span><span class="p">(</span><span class="n">route</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;host_routes&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateSubnetDetailAction.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetDetailAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreateSubnetDetailAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_allocation_pools</span><span class="p">(</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allocation_pools&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_host_routes</span><span class="p">(</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;host_routes&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_dns_nameservers</span><span class="p">(</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dns_nameservers&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateSubnetDetail"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateSubnetDetail">[docs]</a><span class="k">class</span> <span class="nc">CreateSubnetDetail</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">CreateSubnetDetailAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;enable_dhcp&quot;</span><span class="p">,</span> <span class="s2">&quot;ipv6_modes&quot;</span><span class="p">,</span> <span class="s2">&quot;allocation_pools&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;dns_nameservers&quot;</span><span class="p">,</span> <span class="s2">&quot;host_routes&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CreateNetwork"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetwork">[docs]</a><span class="k">class</span> <span class="nc">CreateNetwork</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;create_network&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Network&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Created network &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create network &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">CreateNetworkInfo</span><span class="p">,</span>
+                     <span class="n">CreateSubnetInfo</span><span class="p">,</span>
+                     <span class="n">CreateSubnetDetail</span><span class="p">)</span>
+    <span class="n">wizard</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="CreateNetwork.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetwork.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:networks:index&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CreateNetwork.get_failure_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetwork.get_failure_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_failure_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:networks:index&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CreateNetwork.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetwork.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;net_name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;net_id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="n">name</span>
+</div>
+    <span class="k">def</span> <span class="nf">_create_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;net_name&#39;</span><span class="p">],</span>
+                      <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;admin_state&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;True&#39;</span><span class="p">)}</span>
+            <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;net_profile_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;net_profile_id&#39;</span><span class="p">]</span>
+            <span class="n">network</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;net_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network &quot;</span><span class="si">%s</span><span class="s1">&quot; was successfully created.&#39;</span><span class="p">)</span> <span class="o">%</span>
+                   <span class="n">network</span><span class="o">.</span><span class="n">name_or_id</span><span class="p">)</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">network</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to create network &quot;</span><span class="si">%(network)s</span><span class="s1">&quot;: </span><span class="si">%(reason)s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                   <span class="p">{</span><span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;net_name&#39;</span><span class="p">],</span> <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="n">e</span><span class="p">})</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_failure_url</span><span class="p">()</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">_setup_subnet_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">is_create</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Setup subnet parameters</span>
+
+<span class="sd">        This methods setups subnet parameters which are available</span>
+<span class="sd">        in both create and update.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_update</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">is_create</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;enable_dhcp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;enable_dhcp&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ip_version&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">ipv6_modes</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_ipv6_modes_attrs_from_menu</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;ipv6_modes&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ipv6_modes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">is_create</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;ipv6_ra_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ipv6_modes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ipv6_modes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">is_create</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;ipv6_address_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ipv6_modes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;allocation_pools&#39;</span><span class="p">]:</span>
+            <span class="n">pools</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">],</span> <span class="n">pool</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)))</span>
+                     <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;allocation_pools&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">pool</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;allocation_pools&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pools</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;host_routes&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">is_update</span><span class="p">:</span>
+            <span class="n">routes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s1">&#39;destination&#39;</span><span class="p">,</span> <span class="s1">&#39;nexthop&#39;</span><span class="p">],</span>
+                               <span class="n">route</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)))</span>
+                      <span class="k">for</span> <span class="n">route</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;host_routes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                      <span class="k">if</span> <span class="n">route</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;host_routes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">routes</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dns_nameservers&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">is_update</span><span class="p">:</span>
+            <span class="n">nameservers</span> <span class="o">=</span> <span class="p">[</span><span class="n">ns</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                           <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dns_nameservers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                           <span class="k">if</span> <span class="n">ns</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dns_nameservers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nameservers</span>
+
+    <span class="k">def</span> <span class="nf">_create_subnet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                       <span class="n">no_redirect</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">network</span><span class="p">:</span>
+            <span class="n">network_id</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">network_name</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">network_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network_id&#39;</span><span class="p">)</span>
+            <span class="n">network_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network_name&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;network_id&#39;</span><span class="p">:</span> <span class="n">network_id</span><span class="p">,</span>
+                      <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;subnet_name&#39;</span><span class="p">]}</span>
+            <span class="k">if</span> <span class="s1">&#39;cidr&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;ip_version&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;ip_version&#39;</span><span class="p">]:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;ip_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ip_version&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">tenant_id</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;tenant_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tenant_id</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;no_gateway&#39;</span><span class="p">]:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;gateway_ip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;gateway_ip&#39;</span><span class="p">]:</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;gateway_ip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;gateway_ip&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;subnetpool&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]):</span>
+                <span class="n">params</span><span class="p">[</span><span class="s1">&#39;subnetpool_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;subnetpool&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;prefixlen&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;prefixlen&#39;</span><span class="p">]):</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s1">&#39;prefixlen&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;prefixlen&#39;</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup_subnet_parameters</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="n">subnet</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnet_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subnet</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Subnet &quot;</span><span class="si">%s</span><span class="s1">&quot; was successfully created.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">]</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">subnet</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to create subnet &quot;</span><span class="si">%(sub)s</span><span class="s1">&quot; for network &quot;</span><span class="si">%(net)s</span><span class="s1">&quot;: &#39;</span>
+                    <span class="s1">&#39; </span><span class="si">%(reason)s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">no_redirect</span><span class="p">:</span>
+                <span class="n">redirect</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_failure_url</span><span class="p">()</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">msg</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;sub&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cidr&#39;</span><span class="p">],</span> <span class="s2">&quot;net&quot;</span><span class="p">:</span> <span class="n">network_name</span><span class="p">,</span>
+                                     <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="n">e</span><span class="p">},</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">_delete_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Delete the created network when subnet creation failed.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">network</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Delete the created network &quot;</span><span class="si">%s</span><span class="s1">&quot; &#39;</span>
+                    <span class="s1">&#39;due to subnet creation failure.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">network</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_failure_url</span><span class="p">()</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Http302</span><span class="p">(</span><span class="n">redirect</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to delete network &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">network</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_failure_url</span><span class="p">()</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateNetwork.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.networks.workflows.html#openstack_dashboard.dashboards.project.networks.workflows.CreateNetwork.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_network</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">network</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="c1"># If we do not need to create a subnet, return here.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;with_subnet&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">subnet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_subnet</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">no_redirect</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">subnet</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_delete_network</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

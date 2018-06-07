@@ -1,0 +1,76 @@
+Metadata-Version: 2.0
+Name: python-heatclient
+Version: 1.2.0
+Summary: OpenStack Orchestration API Client Library
+Home-page: http://www.openstack.org/
+Author: OpenStack
+Author-email: openstack-dev@lists.openstack.org
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Environment :: OpenStack
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Requires-Dist: Babel (!=2.3.2,!=2.3.0,!=2.3.1,!=2.3.3,>=1.3)
+Requires-Dist: PrettyTable (<0.8,>=0.7)
+Requires-Dist: PyYAML (>=3.1.0)
+Requires-Dist: cliff (>=1.15.0,!=1.17.0,!=1.16.0)
+Requires-Dist: iso8601 (>=0.1.9)
+Requires-Dist: oslo.i18n (>=2.1.0)
+Requires-Dist: oslo.serialization (>=1.10.0)
+Requires-Dist: oslo.utils (>=3.5.0)
+Requires-Dist: pbr (>=1.6)
+Requires-Dist: python-keystoneclient (>=1.6.0,!=2.1.0,!=1.8.0)
+Requires-Dist: python-openstackclient (>=2.1.0)
+Requires-Dist: python-swiftclient (>=2.2.0)
+Requires-Dist: requests (!=2.9.0,>=2.8.1)
+Requires-Dist: six (>=1.9.0)
+
+=================
+python-heatclient
+=================
+
+.. image:: https://img.shields.io/pypi/v/python-heatclient.svg
+    :target: https://pypi.python.org/pypi/python-heatclient/
+    :alt: Latest Version
+
+.. image:: https://img.shields.io/pypi/dm/python-heatclient.svg
+    :target: https://pypi.python.org/pypi/python-heatclient/
+    :alt: Downloads
+
+
+OpenStack Orchestration API Client Library
+
+This is a client library for Heat built on the Heat orchestration API. It
+provides a Python API (the ``heatclient`` module) and a command-line tool
+(``heat``).
+
+* Free software: Apache license
+* `PyPi`_ - package installation
+* `Online Documentation`_
+* `Launchpad project`_ - release management
+* `Blueprints`_ - feature specifications
+* `Bugs`_ - issue tracking
+* `Source`_
+* `Specs`_
+* `Template`_
+* `How to Contribute`_
+
+.. _PyPi: https://pypi.python.org/pypi/python-heatclient
+.. _Online Documentation: http://docs.openstack.org/developer/python-heatclient
+.. _Launchpad project: https://launchpad.net/python-heatclient
+.. _Blueprints: https://blueprints.launchpad.net/python-heatclient
+.. _Bugs: https://bugs.launchpad.net/python-heatclient
+.. _Source: https://git.openstack.org/cgit/openstack/python-heatclient
+.. _How to Contribute: http://docs.openstack.org/infra/manual/developers.html
+.. _Specs: http://specs.openstack.org/openstack/heat-specs/
+.. _Template: https://git.openstack.org/cgit/openstack/heat-templates/
+
+
+

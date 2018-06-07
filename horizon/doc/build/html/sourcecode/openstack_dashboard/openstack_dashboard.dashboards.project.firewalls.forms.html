@@ -1,0 +1,441 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.firewalls.forms Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.containers.views Module" href="openstack_dashboard.dashboards.project.containers.views.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.firewalls.panel Module" href="openstack_dashboard.dashboards.project.firewalls.panel.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-firewalls-forms-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.forms</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-firewalls-forms-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">AddRouterToFirewall</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#AddRouterToFirewall"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.forms.RouterInsertionFormBase</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('router_ids', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b713ea10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('router_ids', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b713ea10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_msg</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b713ea90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_new_router_ids</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#AddRouterToFirewall.get_new_router_ids"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_router_choices</tt><big>(</big><em>request</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#AddRouterToFirewall.get_router_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">init_failure_msg</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b713ead0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_msg</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b713ea50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">InsertRuleToPolicy</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#InsertRuleToPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('firewall_rule_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e410&gt;), ('insert_before', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e4d0&gt;), ('insert_after', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e590&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('firewall_rule_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e410&gt;), ('insert_before', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e4d0&gt;), ('insert_after', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e590&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#InsertRuleToPolicy.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">RemoveRouterFromFirewall</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RemoveRouterFromFirewall"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.forms.RouterInsertionFormBase</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('router_ids', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b713ed90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('router_ids', &lt;django.forms.fields.MultipleChoiceField object at 0x7ff3b713ed90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_msg</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b713ee10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_new_router_ids</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RemoveRouterFromFirewall.get_new_router_ids"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_router_choices</tt><big>(</big><em>request</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RemoveRouterFromFirewall.get_router_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">init_failure_msg</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b713ee50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_msg</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b713edd0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">RemoveRuleFromPolicy</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RemoveRuleFromPolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('firewall_rule_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e790&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('firewall_rule_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e790&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RemoveRuleFromPolicy.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">RouterInsertionFormBase</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RouterInsertionFormBase"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_new_router_ids</tt><big>(</big><em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RouterInsertionFormBase.get_new_router_ids"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a new list of router IDs associated with the firewall.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_router_choices</tt><big>(</big><em>request</em>, <em>kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RouterInsertionFormBase.get_router_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a list of selectable routers.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#RouterInsertionFormBase.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">UpdateFirewall</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#UpdateFirewall"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b713add0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b713aed0&gt;), ('firewall_policy_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713afd0&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e190&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b713add0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b713aed0&gt;), ('firewall_policy_id', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713afd0&gt;), ('admin_state_up', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713e190&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#UpdateFirewall.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">UpdatePolicy</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#UpdatePolicy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b713aa50&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b713ab50&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b713ac50&gt;), ('audited', &lt;django.forms.fields.BooleanField object at 0x7ff3b713ad10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b713aa50&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b713ab50&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b713ac50&gt;), ('audited', &lt;django.forms.fields.BooleanField object at 0x7ff3b713ad10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#UpdatePolicy.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.forms.</tt><tt class="descname">UpdateRule</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#UpdateRule"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b7112ed0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b7112fd0&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713a250&gt;), ('action', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713a3d0&gt;), ('source_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b713a490&gt;), ('destination_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b713a590&gt;), ('source_port', &lt;django.forms.fields.CharField object at 0x7ff3b713a690&gt;), ('destination_port', &lt;django.forms.fields.CharField object at 0x7ff3b713a7d0&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b713a8d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b713a990&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('name', &lt;django.forms.fields.CharField object at 0x7ff3b7112ed0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b7112fd0&gt;), ('protocol', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713a250&gt;), ('action', &lt;django.forms.fields.ChoiceField object at 0x7ff3b713a3d0&gt;), ('source_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b713a490&gt;), ('destination_ip_address', &lt;horizon.forms.fields.IPField object at 0x7ff3b713a590&gt;), ('source_port', &lt;django.forms.fields.CharField object at 0x7ff3b713a690&gt;), ('destination_port', &lt;django.forms.fields.CharField object at 0x7ff3b713a7d0&gt;), ('shared', &lt;django.forms.fields.BooleanField object at 0x7ff3b713a8d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b713a990&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = 'horizon:project:firewalls:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/forms.html#UpdateRule.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.firewalls.panel.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.panel</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.containers.views.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.containers.views</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.forms.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.containers.views.html" title="The openstack_dashboard.dashboards.project.containers.views Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.firewalls.panel.html" title="The openstack_dashboard.dashboards.project.firewalls.panel Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

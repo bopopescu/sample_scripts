@@ -1,0 +1,810 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.neutron Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.nova Module" href="openstack_dashboard.api.nova.html" />
+    <link rel="prev" title="The openstack_dashboard.api.ceilometer Module" href="openstack_dashboard.api.ceilometer.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-neutron-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.neutron</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-neutron-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">Agent</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Agent"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron agents.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">FloatingIp</tt><big>(</big><em>fip</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIp"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">FloatingIpManager</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.network_base.FloatingIpManager</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allocate</tt><big>(</big><em>pool</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.allocate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">associate</tt><big>(</big><em>floating_ip_id</em>, <em>port_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.associate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">device_owner_map</tt><em class="property"> = {'compute:': 'compute', 'neutron:LOADBALANCER': 'loadbalancer'}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">disassociate</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.disassociate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_target_id_by_instance</tt><big>(</big><em>instance_id</em>, <em>target_list=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.get_target_id_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_simple_associate_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.is_simple_associate_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.is_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><em>all_tenants=False</em>, <em>**search_opts</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_pools</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.list_pools"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_target_id_by_instance</tt><big>(</big><em>instance_id</em>, <em>target_list=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.list_target_id_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_targets</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.list_targets"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">release</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpManager.release"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">FloatingIpPool</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpPool"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">FloatingIpTarget</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#FloatingIpTarget"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">Network</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Network"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron Networks.</p>
+<dl class="method">
+<dt>
+<tt class="descname">to_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Network.to_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">NeutronAPIDictWrapper</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#NeutronAPIDictWrapper"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">items</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#NeutronAPIDictWrapper.items"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name_or_id</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#NeutronAPIDictWrapper.name_or_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">set_id_as_name_if_empty</tt><big>(</big><em>length=8</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#NeutronAPIDictWrapper.set_id_as_name_if_empty"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">Port</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Port"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron ports.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">Profile</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Profile"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron profiles.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">Router</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Router"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron routers.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">RouterStaticRoute</tt><big>(</big><em>route</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#RouterStaticRoute"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron routes extra route.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">SecurityGroup</tt><big>(</big><em>sg</em>, <em>sg_dict=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">to_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroup.to_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">SecurityGroupManager</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.network_base.SecurityGroupManager</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">backend</tt><em class="property"> = 'neutron'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create</tt><big>(</big><em>name</em>, <em>desc</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>sg_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>sg_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_by_instance</tt><big>(</big><em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.list_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets security groups of an instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">rule_create</tt><big>(</big><em>parent_group_id</em>, <em>direction=None</em>, <em>ethertype=None</em>, <em>ip_protocol=None</em>, <em>from_port=None</em>, <em>to_port=None</em>, <em>cidr=None</em>, <em>group_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.rule_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">rule_delete</tt><big>(</big><em>sgr_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.rule_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update</tt><big>(</big><em>sg_id</em>, <em>name</em>, <em>desc</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_instance_security_group</tt><big>(</big><em>instance_id</em>, <em>new_security_group_ids</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupManager.update_instance_security_group"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">SecurityGroupRule</tt><big>(</big><em>sgr</em>, <em>sg_dict=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SecurityGroupRule"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">Subnet</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#Subnet"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron subnets.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">SubnetPool</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#SubnetPool"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.neutron.NeutronAPIDictWrapper</span></tt></p>
+<p>Wrapper for neutron subnetpools.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">add_network_to_dhcp_agent</tt><big>(</big><em>request</em>, <em>dhcp_agent</em>, <em>network_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#add_network_to_dhcp_agent"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">agent_list</tt><big>(</big><em>request</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#agent_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">get_feature_permission</tt><big>(</big><em>request</em>, <em>feature</em>, <em>operation=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#get_feature_permission"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Check if a feature-specific field can be displayed.</p>
+<p>This method check a permission for a feature-specific field.
+Such field is usually provided through Neutron extension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>request</strong> &#8211; Request Object</li>
+<li><strong>feature</strong> &#8211; feature name defined in FEATURE_MAP</li>
+<li><strong>(optional)</strong> (<em>operation</em>) &#8211; Operation type. The valid value should be
+defined in FEATURE_MAP[feature][&#8216;policies&#8217;]
+It must be specified if FEATURE_MAP[feature] has &#8216;policies&#8217;.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">get_ipver_str</tt><big>(</big><em>ip_version</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#get_ipver_str"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Convert an ip version number to a human-friendly string.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">is_enabled_by_config</tt><big>(</big><em>name</em>, <em>default=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#is_enabled_by_config"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">is_extension_supported</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#is_extension_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">is_port_profiles_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#is_port_profiles_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">is_quotas_extension_supported</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#is_quotas_extension_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">is_service_enabled</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#is_service_enabled"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">list_dhcp_agent_hosting_networks</tt><big>(</big><em>request</em>, <em>network</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#list_dhcp_agent_hosting_networks"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">list_extensions</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#list_extensions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">list_resources_with_long_filters</tt><big>(</big><em>list_method</em>, <em>filter_attr</em>, <em>filter_values</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#list_resources_with_long_filters"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>List neutron resources with handling RequestURITooLong exception.</p>
+<p>If filter parameters are long, list resources API request leads to
+414 error (URL is too long). For such case, this method split
+list parameters specified by a list_field argument into chunks
+and call the specified list_method repeatedly.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>list_method</strong> &#8211; Method used to retrieve resource list.</li>
+<li><strong>filter_attr</strong> &#8211; attribute name to be filtered. The value corresponding
+to this attribute is specified by &#8220;filter_values&#8221;.
+If you want to specify more attributes for a filter condition,
+pass them as keyword arguments like &#8220;attr2=values2&#8221;.</li>
+<li><strong>filter_values</strong> &#8211; values of &#8220;filter_attr&#8221; to be filtered.
+If filter_values are too long and the total URI length exceed the
+maximum length supported by the neutron server, filter_values will
+be split into sub lists if filter_values is a list.</li>
+<li><strong>params</strong> &#8211; parameters to pass a specified listing API call
+without any changes. You can specify more filter conditions
+in addition to a pair of filter_attr and filter_values.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">network_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#network_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a  network object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>tenant_id</strong> &#8211; (optional) tenant id of the network created</li>
+<li><strong>name</strong> &#8211; (optional) name of the network created</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Network object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">network_delete</tt><big>(</big><em>request</em>, <em>network_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#network_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">network_get</tt><big>(</big><em>request</em>, <em>network_id</em>, <em>expand_subnet=True</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#network_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">network_list</tt><big>(</big><em>request</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#network_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">network_list_for_tenant</tt><big>(</big><em>request</em>, <em>tenant_id</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#network_list_for_tenant"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return a network list available for the tenant.</p>
+<p>The list contains networks owned by the tenant and public networks.
+If requested_networks specified, it searches requested_networks only.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">network_update</tt><big>(</big><em>request</em>, <em>network_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#network_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">neutronclient</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#neutronclient"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">port_create</tt><big>(</big><em>request</em>, <em>network_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#port_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a port on a specified network.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>network_id</strong> &#8211; network id a subnet is created on</li>
+<li><strong>device_id</strong> &#8211; (optional) device id attached to the port</li>
+<li><strong>tenant_id</strong> &#8211; (optional) tenant id of the port created</li>
+<li><strong>name</strong> &#8211; (optional) name of the port created</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Port object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">port_delete</tt><big>(</big><em>request</em>, <em>port_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#port_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">port_get</tt><big>(</big><em>request</em>, <em>port_id</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#port_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">port_list</tt><big>(</big><em>request</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#port_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">port_update</tt><big>(</big><em>request</em>, <em>port_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#port_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">profile_bindings_list</tt><big>(</big><em>request</em>, <em>type_p</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#profile_bindings_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">profile_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#profile_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">profile_delete</tt><big>(</big><em>request</em>, <em>profile_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#profile_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">profile_get</tt><big>(</big><em>request</em>, <em>profile_id</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#profile_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">profile_list</tt><big>(</big><em>request</em>, <em>type_p</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#profile_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">profile_update</tt><big>(</big><em>request</em>, <em>profile_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#profile_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">provider_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#provider_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">remove_network_from_dhcp_agent</tt><big>(</big><em>request</em>, <em>dhcp_agent</em>, <em>network_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#remove_network_from_dhcp_agent"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_add_gateway</tt><big>(</big><em>request</em>, <em>router_id</em>, <em>network_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_add_gateway"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_add_interface</tt><big>(</big><em>request</em>, <em>router_id</em>, <em>subnet_id=None</em>, <em>port_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_add_interface"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_create</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_delete</tt><big>(</big><em>request</em>, <em>router_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_get</tt><big>(</big><em>request</em>, <em>router_id</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_list</tt><big>(</big><em>request</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_remove_gateway</tt><big>(</big><em>request</em>, <em>router_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_remove_gateway"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_remove_interface</tt><big>(</big><em>request</em>, <em>router_id</em>, <em>subnet_id=None</em>, <em>port_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_remove_interface"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_static_route_add</tt><big>(</big><em>request</em>, <em>router_id</em>, <em>newroute</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_static_route_add"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_static_route_list</tt><big>(</big><em>request</em>, <em>router_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_static_route_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_static_route_remove</tt><big>(</big><em>request</em>, <em>router_id</em>, <em>route_ids</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_static_route_remove"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">router_update</tt><big>(</big><em>request</em>, <em>r_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#router_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">servers_update_addresses</tt><big>(</big><em>request</em>, <em>servers</em>, <em>all_tenants=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#servers_update_addresses"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Retrieve servers networking information from Neutron if enabled.</p>
+<p>Should be used when up to date networking information is required,
+and Nova&#8217;s networking info caching mechanism is not fast enough.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnet_create</tt><big>(</big><em>request</em>, <em>network_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnet_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a subnet on a specified network.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> &#8211; request context</li>
+<li><strong>network_id</strong> &#8211; network id a subnet is created on</li>
+<li><strong>cidr</strong> &#8211; (optional) subnet IP address range</li>
+<li><strong>ip_version</strong> &#8211; (optional) IP version (4 or 6)</li>
+<li><strong>gateway_ip</strong> &#8211; (optional) IP address of gateway</li>
+<li><strong>tenant_id</strong> &#8211; (optional) tenant id of the subnet created</li>
+<li><strong>name</strong> &#8211; (optional) name of the subnet created</li>
+<li><strong>subnetpool_id</strong> &#8211; (optional) subnetpool to allocate prefix from</li>
+<li><strong>prefixlen</strong> &#8211; (optional) length of prefix to allocate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Subnet object</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Although both cidr+ip_version and subnetpool_id+preifxlen is listed as
+optional you MUST pass along one of the combinations to get a successful
+result.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnet_delete</tt><big>(</big><em>request</em>, <em>subnet_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnet_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnet_get</tt><big>(</big><em>request</em>, <em>subnet_id</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnet_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnet_list</tt><big>(</big><em>request</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnet_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnet_update</tt><big>(</big><em>request</em>, <em>subnet_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnet_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnetpool_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>prefixes</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnetpool_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a subnetpool.</p>
+<p>ip_version is auto-detected in back-end.</p>
+<p>Parameters:
+request           &#8211; Request context
+name              &#8211; Name for subnetpool
+prefixes          &#8211; List of prefixes for pool</p>
+<p>Keyword Arguments (optional):
+min_prefixlen     &#8211; Minimum prefix length for allocations from pool
+max_prefixlen     &#8211; Maximum prefix length for allocations from pool
+default_prefixlen &#8211; Default prefix length for allocations from pool
+default_quota     &#8211; Default quota for allocations from pool
+shared            &#8211; Subnetpool should be shared (Admin-only)
+tenant_id         &#8211; Owner of subnetpool</p>
+<p>Returns:
+SubnetPool object</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnetpool_delete</tt><big>(</big><em>request</em>, <em>subnetpool_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnetpool_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnetpool_get</tt><big>(</big><em>request</em>, <em>subnetpool_id</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnetpool_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnetpool_list</tt><big>(</big><em>request</em>, <em>**params</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnetpool_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">subnetpool_update</tt><big>(</big><em>request</em>, <em>subnetpool_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#subnetpool_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">tenant_quota_get</tt><big>(</big><em>request</em>, <em>tenant_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#tenant_quota_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">tenant_quota_update</tt><big>(</big><em>request</em>, <em>tenant_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#tenant_quota_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.neutron.</tt><tt class="descname">unescape_port_kwargs</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/neutron.html#unescape_port_kwargs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.ceilometer.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.ceilometer</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.nova.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.nova</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.neutron.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.nova.html" title="The openstack_dashboard.api.nova Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.ceilometer.html" title="The openstack_dashboard.api.ceilometer Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

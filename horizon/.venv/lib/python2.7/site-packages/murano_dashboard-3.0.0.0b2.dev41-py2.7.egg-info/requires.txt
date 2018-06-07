@@ -1,0 +1,13 @@
+pbr>=1.6
+beautifulsoup4
+Django<1.9,>=1.8
+django-formtools
+iso8601>=0.1.11
+six>=1.9.0
+python-muranoclient>=0.8.2
+PyYAML>=3.1.0
+yaql>=1.1.0
+oslo.log>=1.14.0
+semantic-version>=2.3.1
+Babel>=2.3.4
+django-babel>=0.5.1

@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.containers.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.containers.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">validators</span>
+<span class="kn">from</span> <span class="nn">django.utils.encoding</span> <span class="kn">import</span> <span class="n">force_text</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.containers</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="n">no_slash_validator</span> <span class="o">=</span> <span class="n">validators</span><span class="o">.</span><span class="n">RegexValidator</span><span class="p">(</span><span class="s1">r&#39;^(?u)[^/]+$&#39;</span><span class="p">,</span>
+                                               <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Slash is not an allowed &quot;</span>
+                                                 <span class="s2">&quot;character.&quot;</span><span class="p">),</span>
+                                               <span class="n">code</span><span class="o">=</span><span class="s2">&quot;noslash&quot;</span><span class="p">)</span>
+<span class="n">no_begin_or_end_slash</span> <span class="o">=</span> <span class="n">validators</span><span class="o">.</span><span class="n">RegexValidator</span><span class="p">(</span><span class="s1">r&#39;^[^\/](?u).+[^\/]$&#39;</span><span class="p">,</span>
+                                                  <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Slash is not allowed at &quot;</span>
+                                                    <span class="s2">&quot;the beginning or end of &quot;</span>
+                                                    <span class="s2">&quot;your string.&quot;</span><span class="p">),</span>
+                                                  <span class="n">code</span><span class="o">=</span><span class="s2">&quot;nobeginorendslash&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CreateContainer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.CreateContainer">[docs]</a><span class="k">class</span> <span class="nc">CreateContainer</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">ACCESS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Private&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;public&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Public&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                             <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                             <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Container Name&quot;</span><span class="p">),</span>
+                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">no_slash_validator</span><span class="p">])</span>
+    <span class="n">access</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Container Access&quot;</span><span class="p">),</span>
+                               <span class="n">choices</span><span class="o">=</span><span class="n">ACCESS_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateContainer.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.CreateContainer.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;parent&#39;</span><span class="p">]:</span>
+                <span class="n">is_public</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;access&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;public&quot;</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="p">({</span><span class="s1">&#39;is_public&#39;</span><span class="p">:</span> <span class="n">is_public</span><span class="p">})</span>
+                <span class="c1"># Create a container</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_create_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+                                                 <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Container created successfully.&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Create a pseudo-folder</span>
+                <span class="n">container</span><span class="p">,</span> <span class="n">slash</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;parent&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                <span class="n">remainder</span> <span class="o">=</span> <span class="n">remainder</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                <span class="n">subfolder_name</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">bit</span> <span class="k">for</span> <span class="n">bit</span>
+                                           <span class="ow">in</span> <span class="p">(</span><span class="n">remainder</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+                                           <span class="k">if</span> <span class="n">bit</span><span class="p">])</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_create_subfolder</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">container</span><span class="p">,</span>
+                                                 <span class="n">subfolder_name</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Folder created successfully.&quot;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create container.&#39;</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="UploadObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.UploadObject">[docs]</a><span class="k">class</span> <span class="nc">UploadObject</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+    <span class="n">object_file</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;File&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">allow_empty_file</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Object Name&quot;</span><span class="p">),</span>
+                           <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Slashes are allowed, and are treated &quot;</span>
+                                       <span class="s2">&quot;as pseudo-folders by the Object &quot;</span>
+                                       <span class="s2">&quot;Store.&quot;</span><span class="p">),</span>
+                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+                               <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;ng-model&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                                      <span class="s2">&quot;not-blank&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
+                           <span class="p">))</span>
+    <span class="n">container_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_set_object_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]:</span>
+            <span class="n">object_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">object_path</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">object_path</span>
+
+<div class="viewcode-block" id="UploadObject.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.UploadObject.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UploadObject</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;object_file&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;object_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">return</span> <span class="n">data</span>
+</div>
+<div class="viewcode-block" id="UploadObject.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.UploadObject.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">object_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;object_file&#39;</span><span class="p">]</span>
+        <span class="n">object_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_object_path</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_upload_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">],</span>
+                                                <span class="n">object_path</span><span class="p">,</span>
+                                                <span class="n">object_file</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Object was successfully uploaded.&quot;</span><span class="p">))</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">obj</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to upload object.&quot;</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.UpdateObject">[docs]</a><span class="k">class</span> <span class="nc">UpdateObject</span><span class="p">(</span><span class="n">UploadObject</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UpdateObject</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;readonly&quot;</span><span class="p">:</span> <span class="s2">&quot;readonly&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="UpdateObject.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.UpdateObject.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">object_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;object_file&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">object_file</span><span class="p">:</span>
+            <span class="n">object_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_object_path</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_upload_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">],</span>
+                                                    <span class="n">object_path</span><span class="p">,</span>
+                                                    <span class="n">object_file</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Object was successfully updated.&quot;</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">obj</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to update object.&quot;</span><span class="p">))</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If object file is not provided, then a POST method is needed</span>
+            <span class="c1"># to update ONLY metadata. This must be implemented when</span>
+            <span class="c1"># object metadata can be updated from this panel.</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="CreatePseudoFolder"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.CreatePseudoFolder">[docs]</a><span class="k">class</span> <span class="nc">CreatePseudoFolder</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Pseudo-folder Name&quot;</span><span class="p">),</span>
+                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">no_begin_or_end_slash</span><span class="p">])</span>
+    <span class="n">container_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_set_pseudo_folder_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]:</span>
+            <span class="n">pseudo_folder_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span>
+                                           <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]])</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pseudo_folder_path</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="k">return</span> <span class="n">pseudo_folder_path</span>
+
+<div class="viewcode-block" id="CreatePseudoFolder.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.CreatePseudoFolder.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">pseudo_folder_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_pseudo_folder_path</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_create_pseudo_folder</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                       <span class="n">data</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">],</span>
+                                                       <span class="n">pseudo_folder_path</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Pseudo-folder was successfully created.&quot;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">obj</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to create pseudo-folder.&quot;</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="CopyObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.CopyObject">[docs]</a><span class="k">class</span> <span class="nc">CopyObject</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">new_container_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Destination container&quot;</span><span class="p">),</span>
+                                           <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">no_slash_validator</span><span class="p">])</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Swift pseudo folder path&quot;</span><span class="p">,</span> <span class="s2">u&quot;Path&quot;</span><span class="p">),</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">new_object_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                                      <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Destination object name&quot;</span><span class="p">),</span>
+                                      <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">no_slash_validator</span><span class="p">])</span>
+    <span class="n">orig_container_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+    <span class="n">orig_object_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">containers</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;containers&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CopyObject</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;new_container_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">containers</span>
+
+<div class="viewcode-block" id="CopyObject.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.html#openstack_dashboard.dashboards.project.containers.forms.CopyObject.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+        <span class="n">orig_container</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;orig_container_name&#39;</span><span class="p">]</span>
+        <span class="n">orig_object</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;orig_object_name&#39;</span><span class="p">]</span>
+        <span class="n">new_container</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;new_container_name&#39;</span><span class="p">]</span>
+        <span class="n">new_object</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;new_object_name&#39;</span><span class="p">]</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">new_object</span><span class="p">)</span>
+
+        <span class="c1"># Now copy the object itself.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_copy_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                        <span class="n">orig_container</span><span class="p">,</span>
+                                        <span class="n">orig_object</span><span class="p">,</span>
+                                        <span class="n">new_container</span><span class="p">,</span>
+                                        <span class="n">new_path</span><span class="p">)</span>
+            <span class="n">dest</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">new_container</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dest&quot;</span><span class="p">:</span> <span class="n">dest</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;orig&quot;</span><span class="p">:</span> <span class="n">orig_object</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="s2">&quot;new&quot;</span><span class="p">:</span> <span class="n">new_object</span><span class="p">}</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Copied &quot;</span><span class="si">%(orig)s</span><span class="s1">&quot; to &quot;</span><span class="si">%(dest)s</span><span class="s1">&quot; as &quot;</span><span class="si">%(new)s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+                             <span class="o">%</span> <span class="n">vals</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">HorizonException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Http302</span><span class="p">(</span>
+                <span class="n">reverse</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">orig_container</span><span class="p">)]))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="n">index</span><span class="p">,</span>
+                               <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">orig_container</span><span class="p">)])</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to copy object.&quot;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

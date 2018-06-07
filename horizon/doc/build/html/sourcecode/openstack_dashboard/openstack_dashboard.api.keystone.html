@@ -1,0 +1,522 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.keystone Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.vpn Module" href="openstack_dashboard.api.vpn.html" />
+    <link rel="prev" title="The openstack_dashboard.api.lbaas Module" href="openstack_dashboard.api.lbaas.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-keystone-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.keystone</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-keystone-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">IdentityAPIVersionManager</tt><big>(</big><em>service_type</em>, <em>preferred_version=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#IdentityAPIVersionManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIVersionManager</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_project_manager</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#IdentityAPIVersionManager.get_project_manager"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">upgrade_v2_user</tt><big>(</big><em>user</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#IdentityAPIVersionManager.upgrade_v2_user"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">Service</tt><big>(</big><em>service</em>, <em>region</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#Service"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<p>Wrapper for a dict based on the service data from keystone.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">add_domain_user_role</tt><big>(</big><em>request</em>, <em>user</em>, <em>role</em>, <em>domain</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#add_domain_user_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds a role for a user on a domain.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">add_group_role</tt><big>(</big><em>request</em>, <em>role</em>, <em>group</em>, <em>domain=None</em>, <em>project=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#add_group_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds a role for a group on a domain or project.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">add_group_user</tt><big>(</big><em>request</em>, <em>group_id</em>, <em>user_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#add_group_user"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">add_tenant_user_role</tt><big>(</big><em>request</em>, <em>project=None</em>, <em>user=None</em>, <em>role=None</em>, <em>group=None</em>, <em>domain=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#add_tenant_user_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds a role for a user on a tenant.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">create_ec2_credentials</tt><big>(</big><em>request</em>, <em>user_id</em>, <em>tenant_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#create_ec2_credentials"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">domain_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>description=None</em>, <em>enabled=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#domain_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">domain_delete</tt><big>(</big><em>request</em>, <em>domain_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#domain_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">domain_get</tt><big>(</big><em>request</em>, <em>domain_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#domain_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">domain_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#domain_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">domain_update</tt><big>(</big><em>request</em>, <em>domain_id</em>, <em>name=None</em>, <em>description=None</em>, <em>enabled=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#domain_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">ec2_manager</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#ec2_manager"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_default_domain</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_default_domain"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets the default domain object to use when creating Identity object.</p>
+<p>Returns the domain context if is set, otherwise return the domain
+of the logon user.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_default_role</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_default_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets the default role object from Keystone and saves it as a global.</p>
+<p>Since this is configured in settings and should not change from request
+to request. Supports lookup by name or id.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_domain_users_roles</tt><big>(</big><em>request</em>, <em>domain</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_domain_users_roles"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_project_groups_roles</tt><big>(</big><em>request</em>, <em>project</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_project_groups_roles"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets the groups roles in a given project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> &#8211; the request entity containing the login user information</li>
+<li><strong>project</strong> &#8211; the project to filter the groups roles. It accepts both
+project object resource or project ID</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns group_roles:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">a dictionary mapping the groups and their roles in
+given project</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_project_users_roles</tt><big>(</big><em>request</em>, <em>project</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_project_users_roles"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_user_ec2_credentials</tt><big>(</big><em>request</em>, <em>user_id</em>, <em>access_token</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_user_ec2_credentials"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">get_version</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#get_version"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">group_create</tt><big>(</big><em>request</em>, <em>domain_id</em>, <em>name</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#group_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">group_delete</tt><big>(</big><em>request</em>, <em>group_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#group_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">group_get</tt><big>(</big><em>request</em>, <em>group_id</em>, <em>admin=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#group_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">group_list</tt><big>(</big><em>request</em>, <em>domain=None</em>, <em>project=None</em>, <em>user=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#group_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">group_update</tt><big>(</big><em>request</em>, <em>group_id</em>, <em>name=None</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#group_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystone_backend_name</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystone_backend_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystone_can_edit_domain</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystone_can_edit_domain"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystone_can_edit_group</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystone_can_edit_group"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystone_can_edit_project</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystone_can_edit_project"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystone_can_edit_role</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystone_can_edit_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystone_can_edit_user</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystone_can_edit_user"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">keystoneclient</tt><big>(</big><em>request</em>, <em>admin=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#keystoneclient"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a client connected to the Keystone backend.</p>
+<p>Several forms of authentication are supported:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Username + password -&gt; Unscoped authentication</li>
+<li>Username + password + tenant id -&gt; Scoped authentication</li>
+<li>Unscoped token -&gt; Unscoped authentication</li>
+<li>Unscoped token + tenant id -&gt; Scoped authentication</li>
+<li>Scoped token -&gt; Scoped authentication</li>
+</ul>
+</div></blockquote>
+<p>Available services and data from the backend will vary depending on
+whether the authentication was scoped or unscoped.</p>
+<p>Lazy authentication if an <tt class="docutils literal"><span class="pre">endpoint</span></tt> parameter is provided.</p>
+<p>Calls requiring the admin endpoint should have <tt class="docutils literal"><span class="pre">admin=True</span></tt> passed in
+as a keyword argument.</p>
+<p>The client is cached so that subsequent API calls during the same
+request/response cycle don&#8217;t have to be re-authenticated.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">list_ec2_credentials</tt><big>(</big><em>request</em>, <em>user_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#list_ec2_credentials"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">remove_domain_user_role</tt><big>(</big><em>request</em>, <em>user</em>, <em>role</em>, <em>domain=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#remove_domain_user_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Removes a given single role for a user from a domain.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">remove_group_role</tt><big>(</big><em>request</em>, <em>role</em>, <em>group</em>, <em>domain=None</em>, <em>project=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#remove_group_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Removes a given single role for a group from a domain or project.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">remove_group_roles</tt><big>(</big><em>request</em>, <em>group</em>, <em>domain=None</em>, <em>project=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#remove_group_roles"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Removes all roles from a group on a domain or project.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">remove_group_user</tt><big>(</big><em>request</em>, <em>group_id</em>, <em>user_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#remove_group_user"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">remove_tenant_user</tt><big>(</big><em>request</em>, <em>project=None</em>, <em>user=None</em>, <em>domain=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#remove_tenant_user"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Removes all roles from a user on a tenant, removing them from it.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">remove_tenant_user_role</tt><big>(</big><em>request</em>, <em>project=None</em>, <em>user=None</em>, <em>role=None</em>, <em>group=None</em>, <em>domain=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#remove_tenant_user_role"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Removes a given single role for a user from a tenant.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">role_assignments_list</tt><big>(</big><em>request</em>, <em>project=None</em>, <em>user=None</em>, <em>role=None</em>, <em>group=None</em>, <em>domain=None</em>, <em>effective=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#role_assignments_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">role_create</tt><big>(</big><em>request</em>, <em>name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#role_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">role_delete</tt><big>(</big><em>request</em>, <em>role_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#role_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">role_get</tt><big>(</big><em>request</em>, <em>role_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#role_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">role_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#role_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a global list of available roles.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">role_update</tt><big>(</big><em>request</em>, <em>role_id</em>, <em>name=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#role_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">roles_for_group</tt><big>(</big><em>request</em>, <em>group</em>, <em>domain=None</em>, <em>project=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#roles_for_group"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">roles_for_user</tt><big>(</big><em>request</em>, <em>user</em>, <em>project=None</em>, <em>domain=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#roles_for_user"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a list of user roles scoped to a project or domain.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">tenant_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>description=None</em>, <em>enabled=None</em>, <em>domain=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#tenant_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">tenant_delete</tt><big>(</big><em>request</em>, <em>project</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#tenant_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">tenant_get</tt><big>(</big><em>request</em>, <em>project</em>, <em>admin=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#tenant_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">tenant_list</tt><big>(</big><em>request</em>, <em>paginate=False</em>, <em>marker=None</em>, <em>domain=None</em>, <em>user=None</em>, <em>admin=True</em>, <em>filters=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#tenant_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">tenant_update</tt><big>(</big><em>request</em>, <em>project</em>, <em>name=None</em>, <em>description=None</em>, <em>enabled=None</em>, <em>domain=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#tenant_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_create</tt><big>(</big><em>request</em>, <em>name=None</em>, <em>email=None</em>, <em>password=None</em>, <em>project=None</em>, <em>enabled=None</em>, <em>domain=None</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_delete</tt><big>(</big><em>request</em>, <em>user_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_get</tt><big>(</big><em>request</em>, <em>user_id</em>, <em>admin=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_list</tt><big>(</big><em>request</em>, <em>project=None</em>, <em>domain=None</em>, <em>group=None</em>, <em>filters=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_update</tt><big>(</big><em>request</em>, <em>user</em>, <em>**data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_update_enabled</tt><big>(</big><em>request</em>, <em>user</em>, <em>enabled</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_update_enabled"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_update_own_password</tt><big>(</big><em>request</em>, <em>origpassword</em>, <em>password</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_update_own_password"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_update_password</tt><big>(</big><em>request</em>, <em>user</em>, <em>password</em>, <em>admin=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_update_password"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_update_tenant</tt><big>(</big><em>request</em>, <em>user</em>, <em>project</em>, <em>admin=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_update_tenant"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.keystone.</tt><tt class="descname">user_verify_admin_password</tt><big>(</big><em>request</em>, <em>admin_password</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/keystone.html#user_verify_admin_password"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.lbaas.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.lbaas</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.vpn.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.vpn</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.vpn.html" title="The openstack_dashboard.api.vpn Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.lbaas.html" title="The openstack_dashboard.api.lbaas Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

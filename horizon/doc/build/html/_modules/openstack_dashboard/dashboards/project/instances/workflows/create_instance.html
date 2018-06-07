@@ -1,0 +1,1133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.instances.workflows.create_instance &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.instances.workflows.create_instance</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">units</span>
+
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">filesizeformat</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.text</span> <span class="kn">import</span> <span class="n">normalize_newlines</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.debug</span> <span class="kn">import</span> <span class="n">sensitive_variables</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">functions</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">validators</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">cinder</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">nova</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.usage</span> <span class="kn">import</span> <span class="n">quotas</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.images</span> \
+    <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">image_utils</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">instance_utils</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SelectProjectUserAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SelectProjectUserAction">[docs]</a><span class="k">class</span> <span class="nc">SelectProjectUserAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">project_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project&quot;</span><span class="p">))</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;User&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SelectProjectUserAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Set our project choices</span>
+        <span class="n">projects</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tenant</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">tenant</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">tenant</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">authorized_tenants</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;project_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">projects</span>
+
+        <span class="c1"># Set our user options</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="p">[(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">users</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project &amp; User&quot;</span><span class="p">)</span>
+        <span class="c1"># Unusable permission so this is always hidden. However, we</span>
+        <span class="c1"># keep this step in the workflow for validation/verification purposes.</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;!&quot;</span><span class="p">,)</span>
+
+</div>
+<div class="viewcode-block" id="SelectProjectUser"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SelectProjectUser">[docs]</a><span class="k">class</span> <span class="nc">SelectProjectUser</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">SelectProjectUserAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction">[docs]</a><span class="k">class</span> <span class="nc">SetInstanceDetailsAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">availability_zone</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Availability Zone&quot;</span><span class="p">),</span>
+                                          <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance Name&quot;</span><span class="p">),</span>
+                           <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+    <span class="n">flavor</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor&quot;</span><span class="p">),</span>
+                               <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of image to launch.&quot;</span><span class="p">))</span>
+
+    <span class="n">count</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance Count&quot;</span><span class="p">),</span>
+                               <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">initial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of instances to launch.&quot;</span><span class="p">))</span>
+
+    <span class="n">source_type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance Boot Source&quot;</span><span class="p">),</span>
+                                    <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose Your Boot Source &quot;</span>
+                                                <span class="s2">&quot;Type.&quot;</span><span class="p">))</span>
+
+    <span class="n">instance_snapshot_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance Snapshot&quot;</span><span class="p">),</span>
+                                             <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">volume_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">volume_snapshot_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Snapshot&quot;</span><span class="p">),</span>
+                                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">image_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image Name&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span>
+            <span class="n">data_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;volume_size&#39;</span><span class="p">,),</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                              <span class="n">filesizeformat</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">bytes</span><span class="p">)))))</span>
+
+    <span class="n">volume_size</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Device size (GB)&quot;</span><span class="p">),</span>
+                                     <span class="n">initial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                     <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                     <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                     <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume size in gigabytes &quot;</span>
+                                                 <span class="s2">&quot;(integer value).&quot;</span><span class="p">))</span>
+
+    <span class="n">device_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Device Name&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;vda&quot;</span><span class="p">,</span>
+                                  <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume mount point (e.g. &#39;vda&#39; &quot;</span>
+                                              <span class="s2">&quot;mounts at &#39;/dev/vda&#39;). Leave &quot;</span>
+                                              <span class="s2">&quot;this field blank to let the &quot;</span>
+                                              <span class="s2">&quot;system choose a device name &quot;</span>
+                                              <span class="s2">&quot;for you.&quot;</span><span class="p">))</span>
+
+    <span class="n">delete_on_terminate</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Delete on Terminate&quot;</span><span class="p">),</span>
+                                             <span class="n">initial</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                             <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                             <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Delete volume on &quot;</span>
+                                                         <span class="s2">&quot;instance terminate&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Details&quot;</span><span class="p">)</span>
+        <span class="n">help_text_template</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project/instances/&quot;</span>
+                              <span class="s2">&quot;_launch_details_help.html&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_images_cache</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SetInstanceDetailsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Hide the device field if the hypervisor doesn&#39;t support it.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nova</span><span class="o">.</span><span class="n">can_set_mount_point</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;device_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+
+        <span class="n">source_type_choices</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select source&quot;</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s2">&quot;image_id&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Boot from image&quot;</span><span class="p">)),</span>
+            <span class="p">(</span><span class="s2">&quot;instance_snapshot_id&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Boot from snapshot&quot;</span><span class="p">)),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">):</span>
+            <span class="n">source_type_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;volume_id&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Boot from volume&quot;</span><span class="p">)))</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">extension_supported</span><span class="p">(</span><span class="s2">&quot;BlockDeviceMappingV2Boot&quot;</span><span class="p">,</span>
+                                                <span class="n">request</span><span class="p">):</span>
+                    <span class="n">source_type_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">(</span><span class="s2">&quot;volume_image_id&quot;</span><span class="p">,</span>
+                         <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Boot from image (creates a new volume)&quot;</span><span class="p">)))</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve extensions &#39;</span>
+                                             <span class="s1">&#39;information.&#39;</span><span class="p">))</span>
+
+            <span class="n">source_type_choices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;volume_snapshot_id&quot;</span><span class="p">,</span>
+                 <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Boot from volume snapshot (creates a new volume)&quot;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;source_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">source_type_choices</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_flavor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># We want to retrieve details for a given flavor,</span>
+            <span class="c1"># however flavor_list uses a memoized decorator</span>
+            <span class="c1"># so it is used instead of flavor_get to reduce the number</span>
+            <span class="c1"># of API calls.</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">flavor</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">flavors</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">flavor_id</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">flavor</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">flavor</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># We want to retrieve details for a given image,</span>
+            <span class="c1"># however get_available_images uses a cache of image list,</span>
+            <span class="c1"># so it is used instead of image_get to reduce the number</span>
+            <span class="c1"># of API calls.</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="n">image_utils</span><span class="o">.</span><span class="n">get_available_images</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_images_cache</span><span class="p">)</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">images</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">image_id</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">image</span>
+
+    <span class="k">def</span> <span class="nf">_check_quotas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Prevent launching more instances than the quota allows</span>
+        <span class="n">usages</span> <span class="o">=</span> <span class="n">quotas</span><span class="o">.</span><span class="n">tenant_quota_usages</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">available_count</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;instances&#39;</span><span class="p">][</span><span class="s1">&#39;available&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">available_count</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">:</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+                <span class="s1">&#39;The requested instance cannot be launched as you only &#39;</span>
+                <span class="s1">&#39;have </span><span class="si">%(avail)i</span><span class="s1"> of your quota available. &#39;</span><span class="p">,</span>
+                <span class="s1">&#39;The requested </span><span class="si">%(req)i</span><span class="s1"> instances cannot be launched as you &#39;</span>
+                <span class="s1">&#39;only have </span><span class="si">%(avail)i</span><span class="s1"> of your quota available.&#39;</span><span class="p">,</span>
+                <span class="n">count</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;req&#39;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+                      <span class="s1">&#39;avail&#39;</span><span class="p">:</span> <span class="n">available_count</span><span class="p">}</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span> <span class="o">%</span> <span class="n">params</span><span class="p">)</span>
+
+        <span class="n">source_type</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_type&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;volume_image_id&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_snapshot_id&#39;</span><span class="p">):</span>
+            <span class="n">available_volume</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;volumes&#39;</span><span class="p">][</span><span class="s1">&#39;available&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">available_volume</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The requested instance cannot be launched. &#39;</span>
+                         <span class="s1">&#39;Requested volume exceeds quota: Available: &#39;</span>
+                         <span class="s1">&#39;</span><span class="si">%(avail)s</span><span class="s1">, Requested: </span><span class="si">%(req)s</span><span class="s1">.&#39;</span><span class="p">)</span>
+                       <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;avail&#39;</span><span class="p">:</span> <span class="n">available_volume</span><span class="p">,</span> <span class="s1">&#39;req&#39;</span><span class="p">:</span> <span class="n">count</span><span class="p">})</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flavor&#39;</span><span class="p">)</span>
+        <span class="n">flavor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flavor</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+
+        <span class="n">count_error</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Validate cores and ram.</span>
+        <span class="n">available_cores</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;cores&#39;</span><span class="p">][</span><span class="s1">&#39;available&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">flavor</span> <span class="ow">and</span> <span class="n">available_cores</span> <span class="o">&lt;</span> <span class="n">count</span> <span class="o">*</span> <span class="n">flavor</span><span class="o">.</span><span class="n">vcpus</span><span class="p">:</span>
+            <span class="n">count_error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Cores(Available: </span><span class="si">%(avail)s</span><span class="s2">, &quot;</span>
+                                 <span class="s2">&quot;Requested: </span><span class="si">%(req)s</span><span class="s2">)&quot;</span><span class="p">)</span>
+                               <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;avail&#39;</span><span class="p">:</span> <span class="n">available_cores</span><span class="p">,</span>
+                                  <span class="s1">&#39;req&#39;</span><span class="p">:</span> <span class="n">count</span> <span class="o">*</span> <span class="n">flavor</span><span class="o">.</span><span class="n">vcpus</span><span class="p">})</span>
+
+        <span class="n">available_ram</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;ram&#39;</span><span class="p">][</span><span class="s1">&#39;available&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">flavor</span> <span class="ow">and</span> <span class="n">available_ram</span> <span class="o">&lt;</span> <span class="n">count</span> <span class="o">*</span> <span class="n">flavor</span><span class="o">.</span><span class="n">ram</span><span class="p">:</span>
+            <span class="n">count_error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;RAM(Available: </span><span class="si">%(avail)s</span><span class="s2">, &quot;</span>
+                                 <span class="s2">&quot;Requested: </span><span class="si">%(req)s</span><span class="s2">)&quot;</span><span class="p">)</span>
+                               <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;avail&#39;</span><span class="p">:</span> <span class="n">available_ram</span><span class="p">,</span>
+                                  <span class="s1">&#39;req&#39;</span><span class="p">:</span> <span class="n">count</span> <span class="o">*</span> <span class="n">flavor</span><span class="o">.</span><span class="n">ram</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">count_error</span><span class="p">:</span>
+            <span class="n">value_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">count_error</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The requested instance cannot be launched. &#39;</span>
+                     <span class="s1">&#39;The following requested resource(s) exceed &#39;</span>
+                     <span class="s1">&#39;quota(s): </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">value_str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;flavor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_check_flavor_for_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="c1"># Prevents trying to launch an image needing more resources.</span>
+        <span class="n">image_id</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_id&#39;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_image</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flavor&#39;</span><span class="p">)</span>
+        <span class="n">flavor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flavor</span><span class="p">(</span><span class="n">flavor_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">image</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">flavor</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">props_mapping</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;min_ram&quot;</span><span class="p">,</span> <span class="s2">&quot;ram&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;min_disk&quot;</span><span class="p">,</span> <span class="s2">&quot;disk&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">iprop</span><span class="p">,</span> <span class="n">fprop</span> <span class="ow">in</span> <span class="n">props_mapping</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">iprop</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> \
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">iprop</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">flavor</span><span class="p">,</span> <span class="n">fprop</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;The flavor &#39;</span><span class="si">%(flavor)s</span><span class="s2">&#39; is too small &quot;</span>
+                         <span class="s2">&quot;for requested image.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                         <span class="s2">&quot;Minimum requirements: &quot;</span>
+                         <span class="s2">&quot;</span><span class="si">%(min_ram)s</span><span class="s2"> MB of RAM and &quot;</span>
+                         <span class="s2">&quot;</span><span class="si">%(min_disk)s</span><span class="s2"> GB of Root Disk.&quot;</span><span class="p">)</span> <span class="o">%</span>
+                       <span class="p">{</span><span class="s1">&#39;flavor&#39;</span><span class="p">:</span> <span class="n">flavor</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="s1">&#39;min_ram&#39;</span><span class="p">:</span> <span class="n">image</span><span class="o">.</span><span class="n">min_ram</span><span class="p">,</span>
+                        <span class="s1">&#39;min_disk&#39;</span><span class="p">:</span> <span class="n">image</span><span class="o">.</span><span class="n">min_disk</span><span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;image_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+                <span class="k">break</span>  <span class="c1"># Not necessary to continue the tests.</span>
+
+    <span class="k">def</span> <span class="nf">_check_volume_for_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="n">image_id</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_id&#39;</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_image</span><span class="p">(</span><span class="n">image_id</span><span class="p">)</span>
+        <span class="n">volume_size</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_size&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">image</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">volume_size</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">volume_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">volume_size</span><span class="p">)</span>
+        <span class="n">img_gigs</span> <span class="o">=</span> <span class="n">functions</span><span class="o">.</span><span class="n">bytes_to_gigabytes</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">smallest_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">img_gigs</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">min_disk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volume_size</span> <span class="o">&lt;</span> <span class="n">smallest_size</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;The Volume size is too small for the&quot;</span>
+                     <span class="s2">&quot; &#39;</span><span class="si">%(image_name)s</span><span class="s2">&#39; image and has to be&quot;</span>
+                     <span class="s2">&quot; greater than or equal to &quot;</span>
+                     <span class="s2">&quot;&#39;</span><span class="si">%(smallest_size)d</span><span class="s2">&#39; GB.&quot;</span><span class="p">)</span> <span class="o">%</span>
+                   <span class="p">{</span><span class="s1">&#39;image_name&#39;</span><span class="p">:</span> <span class="n">image</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="s1">&#39;smallest_size&#39;</span><span class="p">:</span> <span class="n">smallest_size</span><span class="p">})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;volume_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_check_source_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_id&#39;</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must select an image.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;image_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_flavor_for_image</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_source_volume_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="n">volume_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_size&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">volume_size</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must set volume size&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;volume_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">volume_size</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume size must be greater than 0&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;volume_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_id&#39;</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must select an image.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;image_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+            <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_flavor_for_image</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_volume_for_image</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_source_instance_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="c1"># using the array form of get blows up with KeyError</span>
+        <span class="c1"># if instance_snapshot_id is nil</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instance_snapshot_id&#39;</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must select a snapshot.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;instance_snapshot_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_check_source_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_id&#39;</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must select a volume.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="c1"># Prevent launching multiple instances with the same volume.</span>
+        <span class="c1"># TODO(gabriel): is it safe to launch multiple instances with</span>
+        <span class="c1"># a snapshot since it should be cloned to new volumes?</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Launching multiple instances is only supported for &#39;</span>
+                    <span class="s1">&#39;images and instance snapshots.&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_source_volume_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_snapshot_id&#39;</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must select a snapshot.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;volume_snapshot_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_check_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="c1"># Validate our instance source.</span>
+        <span class="n">source_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_type&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">source_check_methods</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;image_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_source_image</span><span class="p">,</span>
+            <span class="s1">&#39;volume_image_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_source_volume_image</span><span class="p">,</span>
+            <span class="s1">&#39;instance_snapshot_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_source_instance_snapshot</span><span class="p">,</span>
+            <span class="s1">&#39;volume_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_source_volume</span><span class="p">,</span>
+            <span class="s1">&#39;volume_snapshot_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_source_volume_snapshot</span>
+        <span class="p">}</span>
+        <span class="n">check_method</span> <span class="o">=</span> <span class="n">source_check_methods</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check_method</span><span class="p">:</span>
+            <span class="n">check_method</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SetInstanceDetailsAction.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SetInstanceDetailsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_quotas</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_source</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction.populate_flavor_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.populate_flavor_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_flavor_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">flavor_field_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction.populate_availability_zone_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.populate_availability_zone_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_availability_zone_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zones</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">availability_zone_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">zones</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve availability zones.&#39;</span><span class="p">))</span>
+
+        <span class="n">zone_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">zone</span><span class="o">.</span><span class="n">zoneName</span><span class="p">,</span> <span class="n">zone</span><span class="o">.</span><span class="n">zoneName</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">zone</span> <span class="ow">in</span> <span class="n">zones</span> <span class="k">if</span> <span class="n">zone</span><span class="o">.</span><span class="n">zoneState</span><span class="p">[</span><span class="s1">&#39;available&#39;</span><span class="p">]]</span>
+        <span class="n">zone_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">zone_list</span><span class="p">:</span>
+            <span class="n">zone_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No availability zones found&quot;</span><span class="p">)))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">zone_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">zone_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Any Availability Zone&quot;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">zone_list</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction.get_help_text"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.get_help_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_help_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">extra</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">extra_context</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">(</span><span class="n">extra_context</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;usages&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">tenant_absolute_limits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;usages_json&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">extra</span><span class="p">[</span><span class="s1">&#39;usages&#39;</span><span class="p">])</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">_info</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span>
+                                  <span class="n">instance_utils</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)])</span>
+            <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;flavors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flavors</span>
+            <span class="n">images</span> <span class="o">=</span> <span class="n">image_utils</span><span class="o">.</span><span class="n">get_available_images</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;project_id&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_images_cache</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                          <span class="s1">&#39;min_disk&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;min_disk&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                          <span class="s1">&#39;min_ram&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;min_ram&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                          <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">functions</span><span class="o">.</span><span class="n">bytes_to_gigabytes</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">size</span><span class="p">)}</span>
+                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">images</span><span class="p">]</span>
+                <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;images&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve quota information.&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SetInstanceDetailsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_help_text</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_init_images_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_images_cache&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_images_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_get_volume_display_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="s2">&quot;volume_id&quot;</span><span class="p">):</span>
+            <span class="n">vol_type</span> <span class="o">=</span> <span class="s2">&quot;snap&quot;</span>
+            <span class="n">visible_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Snapshot&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vol_type</span> <span class="o">=</span> <span class="s2">&quot;vol&quot;</span>
+            <span class="n">visible_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">((</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">:</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">vol_type</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(name)s</span><span class="s2"> - </span><span class="si">%(size)s</span><span class="s2"> GB (</span><span class="si">%(label)s</span><span class="s2">)&quot;</span><span class="p">)</span> <span class="o">%</span>
+                 <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">volume</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                  <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">volume</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+                  <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">visible_label</span><span class="p">}))</span>
+
+<div class="viewcode-block" id="SetInstanceDetailsAction.populate_image_id_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.populate_image_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_image_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">image_utils</span><span class="o">.</span><span class="n">get_available_images</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">),</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">_images_cache</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">bytes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;virtual_size&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">volume_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">min_disk</span><span class="p">,</span> <span class="n">functions</span><span class="o">.</span><span class="n">bytes_to_gigabytes</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">bytes</span><span class="p">))</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_id&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">image</span><span class="o">.</span><span class="n">id</span> <span class="ow">and</span> \
+                    <span class="s1">&#39;volume_size&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">context</span><span class="p">:</span>
+                <span class="n">context</span><span class="p">[</span><span class="s1">&#39;volume_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">volume_size</span>
+        <span class="k">if</span> <span class="n">choices</span><span class="p">:</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select Image&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No images available&quot;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">choices</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction.populate_instance_snapshot_id_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.populate_instance_snapshot_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_instance_snapshot_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">image_utils</span><span class="o">.</span><span class="n">get_available_images</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">),</span>
+                                                  <span class="bp">self</span><span class="o">.</span><span class="n">_images_cache</span><span class="p">)</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span>
+                   <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;image_type&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;snapshot&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">choices</span><span class="p">:</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select Instance Snapshot&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No snapshots available&quot;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">choices</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction.populate_volume_id_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.populate_volume_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_volume_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">volumes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volumev2&#39;</span><span class="p">)):</span>
+                <span class="n">available</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">VOLUME_STATE_AVAILABLE</span>
+                <span class="n">volumes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_volume_display_name</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                           <span class="n">search_opts</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">available</span><span class="p">,</span> <span class="n">bootable</span><span class="o">=</span><span class="bp">True</span><span class="p">))]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve list of volumes.&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">volumes</span><span class="p">:</span>
+            <span class="n">volumes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select Volume&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">volumes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No volumes available&quot;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">volumes</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetailsAction.populate_volume_snapshot_id_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetailsAction.populate_volume_snapshot_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_volume_snapshot_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">snapshots</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volumev2&#39;</span><span class="p">)):</span>
+                <span class="n">available</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">VOLUME_STATE_AVAILABLE</span>
+                <span class="n">snapshots</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_volume_display_name</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_snapshot_list</span><span class="p">(</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">available</span><span class="p">))]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve list of volume &#39;</span>
+                                <span class="s1">&#39;snapshots.&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">snapshots</span><span class="p">:</span>
+            <span class="n">snapshots</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select Volume Snapshot&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">snapshots</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No volume snapshots available&quot;</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">snapshots</span>
+
+</div></div>
+<div class="viewcode-block" id="SetInstanceDetails"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetails">[docs]</a><span class="k">class</span> <span class="nc">SetInstanceDetails</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">SetInstanceDetailsAction</span>
+    <span class="n">depends_on</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;source_type&quot;</span><span class="p">,</span> <span class="s2">&quot;source_id&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;availability_zone&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;flavor&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;device_name&quot;</span><span class="p">,</span>  <span class="c1"># Can be None for an image.</span>
+                   <span class="s2">&quot;delete_on_terminate&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SetInstanceDetails.prepare_action_context"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetails.prepare_action_context">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_action_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;source_type&#39;</span> <span class="ow">in</span> <span class="n">context</span> <span class="ow">and</span> <span class="s1">&#39;source_id&#39;</span> <span class="ow">in</span> <span class="n">context</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;source_type&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;source_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="SetInstanceDetails.contribute"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetInstanceDetails.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SetInstanceDetails</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="c1"># Allow setting the source dynamically.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;source_type&quot;</span> <span class="ow">in</span> <span class="n">context</span> <span class="ow">and</span> <span class="s2">&quot;source_id&quot;</span> <span class="ow">in</span> <span class="n">context</span>
+                <span class="ow">and</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;source_type&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">context</span><span class="p">):</span>
+            <span class="n">context</span><span class="p">[</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;source_type&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;source_id&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Translate form input to context for source values.</span>
+        <span class="k">if</span> <span class="s2">&quot;source_type&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;source_type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;image_id&quot;</span><span class="p">,</span> <span class="s2">&quot;volume_image_id&quot;</span><span class="p">]:</span>
+                <span class="n">context</span><span class="p">[</span><span class="s2">&quot;source_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;image_id&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">context</span><span class="p">[</span><span class="s2">&quot;source_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;source_type&quot;</span><span class="p">],</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;volume_size&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;volume_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;volume_size&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<span class="n">KEYPAIR_IMPORT_URL</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:access_and_security:keypairs:import&quot;</span>
+
+
+<div class="viewcode-block" id="SetAccessControlsAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAccessControlsAction">[docs]</a><span class="k">class</span> <span class="nc">SetAccessControlsAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">keypair</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DynamicChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Key Pair&quot;</span><span class="p">),</span>
+                                       <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Key pair to use for &quot;</span>
+                                                   <span class="s2">&quot;authentication.&quot;</span><span class="p">),</span>
+                                       <span class="n">add_item_link</span><span class="o">=</span><span class="n">KEYPAIR_IMPORT_URL</span><span class="p">)</span>
+    <span class="n">admin_pass</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">RegexField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin Password&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">(</span><span class="n">render_value</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">regex</span><span class="o">=</span><span class="n">validators</span><span class="o">.</span><span class="n">password_validator</span><span class="p">(),</span>
+        <span class="n">error_messages</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;invalid&#39;</span><span class="p">:</span> <span class="n">validators</span><span class="o">.</span><span class="n">password_validator_msg</span><span class="p">()})</span>
+    <span class="n">confirm_admin_pass</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Confirm Admin Password&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">(</span><span class="n">render_value</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">MultipleChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Security Groups&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                       <span class="n">initial</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">],</span>
+                                       <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxSelectMultiple</span><span class="p">(),</span>
+                                       <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch instance in these &quot;</span>
+                                                   <span class="s2">&quot;security groups.&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Access &amp; Security&quot;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Control access to your instance via key pairs, &quot;</span>
+                      <span class="s2">&quot;security groups, and other mechanisms.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SetAccessControlsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">can_set_server_password</span><span class="p">():</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;admin_pass&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;confirm_admin_pass&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;keypair&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">required</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">requires_keypair</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SetAccessControlsAction.populate_keypair_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAccessControlsAction.populate_keypair_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_keypair_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">keypairs</span> <span class="o">=</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">keypair_field_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keypairs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;keypair&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">keypairs</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">keypairs</span>
+</div>
+<div class="viewcode-block" id="SetAccessControlsAction.populate_groups_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAccessControlsAction.populate_groups_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_groups_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">security_group_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">):</span>
+                <span class="n">security_group_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sg</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">sg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Nova-Network requires the groups to be listed by name</span>
+                <span class="n">security_group_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sg</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">sg</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">sg</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve list of security groups&#39;</span><span class="p">))</span>
+            <span class="n">security_group_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">security_group_list</span>
+</div>
+<div class="viewcode-block" id="SetAccessControlsAction.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAccessControlsAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Check to make sure password fields match.&#39;&#39;&#39;</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SetAccessControlsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;admin_pass&#39;</span> <span class="ow">in</span> <span class="n">cleaned_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;admin_pass&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s1">&#39;confirm_admin_pass&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Passwords do not match.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+
+</div></div>
+<div class="viewcode-block" id="SetAccessControls"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAccessControls">[docs]</a><span class="k">class</span> <span class="nc">SetAccessControls</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">SetAccessControlsAction</span>
+    <span class="n">depends_on</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="s2">&quot;user_id&quot;</span><span class="p">)</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;keypair_id&quot;</span><span class="p">,</span> <span class="s2">&quot;security_group_ids&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;admin_pass&quot;</span><span class="p">,</span> <span class="s2">&quot;confirm_admin_pass&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SetAccessControls.contribute"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAccessControls.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;security_group_ids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;groups&quot;</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;keypair_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keypair&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;admin_pass&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;admin_pass&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;confirm_admin_pass&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;confirm_admin_pass&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="CustomizeAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.CustomizeAction">[docs]</a><span class="k">class</span> <span class="nc">CustomizeAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Post-Creation&quot;</span><span class="p">)</span>
+        <span class="n">help_text_template</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project/instances/&quot;</span>
+                              <span class="s2">&quot;_launch_customize_help.html&quot;</span><span class="p">)</span>
+
+    <span class="n">source_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select Script Source&#39;</span><span class="p">)),</span>
+                      <span class="p">(</span><span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Direct Input&#39;</span><span class="p">)),</span>
+                      <span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;File&#39;</span><span class="p">))]</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span> <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;scriptsource&#39;</span><span class="p">}</span>
+    <span class="n">script_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Customization Script Source&#39;</span><span class="p">),</span>
+                                      <span class="n">choices</span><span class="o">=</span><span class="n">source_choices</span><span class="p">,</span>
+                                      <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">attributes</span><span class="p">),</span>
+                                      <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">script_help</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;A script or set of commands to be executed after the &quot;</span>
+                    <span class="s2">&quot;instance has been built (max 16kb).&quot;</span><span class="p">)</span>
+
+    <span class="n">script_upload</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Script File&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">script_help</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;scriptsource&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-scriptsource-file&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Script File&#39;</span><span class="p">)}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">script_data</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Script Data&#39;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">script_help</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;scriptsource&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-scriptsource-raw&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Script Data&#39;</span><span class="p">)}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CustomizeAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CustomizeAction.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.CustomizeAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CustomizeAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">FILES</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean_uploaded_files</span><span class="p">(</span><span class="s1">&#39;script&#39;</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">script</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">cleaned</span><span class="p">[</span><span class="s1">&#39;script_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">script</span>
+
+        <span class="k">return</span> <span class="n">cleaned</span>
+</div>
+<div class="viewcode-block" id="CustomizeAction.clean_uploaded_files"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.CustomizeAction.clean_uploaded_files">[docs]</a>    <span class="k">def</span> <span class="nf">clean_uploaded_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+        <span class="n">upload_str</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;_upload&quot;</span>
+
+        <span class="n">has_upload</span> <span class="o">=</span> <span class="n">upload_str</span> <span class="ow">in</span> <span class="n">files</span>
+        <span class="k">if</span> <span class="n">has_upload</span><span class="p">:</span>
+            <span class="n">upload_file</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">upload_str</span><span class="p">]</span>
+            <span class="n">log_script_name</span> <span class="o">=</span> <span class="n">upload_file</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;got upload </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">log_script_name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">upload_file</span><span class="o">.</span><span class="n">_size</span> <span class="o">&gt;</span> <span class="mi">16</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">Ki</span><span class="p">:</span>  <span class="c1"># 16kb</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;File exceeds maximum size (16kb)&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">script</span> <span class="o">=</span> <span class="n">upload_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">script</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">normalize_newlines</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;There was a problem parsing the&#39;</span>
+                                <span class="s1">&#39; </span><span class="si">%(prefix)s</span><span class="s1">: </span><span class="si">%(error)s</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;prefix&#39;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="n">e</span><span class="p">}</span>
+                        <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">script</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+</div></div>
+<div class="viewcode-block" id="PostCreationStep"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.PostCreationStep">[docs]</a><span class="k">class</span> <span class="nc">PostCreationStep</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">CustomizeAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;script_data&quot;</span><span class="p">,)</span>
+
+</div>
+<div class="viewcode-block" id="SetNetworkAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetNetworkAction">[docs]</a><span class="k">class</span> <span class="nc">SetNetworkAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">MultipleChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Networks&quot;</span><span class="p">),</span>
+                                        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxSelectMultiple</span><span class="p">(),</span>
+                                        <span class="n">error_messages</span><span class="o">=</span><span class="p">{</span>
+                                            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span>
+                                                <span class="s2">&quot;At least one network must&quot;</span>
+                                                <span class="s2">&quot; be specified.&quot;</span><span class="p">)},</span>
+                                        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch instance with&quot;</span>
+                                                    <span class="s2">&quot; these networks&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+    <span class="n">profile</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Policy Profiles&quot;</span><span class="p">),</span>
+                                <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                <span class="n">widget</span><span class="o">=</span><span class="n">widget</span><span class="p">,</span>
+                                <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch instance with &quot;</span>
+                                            <span class="s2">&quot;this policy profile&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SetNetworkAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">network_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;network&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">network_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="p">[</span><span class="n">network_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_policy_profile_choices</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Networking&quot;</span><span class="p">)</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.network&#39;</span><span class="p">,)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select networks for your instance.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SetNetworkAction.populate_network_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetNetworkAction.populate_network_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_network_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance_utils</span><span class="o">.</span><span class="n">network_field_data</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SetNetworkAction.get_policy_profile_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetNetworkAction.get_policy_profile_choices">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy_profile_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">profile_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select a profile&quot;</span><span class="p">))]</span>
+        <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_profiles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;policy&#39;</span><span class="p">):</span>
+            <span class="n">profile_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">profile</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">profile_choices</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">type_p</span><span class="p">):</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">profiles</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">profile_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">type_p</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Network Profiles could not be retrieved.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">profiles</span>
+
+</div>
+<div class="viewcode-block" id="SetNetwork"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetNetwork">[docs]</a><span class="k">class</span> <span class="nc">SetNetwork</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">SetNetworkAction</span>
+    <span class="c1"># Disabling the template drag/drop only in the case port profiles</span>
+    <span class="c1"># are used till the issue with the drag/drop affecting the</span>
+    <span class="c1"># profile_id detection is fixed.</span>
+    <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+        <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;network_id&quot;</span><span class="p">,</span> <span class="s2">&quot;profile_id&quot;</span><span class="p">,)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/instances/_update_networks.html&quot;</span>
+        <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;network_id&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="SetNetwork.contribute"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetNetwork.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">networks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;network&quot;</span><span class="p">)</span>
+            <span class="c1"># If no networks are explicitly specified, network list</span>
+            <span class="c1"># contains an empty string, so remove it.</span>
+            <span class="n">networks</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">networks</span> <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">networks</span><span class="p">:</span>
+                <span class="n">context</span><span class="p">[</span><span class="s1">&#39;network_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">networks</span>
+
+            <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+                <span class="n">context</span><span class="p">[</span><span class="s1">&#39;profile_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;profile&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="SetAdvancedAction"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAdvancedAction">[docs]</a><span class="k">class</span> <span class="nc">SetAdvancedAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">disk_config</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Disk Partition&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Automatic: The entire disk is a single partition and &quot;</span>
+                    <span class="s2">&quot;automatically resizes. Manual: Results in faster build &quot;</span>
+                    <span class="s2">&quot;times but requires manual partitioning.&quot;</span><span class="p">))</span>
+    <span class="n">config_drive</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Configuration Drive&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Configure OpenStack to write metadata to &quot;</span>
+                                    <span class="s2">&quot;a special configuration drive that &quot;</span>
+                                    <span class="s2">&quot;attaches to the instance when it boots.&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SetAdvancedAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+                                                <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">extension_supported</span><span class="p">(</span><span class="s2">&quot;DiskConfig&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;disk_config&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Set our disk_config choices</span>
+                <span class="n">config_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Automatic&quot;</span><span class="p">)),</span>
+                                  <span class="p">(</span><span class="s2">&quot;MANUAL&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Manual&quot;</span><span class="p">))]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;disk_config&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">config_choices</span>
+            <span class="c1"># Only show the Config Drive option for the Launch Instance</span>
+            <span class="c1"># workflow (not Resize Instance) and only if the extension</span>
+            <span class="c1"># is supported.</span>
+            <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;workflow_slug&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;launch_instance&#39;</span> <span class="ow">or</span> <span class="p">(</span>
+                    <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">extension_supported</span><span class="p">(</span><span class="s2">&quot;ConfigDrive&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">)):</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;config_drive&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve extensions &#39;</span>
+                                         <span class="s1">&#39;information.&#39;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Advanced Options&quot;</span><span class="p">)</span>
+        <span class="n">help_text_template</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project/instances/&quot;</span>
+                              <span class="s2">&quot;_launch_advanced_help.html&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SetAdvanced"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAdvanced">[docs]</a><span class="k">class</span> <span class="nc">SetAdvanced</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">SetAdvancedAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;disk_config&quot;</span><span class="p">,</span> <span class="s2">&quot;config_drive&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="SetAdvanced.prepare_action_context"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.SetAdvanced.prepare_action_context">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_action_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SetAdvanced</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">prepare_action_context</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                                  <span class="n">context</span><span class="p">)</span>
+        <span class="c1"># Add the workflow slug to the context so that we can tell which</span>
+        <span class="c1"># workflow is being used when creating the action. This step is</span>
+        <span class="c1"># used by both the Launch Instance and Resize Instance workflows.</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;workflow_slug&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">slug</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="LaunchInstance"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.LaunchInstance">[docs]</a><span class="k">class</span> <span class="nc">LaunchInstance</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;launch_instance&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch Instance&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Launch&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Launched </span><span class="si">%(count)s</span><span class="s1"> named &quot;</span><span class="si">%(name)s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to launch </span><span class="si">%(count)s</span><span class="s1"> named &quot;</span><span class="si">%(name)s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:instances:index&quot;</span>
+    <span class="n">multipart</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">SelectProjectUser</span><span class="p">,</span>
+                     <span class="n">SetInstanceDetails</span><span class="p">,</span>
+                     <span class="n">SetAccessControls</span><span class="p">,</span>
+                     <span class="n">SetNetwork</span><span class="p">,</span>
+                     <span class="n">PostCreationStep</span><span class="p">,</span>
+                     <span class="n">SetAdvanced</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LaunchInstance.format_status_message"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.LaunchInstance.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown instance&#39;</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">count</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> instances&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">count</span><span class="p">,</span>
+                              <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">),</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
+</div>
+    <span class="nd">@sensitive_variables</span><span class="p">(</span><span class="s1">&#39;context&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="LaunchInstance.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.LaunchInstance.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">custom_script</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;script_data&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">dev_mapping_1</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">dev_mapping_2</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">image_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="c1"># Determine volume mapping options</span>
+        <span class="n">source_type</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source_type&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;image_id&#39;</span><span class="p">,</span> <span class="s1">&#39;instance_snapshot_id&#39;</span><span class="p">]:</span>
+            <span class="n">image_id</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;source_id&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">source_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">,</span> <span class="s1">&#39;volume_snapshot_id&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">extension_supported</span><span class="p">(</span><span class="s2">&quot;BlockDeviceMappingV2Boot&quot;</span><span class="p">,</span>
+                                                <span class="n">request</span><span class="p">):</span>
+                    <span class="c1"># Volume source id is extracted from the source</span>
+                    <span class="n">volume_source_id</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;source_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">device_name</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;device_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> \
+                        <span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">None</span>
+                    <span class="n">dev_source_type_mapping</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;volume_id&#39;</span><span class="p">:</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;volume_snapshot_id&#39;</span><span class="p">:</span> <span class="s1">&#39;snapshot&#39;</span>
+                    <span class="p">}</span>
+                    <span class="n">dev_mapping_2</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s1">&#39;device_name&#39;</span><span class="p">:</span> <span class="n">device_name</span><span class="p">,</span>
+                         <span class="s1">&#39;source_type&#39;</span><span class="p">:</span> <span class="n">dev_source_type_mapping</span><span class="p">[</span><span class="n">source_type</span><span class="p">],</span>
+                         <span class="s1">&#39;destination_type&#39;</span><span class="p">:</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;delete_on_termination&#39;</span><span class="p">:</span>
+                             <span class="nb">bool</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;delete_on_terminate&#39;</span><span class="p">]),</span>
+                         <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">volume_source_id</span><span class="p">,</span>
+                         <span class="s1">&#39;boot_index&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;volume_size&#39;</span><span class="p">:</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;volume_size&#39;</span><span class="p">]</span>
+                         <span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dev_mapping_1</span> <span class="o">=</span> <span class="p">{</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;device_name&#39;</span><span class="p">]:</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">::</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                     <span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;source_id&#39;</span><span class="p">],</span>
+                                     <span class="nb">bool</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;delete_on_terminate&#39;</span><span class="p">]))</span>
+                                     <span class="p">}</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve extensions information&#39;</span><span class="p">)</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">source_type</span> <span class="o">==</span> <span class="s1">&#39;volume_image_id&#39;</span><span class="p">:</span>
+            <span class="n">device_name</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;device_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">None</span>
+            <span class="n">dev_mapping_2</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s1">&#39;device_name&#39;</span><span class="p">:</span> <span class="n">device_name</span><span class="p">,</span>  <span class="c1"># None auto-selects device</span>
+                 <span class="s1">&#39;source_type&#39;</span><span class="p">:</span> <span class="s1">&#39;image&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;destination_type&#39;</span><span class="p">:</span> <span class="s1">&#39;volume&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;delete_on_termination&#39;</span><span class="p">:</span>
+                     <span class="nb">bool</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;delete_on_terminate&#39;</span><span class="p">]),</span>
+                 <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;source_id&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;boot_index&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;volume_size&#39;</span><span class="p">:</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;volume_size&#39;</span><span class="p">]</span>
+                 <span class="p">}</span>
+            <span class="p">]</span>
+
+        <span class="n">netids</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network_id&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">netids</span><span class="p">:</span>
+            <span class="n">nics</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;net-id&quot;</span><span class="p">:</span> <span class="n">netid</span><span class="p">,</span> <span class="s2">&quot;v4-fixed-ip&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
+                    <span class="k">for</span> <span class="n">netid</span> <span class="ow">in</span> <span class="n">netids</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nics</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">avail_zone</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="n">port_profiles_supported</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">port_profiles_supported</span><span class="p">:</span>
+            <span class="n">nics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_network_port_profiles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="n">context</span><span class="p">[</span><span class="s1">&#39;network_id&#39;</span><span class="p">],</span>
+                                                  <span class="n">context</span><span class="p">[</span><span class="s1">&#39;profile_id&#39;</span><span class="p">])</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                   <span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                   <span class="n">image_id</span><span class="p">,</span>
+                                   <span class="n">context</span><span class="p">[</span><span class="s1">&#39;flavor&#39;</span><span class="p">],</span>
+                                   <span class="n">context</span><span class="p">[</span><span class="s1">&#39;keypair_id&#39;</span><span class="p">],</span>
+                                   <span class="n">normalize_newlines</span><span class="p">(</span><span class="n">custom_script</span><span class="p">),</span>
+                                   <span class="n">context</span><span class="p">[</span><span class="s1">&#39;security_group_ids&#39;</span><span class="p">],</span>
+                                   <span class="n">block_device_mapping</span><span class="o">=</span><span class="n">dev_mapping_1</span><span class="p">,</span>
+                                   <span class="n">block_device_mapping_v2</span><span class="o">=</span><span class="n">dev_mapping_2</span><span class="p">,</span>
+                                   <span class="n">nics</span><span class="o">=</span><span class="n">nics</span><span class="p">,</span>
+                                   <span class="n">availability_zone</span><span class="o">=</span><span class="n">avail_zone</span><span class="p">,</span>
+                                   <span class="n">instance_count</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]),</span>
+                                   <span class="n">admin_pass</span><span class="o">=</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;admin_pass&#39;</span><span class="p">],</span>
+                                   <span class="n">disk_config</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;disk_config&#39;</span><span class="p">),</span>
+                                   <span class="n">config_drive</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;config_drive&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">port_profiles_supported</span><span class="p">:</span>
+                <span class="n">ports_failing_deletes</span> <span class="o">=</span> <span class="n">_cleanup_ports_on_failed_vm_launch</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span> <span class="n">nics</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ports_failing_deletes</span><span class="p">:</span>
+                    <span class="n">ports_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ports_failing_deletes</span><span class="p">)</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Port cleanup failed for these port-ids (</span><span class="si">%s</span><span class="s1">).&#39;</span><span class="p">)</span>
+                           <span class="o">%</span> <span class="n">ports_str</span><span class="p">)</span>
+                    <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="LaunchInstance.set_network_port_profiles"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.workflows.create_instance.html#openstack_dashboard.dashboards.project.instances.workflows.create_instance.LaunchInstance.set_network_port_profiles">[docs]</a>    <span class="k">def</span> <span class="nf">set_network_port_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">net_ids</span><span class="p">,</span> <span class="n">profile_id</span><span class="p">):</span>
+        <span class="c1"># Create port with Network ID and Port Profile</span>
+        <span class="c1"># for the use with the plugin supporting port profiles.</span>
+        <span class="n">nics</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">net_id</span> <span class="ow">in</span> <span class="n">net_ids</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">port</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">port_create</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span>
+                    <span class="n">net_id</span><span class="p">,</span>
+                    <span class="n">policy_profile_id</span><span class="o">=</span><span class="n">profile_id</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create port for profile &#39;</span>
+                         <span class="s1">&#39;&quot;</span><span class="si">%(profile_id)s</span><span class="s1">&quot;: </span><span class="si">%(reason)s</span><span class="s1">&#39;</span><span class="p">),</span>
+                       <span class="p">{</span><span class="s1">&#39;profile_id&#39;</span><span class="p">:</span> <span class="n">profile_id</span><span class="p">,</span>
+                        <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="n">e</span><span class="p">})</span>
+                <span class="k">for</span> <span class="n">nic</span> <span class="ow">in</span> <span class="n">nics</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">port_id</span> <span class="o">=</span> <span class="n">nic</span><span class="p">[</span><span class="s1">&#39;port-id&#39;</span><span class="p">]</span>
+                        <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">port_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">port_id</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">msg</span> <span class="o">+</span>
+                               <span class="n">_</span><span class="p">(</span><span class="s1">&#39; Also failed to delete port </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">port_id</span><span class="p">)</span>
+                <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">port</span><span class="p">:</span>
+                <span class="n">nics</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;port-id&quot;</span><span class="p">:</span> <span class="n">port</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created Port </span><span class="si">%(portid)s</span><span class="s2"> with &quot;</span>
+                          <span class="s2">&quot;network </span><span class="si">%(netid)s</span><span class="s2"> &quot;</span>
+                          <span class="s2">&quot;policy profile </span><span class="si">%(profile_id)s</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="p">{</span><span class="s1">&#39;portid&#39;</span><span class="p">:</span> <span class="n">port</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="s1">&#39;netid&#39;</span><span class="p">:</span> <span class="n">net_id</span><span class="p">,</span>
+                           <span class="s1">&#39;profile_id&#39;</span><span class="p">:</span> <span class="n">profile_id</span><span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">nics</span>
+
+</div></div>
+<span class="k">def</span> <span class="nf">_cleanup_ports_on_failed_vm_launch</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">nics</span><span class="p">):</span>
+    <span class="n">ports_failing_deletes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Cleaning up stale VM ports.&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">nic</span> <span class="ow">in</span> <span class="n">nics</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Deleting port with id: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">nic</span><span class="p">[</span><span class="s1">&#39;port-id&#39;</span><span class="p">])</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">port_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">nic</span><span class="p">[</span><span class="s1">&#39;port-id&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">ports_failing_deletes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nic</span><span class="p">[</span><span class="s1">&#39;port-id&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ports_failing_deletes</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

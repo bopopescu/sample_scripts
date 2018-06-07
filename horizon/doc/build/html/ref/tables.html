@@ -1,0 +1,1691 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Horizon DataTables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Horizon Tabs and TabGroups" href="tabs.html" />
+    <link rel="prev" title="Horizon Workflows" href="workflows.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-horizon.tables">
+<span id="horizon-datatables"></span><h1>Horizon DataTables<a class="headerlink" href="#module-horizon.tables" title="Permalink to this headline">¶</a></h1>
+<p>Horizon includes a componentized API for programmatically creating tables
+in the UI. Why would you want this? It means that every table renders
+correctly and consistently, table- and row-level actions all have a consistent
+API and appearance, and generally you don&#8217;t have to reinvent the wheel or
+copy-and-paste every time you need a new table!</p>
+<blockquote>
+<div><div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For usage information, tips &amp; tricks and more examples check out the <a class="reference internal" href="../topics/tables.html"><em>DataTables Topic
+Guide</em></a>.</p>
+</div>
+</div></blockquote>
+<div class="section" id="datatable">
+<h2>DataTable<a class="headerlink" href="#datatable" title="Permalink to this headline">¶</a></h2>
+<p>The core class which defines the high-level structure of the table being
+represented. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyTable</span><span class="p">(</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_table&quot;</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">MyAction</span><span class="p">,</span> <span class="n">MyOtherAction</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">-</span> <span class="p">(</span><span class="n">MyAction</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A full reference is included below:</p>
+<dl class="class">
+<dt id="horizon.tables.DataTable">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">DataTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class which defines a table with all data and associated actions.</p>
+<dl class="attribute">
+<dt id="horizon.tables.DataTable.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.DataTable.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>String. Read-only access to the name specified in the
+table&#8217;s Meta options.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTable.multi_select">
+<tt class="descname">multi_select</tt><a class="headerlink" href="#horizon.tables.DataTable.multi_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean. Read-only access to whether or not this table
+should display a column for multi-select checkboxes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTable.data">
+<tt class="descname">data</tt><a class="headerlink" href="#horizon.tables.DataTable.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read-only access to the data this table represents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTable.filtered_data">
+<tt class="descname">filtered_data</tt><a class="headerlink" href="#horizon.tables.DataTable.filtered_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read-only access to the data this table represents, filtered by
+the <a class="reference internal" href="#horizon.tables.FilterAction.filter" title="horizon.tables.FilterAction.filter"><tt class="xref py py-meth docutils literal"><span class="pre">filter()</span></tt></a> method of the table&#8217;s
+<a class="reference internal" href="#horizon.tables.FilterAction" title="horizon.tables.FilterAction"><tt class="xref py py-class docutils literal"><span class="pre">FilterAction</span></tt></a> class (if one is provided)
+using the current request&#8217;s query parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.calculate_row_status">
+<tt class="descname">calculate_row_status</tt><big>(</big><em>statuses</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.calculate_row_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean value determining the overall row status
+based on the dictionary of column name to status mappings passed in.</p>
+<p>By default, it uses the following logic:</p>
+<ol class="arabic simple">
+<li>If any statuses are <tt class="docutils literal"><span class="pre">False</span></tt>, return <tt class="docutils literal"><span class="pre">False</span></tt>.</li>
+<li>If no statuses are <tt class="docutils literal"><span class="pre">False</span></tt> but any or <tt class="docutils literal"><span class="pre">None</span></tt>, return <tt class="docutils literal"><span class="pre">None</span></tt>.</li>
+<li>If all statuses are <tt class="docutils literal"><span class="pre">True</span></tt>, return <tt class="docutils literal"><span class="pre">True</span></tt>.</li>
+</ol>
+<p>This provides the greatest protection against false positives without
+weighting any particular columns.</p>
+<p>The <tt class="docutils literal"><span class="pre">statuses</span></tt> parameter is passed in as a dictionary mapping
+column names to their statuses in order to allow this function to
+be overridden in such a way as to weight one column&#8217;s status over
+another should that behavior be desired.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="horizon.tables.DataTable.check_handler">
+<em class="property">classmethod </em><tt class="descname">check_handler</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.check_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the request should be handled by this table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.css_classes">
+<tt class="descname">css_classes</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.css_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the additional CSS class to be added to &lt;table&gt; tag.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_absolute_url">
+<tt class="descname">get_absolute_url</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_absolute_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the canonical URL for this table.</p>
+<p>This is used for the POST action attribute on the form element
+wrapping the table. In many cases it is also useful for redirecting
+after a successful action on the table.</p>
+<p>For convenience it defaults to the value of
+<tt class="docutils literal"><span class="pre">request.get_full_path()</span></tt> with any query string stripped off,
+e.g. the path at which the table was requested.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_columns">
+<tt class="descname">get_columns</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns this table&#8217;s columns including auto-generated ones.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_empty_message">
+<tt class="descname">get_empty_message</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_empty_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the message to be displayed when there is no data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_filter_field">
+<tt class="descname">get_filter_field</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_filter_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the filter field value used for &#8216;server&#8217; type filters. This
+is the value from the filter action&#8217;s list of filter choices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_filter_string">
+<tt class="descname">get_filter_string</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_filter_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the filter string value. For &#8216;server&#8217; type filters this is
+saved in the session so that it gets persisted across table loads.
+For other filter types this is obtained from the POST dict.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_full_url">
+<tt class="descname">get_full_url</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_full_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full URL path for this table.</p>
+<p>This is used for the POST action attribute on the form element
+wrapping the table. We use this method to persist the
+pagination marker.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_marker">
+<tt class="descname">get_marker</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_marker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the identifier for the last object in the current data set
+for APIs that use marker/limit-based paging.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_object_by_id">
+<tt class="descname">get_object_by_id</tt><big>(</big><em>lookup</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_object_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the data object from the table&#8217;s dataset which matches
+the <tt class="docutils literal"><span class="pre">lookup</span></tt> parameter specified. An error will be raised if
+the match is not a single data object.</p>
+<p>We will convert the object id and <tt class="docutils literal"><span class="pre">lookup</span></tt> to unicode before
+comparison.</p>
+<p>Uses <a class="reference internal" href="#horizon.tables.DataTable.get_object_id" title="horizon.tables.DataTable.get_object_id"><tt class="xref py py-meth docutils literal"><span class="pre">get_object_id()</span></tt></a> internally.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_object_display">
+<tt class="descname">get_object_display</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_object_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a display name that identifies this object.</p>
+<p>By default, this returns a <tt class="docutils literal"><span class="pre">name</span></tt> attribute from the given object,
+but this can be overridden to return other values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_object_id">
+<tt class="descname">get_object_id</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_object_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the identifier for the object this row will represent.</p>
+<p>By default this returns an <tt class="docutils literal"><span class="pre">id</span></tt> attribute on the given object,
+but this can be overridden to return other values.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Make sure that the value returned is a unique value for the id
+otherwise rendering issues can occur.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_pagination_string">
+<tt class="descname">get_pagination_string</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_pagination_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the query parameter string to paginate this table
+to the next page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_prev_marker">
+<tt class="descname">get_prev_marker</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_prev_marker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the identifier for the first object in the current data set
+for APIs that use marker/limit-based paging.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_prev_pagination_string">
+<tt class="descname">get_prev_pagination_string</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_prev_pagination_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the query parameter string to paginate this table
+to the previous page.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_row_actions">
+<tt class="descname">get_row_actions</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_row_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the action instances for a specific row.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_row_status_class">
+<tt class="descname">get_row_status_class</tt><big>(</big><em>status</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_row_status_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a css class name determined by the status value. This class
+name is used to indicate the status of the rows in the table if
+any <tt class="docutils literal"><span class="pre">status_columns</span></tt> have been specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_rows">
+<tt class="descname">get_rows</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the row data for this table broken out by columns.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.get_table_actions">
+<tt class="descname">get_table_actions</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.get_table_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the action instances for this table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTable.has_actions">
+<tt class="descname">has_actions</tt><a class="headerlink" href="#horizon.tables.DataTable.has_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean. Indicates whether there are any available actions on this
+table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.has_more_data">
+<tt class="descname">has_more_data</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.has_more_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean value indicating whether there is more data
+available to this table from the source (generally an API).</p>
+<p>The method is largely meant for internal use, but if you want to
+override it to provide custom behavior you can do so at your own risk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.has_prev_data">
+<tt class="descname">has_prev_data</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.has_prev_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean value indicating whether there is previous data
+available to this table from the source (generally an API).</p>
+<p>The method is largely meant for internal use, but if you want to
+override it to provide custom behavior you can do so at your own risk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.inline_edit_handle">
+<tt class="descname">inline_edit_handle</tt><big>(</big><em>request</em>, <em>table_name</em>, <em>action_name</em>, <em>obj_id</em>, <em>new_row</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.inline_edit_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inline edit handler.</p>
+<p>Showing form or handling update by POST of the cell.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.inline_update_action">
+<tt class="descname">inline_update_action</tt><big>(</big><em>request</em>, <em>datum</em>, <em>cell</em>, <em>obj_id</em>, <em>cell_name</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.inline_update_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handling update by POST of the cell.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.maybe_handle">
+<tt class="descname">maybe_handle</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.maybe_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the request should be handled by any action on
+this table after data has been loaded.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.maybe_preempt">
+<tt class="descname">maybe_preempt</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.maybe_preempt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether the request should be handled by a preemptive
+action on this table or by an AJAX row update before loading any data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTable.needs_form_wrapper">
+<tt class="descname">needs_form_wrapper</tt><a class="headerlink" href="#horizon.tables.DataTable.needs_form_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean. Indicates whether this table should be rendered wrapped in
+a <tt class="docutils literal"><span class="pre">&lt;form&gt;</span></tt> tag or not.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="horizon.tables.DataTable.parse_action">
+<em class="property">static </em><tt class="descname">parse_action</tt><big>(</big><em>action_string</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.parse_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the <tt class="docutils literal"><span class="pre">action</span></tt> parameter (a string) sent back with the
+POST data. By default this parses a string formatted as
+<tt class="docutils literal"><span class="pre">{{</span> <span class="pre">table_name</span> <span class="pre">}}__{{</span> <span class="pre">action_name</span> <span class="pre">}}__{{</span> <span class="pre">row_id</span> <span class="pre">}}</span></tt> and returns
+each of the pieces. The <tt class="docutils literal"><span class="pre">row_id</span></tt> is optional.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.render">
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the table using the template from the table options.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.render_row_actions">
+<tt class="descname">render_row_actions</tt><big>(</big><em>datum</em>, <em>pull_right=True</em>, <em>row=False</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.render_row_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the actions specified in <tt class="docutils literal"><span class="pre">Meta.row_actions</span></tt> using the
+current row data. If <cite>row</cite> is True, the actions are rendered in a row
+of buttons. Otherwise they are rendered in a dropdown box.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.render_table_actions">
+<tt class="descname">render_table_actions</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.render_table_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the actions specified in <tt class="docutils literal"><span class="pre">Meta.table_actions</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.sanitize_id">
+<tt class="descname">sanitize_id</tt><big>(</big><em>obj_id</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.sanitize_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override to modify an incoming obj_id to match existing
+API data types or modify the format.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.set_multiselect_column_visibility">
+<tt class="descname">set_multiselect_column_visibility</tt><big>(</big><em>visible=True</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.set_multiselect_column_visibility" title="Permalink to this definition">¶</a></dt>
+<dd><p>hide checkbox column if no current table action is allowed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DataTable.take_action">
+<tt class="descname">take_action</tt><big>(</big><em>action_name</em>, <em>obj_id=None</em>, <em>obj_ids=None</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTable.take_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Locates the appropriate action and routes the object
+data to it. The action should return an HTTP redirect
+if successful, or a value which evaluates to <tt class="docutils literal"><span class="pre">False</span></tt>
+if unsuccessful.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="datatable-options">
+<h2>DataTable Options<a class="headerlink" href="#datatable-options" title="Permalink to this headline">¶</a></h2>
+<p>The following options can be defined in a <tt class="docutils literal"><span class="pre">Meta</span></tt> class inside a
+<a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> class. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyTable</span><span class="p">(</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_table&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="s2">&quot;My Table&quot;</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="horizon.tables.base.DataTableOptions">
+<em class="property">class </em><tt class="descclassname">horizon.tables.base.</tt><tt class="descname">DataTableOptions</tt><big>(</big><em>options</em><big>)</big><a class="reference internal" href="../_modules/horizon/tables/base.html#DataTableOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.base.DataTableOptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains options for <a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> objects.</p>
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A short name or slug for the table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.verbose_name">
+<tt class="descname">verbose_name</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A more verbose name for the table meant for display purposes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.columns">
+<tt class="descname">columns</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of column objects or column names. Controls ordering/display
+of the columns in the table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.table_actions">
+<tt class="descname">table_actions</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.table_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of action classes derived from the
+<a class="reference internal" href="#horizon.tables.Action" title="horizon.tables.Action"><tt class="xref py py-class docutils literal"><span class="pre">Action</span></tt></a> class. These actions will handle tasks
+such as bulk deletion, etc. for multiple objects at once.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.table_actions_menu">
+<tt class="descname">table_actions_menu</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.table_actions_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of action classes similar to <tt class="docutils literal"><span class="pre">table_actions</span></tt> except these
+will be displayed in a menu instead of as individual buttons. Actions
+from this list will take precedence over actions from the
+<tt class="docutils literal"><span class="pre">table_actions</span></tt> list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.row_actions">
+<tt class="descname">row_actions</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.row_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list similar to <tt class="docutils literal"><span class="pre">table_actions</span></tt> except tailored to appear for
+each row. These actions act on a single object at a time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.actions_column">
+<tt class="descname">actions_column</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.actions_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value to control rendering of an additional column containing
+the various actions for each row. Defaults to <tt class="docutils literal"><span class="pre">True</span></tt> if any actions
+are specified in the <tt class="docutils literal"><span class="pre">row_actions</span></tt> option.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.multi_select">
+<tt class="descname">multi_select</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.multi_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value to control rendering of an extra column with checkboxes
+for selecting multiple objects in the table. Defaults to <tt class="docutils literal"><span class="pre">True</span></tt> if
+any actions are specified in the <tt class="docutils literal"><span class="pre">table_actions</span></tt> option.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.filter">
+<tt class="descname">filter</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value to control the display of the &#8220;filter&#8221; search box
+in the table actions. By default it checks whether or not an instance
+of <a class="reference internal" href="#horizon.tables.FilterAction" title="horizon.tables.FilterAction"><tt class="xref py py-class docutils literal"><span class="pre">FilterAction</span></tt></a> is in <a class="reference internal" href="#horizon.tables.DataTableOptions.table_actions" title="horizon.tables.DataTableOptions.table_actions"><tt class="xref py py-attr docutils literal"><span class="pre">table_actions</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.template">
+<tt class="descname">template</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.template" title="Permalink to this definition">¶</a></dt>
+<dd><p>String containing the template which should be used to render the
+table. Defaults to <tt class="docutils literal"><span class="pre">&quot;horizon/common/_data_table.html&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.context_var_name">
+<tt class="descname">context_var_name</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.context_var_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the context variable which will contain the table when
+it is rendered. Defaults to <tt class="docutils literal"><span class="pre">&quot;table&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.prev_pagination_param">
+<tt class="descname">prev_pagination_param</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.prev_pagination_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the query string parameter which will be used when
+paginating backward in this table. When using multiple tables in a
+single view this will need to be changed to differentiate between the
+tables. Default: <tt class="docutils literal"><span class="pre">&quot;prev_marker&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.pagination_param">
+<tt class="descname">pagination_param</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.pagination_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the query string parameter which will be used when
+paginating forward in this table. When using multiple tables in a
+single view this will need to be changed to differentiate between the
+tables. Default: <tt class="docutils literal"><span class="pre">&quot;marker&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.status_columns">
+<tt class="descname">status_columns</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.status_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list or tuple of column names which represents the &#8220;state&#8221;
+of the data object being represented.</p>
+<p>If <tt class="docutils literal"><span class="pre">status_columns</span></tt> is set, when the rows are rendered the value
+of this column will be used to add an extra class to the row in
+the form of <tt class="docutils literal"><span class="pre">&quot;status_up&quot;</span></tt> or <tt class="docutils literal"><span class="pre">&quot;status_down&quot;</span></tt> for that row&#8217;s
+data.</p>
+<p>The row status is used by other Horizon components to trigger tasks
+such as dynamic AJAX updating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.cell_class">
+<tt class="descname">cell_class</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.cell_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class which should be used for rendering the cells of this table.
+Optional. Default: <tt class="xref py py-class docutils literal"><span class="pre">Cell</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.row_class">
+<tt class="descname">row_class</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.row_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class which should be used for rendering the rows of this table.
+Optional. Default: <a class="reference internal" href="#horizon.tables.Row" title="horizon.tables.Row"><tt class="xref py py-class docutils literal"><span class="pre">Row</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.column_class">
+<tt class="descname">column_class</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.column_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class which should be used for handling the columns of this table.
+Optional. Default: <a class="reference internal" href="#horizon.tables.Column" title="horizon.tables.Column"><tt class="xref py py-class docutils literal"><span class="pre">Column</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.css_classes">
+<tt class="descname">css_classes</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.css_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A custom CSS class or classes to add to the <tt class="docutils literal"><span class="pre">&lt;table&gt;</span></tt> tag of the
+rendered table, for when the particular table requires special styling.
+Default: <tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.mixed_data_type">
+<tt class="descname">mixed_data_type</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.mixed_data_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A toggle to indicate if the table accepts two or more types of data.
+Optional. Default: <tt class="docutils literal"><span class="pre">False</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.data_types">
+<tt class="descname">data_types</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.data_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of data types that this table would accept. Default to be an
+empty list, but if the attribute <tt class="docutils literal"><span class="pre">mixed_data_type</span></tt> is set to
+<tt class="docutils literal"><span class="pre">True</span></tt>, then this list must have at least one element.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.data_type_name">
+<tt class="descname">data_type_name</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.data_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of an attribute to assign to data passed to the table when it
+accepts mix data. Default: <tt class="docutils literal"><span class="pre">&quot;_table_data_type&quot;</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.footer">
+<tt class="descname">footer</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.footer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean to control whether or not to show the table&#8217;s footer.
+Default: <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.hidden_title">
+<tt class="descname">hidden_title</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.hidden_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean to control whether or not to show the table&#8217;s title.
+Default: <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DataTableOptions.permissions">
+<tt class="descname">permissions</tt><a class="headerlink" href="#horizon.tables.DataTableOptions.permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of permission names which this table requires in order to be
+displayed. Defaults to an empty list (<tt class="docutils literal"><span class="pre">[]</span></tt>).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="formsetdatatable">
+<h2>FormsetDataTable<a class="headerlink" href="#formsetdatatable" title="Permalink to this headline">¶</a></h2>
+<p>You can integrate the <a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> with a Django Formset using one of following classes:</p>
+<dl class="class">
+<dt id="horizon.tables.formset.FormsetDataTableMixin">
+<em class="property">class </em><tt class="descclassname">horizon.tables.formset.</tt><tt class="descname">FormsetDataTableMixin</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/tables/formset.html#FormsetDataTableMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.formset.FormsetDataTableMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin for DataTable to support Django Formsets.</p>
+<p>This works the same as the <tt class="docutils literal"><span class="pre">FormsetDataTable</span></tt> below, but can be used
+to add to existing DataTable subclasses.</p>
+<dl class="method">
+<dt id="horizon.tables.formset.FormsetDataTableMixin.get_empty_row">
+<tt class="descname">get_empty_row</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_empty_row"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.formset.FormsetDataTableMixin.get_empty_row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a row with no data, for adding at the end of the table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.formset.FormsetDataTableMixin.get_formset">
+<tt class="descname">get_formset</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_formset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.formset.FormsetDataTableMixin.get_formset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide the formset corresponding to this DataTable.</p>
+<p>Use this to validate the formset and to get the submitted data back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.formset.FormsetDataTableMixin.get_required_columns">
+<tt class="descname">get_required_columns</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_required_columns"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.formset.FormsetDataTableMixin.get_required_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists names of columns that have required fields.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.formset.FormsetDataTableMixin.get_rows">
+<tt class="descname">get_rows</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/horizon/tables/formset.html#FormsetDataTableMixin.get_rows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.formset.FormsetDataTableMixin.get_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the row data for this table broken out by columns.</p>
+<p>The row objects get an additional <tt class="docutils literal"><span class="pre">form</span></tt> parameter, with the
+formset form corresponding to that row.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.formset.FormsetDataTable">
+<em class="property">class </em><tt class="descclassname">horizon.tables.formset.</tt><tt class="descname">FormsetDataTable</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/tables/formset.html#FormsetDataTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.tables.formset.FormsetDataTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DataTable with support for Django Formsets.</p>
+<p>Note that <a class="reference internal" href="#horizon.tables.DataTableOptions.row_class" title="horizon.tables.DataTableOptions.row_class"><tt class="xref py py-attr docutils literal"><span class="pre">horizon.tables.DataTableOptions.row_class</span></tt></a> and
+<tt class="xref py py-attr docutils literal"><span class="pre">horizon.tables.DataTaleOptions.cell_class</span></tt> are overwritten in this
+class, so setting them in <tt class="docutils literal"><span class="pre">Meta</span></tt> has no effect.</p>
+<dl class="attribute">
+<dt id="horizon.tables.FormsetDataTable.formset_class">
+<tt class="descname">formset_class</tt><a class="headerlink" href="#horizon.tables.FormsetDataTable.formset_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class made with <tt class="docutils literal"><span class="pre">django.forms.formsets.formset_factory</span></tt>
+containing the definition of the formset to use with this data table.</p>
+<p>The columns that are named the same as the formset fields will be
+replaced with form widgets in the table. Any hidden fields from the
+formset will also be included. The fields that are not hidden and
+don&#8217;t correspond to any column will not be included in the form.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="table-components">
+<h2>Table Components<a class="headerlink" href="#table-components" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.tables.Column">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">Column</tt><big>(</big><em>transform</em>, <em>verbose_name=None</em>, <em>sortable=True</em>, <em>link=None</em>, <em>allowed_data_types=[]</em>, <em>hidden=False</em>, <em>attrs=None</em>, <em>status=False</em>, <em>status_choices=None</em>, <em>display_choices=None</em>, <em>empty_value=None</em>, <em>filters=None</em>, <em>classes=None</em>, <em>summation=None</em>, <em>auto=None</em>, <em>truncate=None</em>, <em>link_classes=None</em>, <em>wrap_list=False</em>, <em>form_field=None</em>, <em>form_field_attributes=None</em>, <em>update_action=None</em>, <em>link_attrs=None</em>, <em>cell_attributes_getter=None</em>, <em>help_text=None</em><big>)</big><a class="headerlink" href="#horizon.tables.Column" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class which represents a single column in a <a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a>.</p>
+<dl class="attribute">
+<dt id="horizon.tables.Column.transform">
+<tt class="descname">transform</tt><a class="headerlink" href="#horizon.tables.Column.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string or callable. If <tt class="docutils literal"><span class="pre">transform</span></tt> is a string, it should be the
+name of the attribute on the underlying data class which
+should be displayed in this column. If it is a callable, it
+will be passed the current row&#8217;s data at render-time and should
+return the contents of the cell. Required.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.verbose_name">
+<tt class="descname">verbose_name</tt><a class="headerlink" href="#horizon.tables.Column.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name for this column which should be used for display purposes.
+Defaults to the value of <tt class="docutils literal"><span class="pre">transform</span></tt> with the first letter
+of each word capitalized if the <tt class="docutils literal"><span class="pre">transform</span></tt> is not callable,
+otherwise it defaults to an empty string (<tt class="docutils literal"><span class="pre">&quot;&quot;</span></tt>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.sortable">
+<tt class="descname">sortable</tt><a class="headerlink" href="#horizon.tables.Column.sortable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean to determine whether this column should be sortable or not.
+Defaults to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.hidden">
+<tt class="descname">hidden</tt><a class="headerlink" href="#horizon.tables.Column.hidden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean to determine whether or not this column should be displayed
+when rendering the table. Default: <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.link">
+<tt class="descname">link</tt><a class="headerlink" href="#horizon.tables.Column.link" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string or callable which returns a URL which will be wrapped around
+this column&#8217;s text as a link.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.allowed_data_types">
+<tt class="descname">allowed_data_types</tt><a class="headerlink" href="#horizon.tables.Column.allowed_data_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of data types for which the link should be created.
+Default is an empty list (<tt class="docutils literal"><span class="pre">[]</span></tt>).</p>
+<p>When the list is empty and the <tt class="docutils literal"><span class="pre">link</span></tt> attribute is not None, all the
+rows under this column will be links.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.status">
+<tt class="descname">status</tt><a class="headerlink" href="#horizon.tables.Column.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean designating whether or not this column represents a status
+(i.e. &#8220;enabled/disabled&#8221;, &#8220;up/down&#8221;, &#8220;active/inactive&#8221;).
+Default: <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.status_choices">
+<tt class="descname">status_choices</tt><a class="headerlink" href="#horizon.tables.Column.status_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of tuples representing the possible data values for the
+status column and their associated boolean equivalent. Positive
+states should equate to <tt class="docutils literal"><span class="pre">True</span></tt>, negative states should equate
+to <tt class="docutils literal"><span class="pre">False</span></tt>, and indeterminate states should be <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<p>Values are compared in a case-insensitive manner.</p>
+<p>Example (these are also the default values):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">status_choices</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="p">(</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;disabled&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;down&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;false&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;inactive&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.display_choices">
+<tt class="descname">display_choices</tt><a class="headerlink" href="#horizon.tables.Column.display_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of tuples representing the possible values to substitute
+the data when displayed in the column cell.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.empty_value">
+<tt class="descname">empty_value</tt><a class="headerlink" href="#horizon.tables.Column.empty_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string or callable to be used for cells which have no data.
+Defaults to the string <tt class="docutils literal"><span class="pre">&quot;-&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.summation">
+<tt class="descname">summation</tt><a class="headerlink" href="#horizon.tables.Column.summation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string containing the name of a summation method to be used in
+the generation of a summary row for this column. By default the
+options are <tt class="docutils literal"><span class="pre">&quot;sum&quot;</span></tt> or <tt class="docutils literal"><span class="pre">&quot;average&quot;</span></tt>, which behave as expected.
+Optional.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.filters">
+<tt class="descname">filters</tt><a class="headerlink" href="#horizon.tables.Column.filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of functions (often template filters) to be applied to the
+value of the data for this column prior to output. This is effectively
+a shortcut for writing a custom <tt class="docutils literal"><span class="pre">transform</span></tt> function in simple cases.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.classes">
+<tt class="descname">classes</tt><a class="headerlink" href="#horizon.tables.Column.classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterable of CSS classes which should be added to this column.
+Example: <tt class="docutils literal"><span class="pre">classes=('foo',</span> <span class="pre">'bar')</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.attrs">
+<tt class="descname">attrs</tt><a class="headerlink" href="#horizon.tables.Column.attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict of HTML attribute strings which should be added to this column.
+Example: <tt class="docutils literal"><span class="pre">attrs={&quot;data-foo&quot;:</span> <span class="pre">&quot;bar&quot;}</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.cell_attributes_getter">
+<tt class="descname">cell_attributes_getter</tt><a class="headerlink" href="#horizon.tables.Column.cell_attributes_getter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable to get the HTML attributes of a column cell depending
+on the data. For example, to add additional description or help
+information for data in a column cell (e.g. in Images panel, for the
+column &#8216;format&#8217;):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>helpText = {
+  &#39;ARI&#39;:&#39;Amazon Ramdisk Image&#39;
+  &#39;QCOW2&#39;:&#39;QEMU&#39; Emulator&#39;
+  }
+
+getHoverHelp(data):
+  text = helpText.get(data, None)
+  if text:
+      return {&#39;title&#39;: text}
+  else:
+      return {}
+...
+...
+cell_attributes_getter = getHoverHelp
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.truncate">
+<tt class="descname">truncate</tt><a class="headerlink" href="#horizon.tables.Column.truncate" title="Permalink to this definition">¶</a></dt>
+<dd><p>An integer for the maximum length of the string in this column. If the
+length of the data in this column is larger than the supplied number,
+the data for this column will be truncated and an ellipsis will be
+appended to the truncated data.
+Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.link_classes">
+<tt class="descname">link_classes</tt><a class="headerlink" href="#horizon.tables.Column.link_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An iterable of CSS classes which will be added when the column&#8217;s text
+is displayed as a link.
+This is left for backward compatibility. Deprecated in favor of the
+link_attributes attribute.
+Example: <tt class="docutils literal"><span class="pre">link_classes=('link-foo',</span> <span class="pre">'link-bar')</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.wrap_list">
+<tt class="descname">wrap_list</tt><a class="headerlink" href="#horizon.tables.Column.wrap_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value indicating whether the contents of this cell should be
+wrapped in a <tt class="docutils literal"><span class="pre">&lt;ul&gt;&lt;/ul&gt;</span></tt> tag. Useful in conjunction with Django&#8217;s
+<tt class="docutils literal"><span class="pre">unordered_list</span></tt> template filter. Defaults to <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.form_field">
+<tt class="descname">form_field</tt><a class="headerlink" href="#horizon.tables.Column.form_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>A form field used for inline editing of the column. A django
+forms.Field can be used or django form.Widget can be used.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">form_field=forms.CharField(required=True)</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.form_field_attributes">
+<tt class="descname">form_field_attributes</tt><a class="headerlink" href="#horizon.tables.Column.form_field_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The additional html attributes that will be rendered to form_field.
+Example: <tt class="docutils literal"><span class="pre">form_field_attributes={'class':</span> <span class="pre">'bold_input_field'}</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.update_action">
+<tt class="descname">update_action</tt><a class="headerlink" href="#horizon.tables.Column.update_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class that inherits from tables.actions.UpdateAction, update_cell
+method takes care of saving inline edited data. The tables.base.Row
+get_data method needs to be connected to table for obtaining the data.
+Example: <tt class="docutils literal"><span class="pre">update_action=UpdateCell</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.link_attrs">
+<tt class="descname">link_attrs</tt><a class="headerlink" href="#horizon.tables.Column.link_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict of HTML attribute strings which should be added when the
+column&#8217;s text is displayed as a link.
+Examples:
+<tt class="docutils literal"><span class="pre">link_attrs={&quot;data-foo&quot;:</span> <span class="pre">&quot;bar&quot;}</span></tt>.
+<tt class="docutils literal"><span class="pre">link_attrs={&quot;target&quot;:</span> <span class="pre">&quot;_blank&quot;,</span> <span class="pre">&quot;class&quot;:</span> <span class="pre">&quot;link-foo</span> <span class="pre">link-bar&quot;}</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Column.help_text">
+<tt class="descname">help_text</tt><a class="headerlink" href="#horizon.tables.Column.help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string of simple help text displayed in a tooltip when you hover
+over the help icon beside the Column name. Defaults to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Column.get_data">
+<tt class="descname">get_data</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.Column.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the final display data for this column from the given
+inputs.</p>
+<p>The return value will be either the attribute specified for this column
+or the return value of the attr:<cite>~horizon.tables.Column.transform</cite>
+method for this column.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Column.get_link_url">
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.Column.get_link_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the final value for the column&#8217;s <tt class="docutils literal"><span class="pre">link</span></tt> property.</p>
+<p>If <tt class="docutils literal"><span class="pre">allowed_data_types</span></tt> of this column  is not empty and the datum
+has an assigned type, check if the datum&#8217;s type is in the
+<tt class="docutils literal"><span class="pre">allowed_data_types</span></tt> list. If not, the datum won&#8217;t be displayed
+as a link.</p>
+<p>If <tt class="docutils literal"><span class="pre">link</span></tt> is a callable, it will be passed the current data object
+and should return a URL. Otherwise <tt class="docutils literal"><span class="pre">get_link_url</span></tt> will attempt to
+call <tt class="docutils literal"><span class="pre">reverse</span></tt> on <tt class="docutils literal"><span class="pre">link</span></tt> with the object&#8217;s id as a parameter.
+Failing that, it will simply return the value of <tt class="docutils literal"><span class="pre">link</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Column.get_raw_data">
+<tt class="descname">get_raw_data</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.Column.get_raw_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the raw data for this column, before any filters or
+formatting are applied to it. This is useful when doing calculations
+on data in the table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Column.get_summation">
+<tt class="descname">get_summation</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.Column.get_summation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the summary value for the data in this column if a
+valid summation method is specified for it. Otherwise returns <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.Row">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">Row</tt><big>(</big><em>table</em>, <em>datum=None</em><big>)</big><a class="headerlink" href="#horizon.tables.Row" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a row in the table.</p>
+<p>When iterated, the <tt class="docutils literal"><span class="pre">Row</span></tt> instance will yield each of its cells.</p>
+<p>Rows are capable of AJAX updating, with a little added work:</p>
+<p>The <tt class="docutils literal"><span class="pre">ajax</span></tt> property needs to be set to <tt class="docutils literal"><span class="pre">True</span></tt>, and
+subclasses need to define a <tt class="docutils literal"><span class="pre">get_data</span></tt> method which returns a data
+object appropriate for consumption by the table (effectively the &#8220;get&#8221;
+lookup versus the table&#8217;s &#8220;list&#8221; lookup).</p>
+<p>The automatic update interval is configurable by setting the key
+<tt class="docutils literal"><span class="pre">ajax_poll_interval</span></tt> in the <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt> dictionary.
+Default: <tt class="docutils literal"><span class="pre">2500</span></tt> (measured in milliseconds).</p>
+<dl class="attribute">
+<dt id="horizon.tables.Row.table">
+<tt class="descname">table</tt><a class="headerlink" href="#horizon.tables.Row.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>The table which this row belongs to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.datum">
+<tt class="descname">datum</tt><a class="headerlink" href="#horizon.tables.Row.datum" title="Permalink to this definition">¶</a></dt>
+<dd><p>The data object which this row represents.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.id">
+<tt class="descname">id</tt><a class="headerlink" href="#horizon.tables.Row.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string uniquely representing this row composed of the table name
+and the row data object&#8217;s identifier.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.cells">
+<tt class="descname">cells</tt><a class="headerlink" href="#horizon.tables.Row.cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cells belonging to this row stored in a <tt class="docutils literal"><span class="pre">OrderedDict</span></tt> object.
+This attribute is populated during instantiation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.status">
+<tt class="descname">status</tt><a class="headerlink" href="#horizon.tables.Row.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value representing the status of this row calculated from
+the values of the table&#8217;s <tt class="docutils literal"><span class="pre">status_columns</span></tt> if they are set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.status_class">
+<tt class="descname">status_class</tt><a class="headerlink" href="#horizon.tables.Row.status_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a css class for the status of the row based on <tt class="docutils literal"><span class="pre">status</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.ajax">
+<tt class="descname">ajax</tt><a class="headerlink" href="#horizon.tables.Row.ajax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value to determine whether ajax updating for this row is
+enabled.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.ajax_action_name">
+<tt class="descname">ajax_action_name</tt><a class="headerlink" href="#horizon.tables.Row.ajax_action_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>String that is used for the query parameter key to request AJAX
+updates. Generally you won&#8217;t need to change this value.
+Default: <tt class="docutils literal"><span class="pre">&quot;row_update&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Row.ajax_cell_action_name">
+<tt class="descname">ajax_cell_action_name</tt><a class="headerlink" href="#horizon.tables.Row.ajax_cell_action_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>String that is used for the query parameter key to request AJAX
+updates of cell. Generally you won&#8217;t need to change this value.
+It is also used for inline edit of the cell.
+Default: <tt class="docutils literal"><span class="pre">&quot;cell_update&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Row.can_be_selected">
+<tt class="descname">can_be_selected</tt><big>(</big><em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.Row.can_be_selected" title="Permalink to this definition">¶</a></dt>
+<dd><p>By default if multiselect enabled return True. You can remove the
+checkbox after an ajax update here if required.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Row.get_cells">
+<tt class="descname">get_cells</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.Row.get_cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the bound cells for this row in order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Row.get_data">
+<tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="headerlink" href="#horizon.tables.Row.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches the updated data for the row based on the object id
+passed in. Must be implemented by a subclass to allow AJAX updating.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Row.load_cells">
+<tt class="descname">load_cells</tt><big>(</big><em>datum=None</em><big>)</big><a class="headerlink" href="#horizon.tables.Row.load_cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the row&#8217;s data (either provided at initialization or as an
+argument to this function), initialize all the cells contained
+by this row, and set the appropriate row properties which require
+the row&#8217;s data to be determined.</p>
+<p>This function is called automatically by
+<tt class="xref py py-meth docutils literal"><span class="pre">__init__()</span></tt> if the <tt class="docutils literal"><span class="pre">datum</span></tt> argument is
+provided. However, by not providing the data during initialization
+this function allows for the possibility of a two-step loading
+pattern when you need a row instance but don&#8217;t yet have the data
+available.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="actions">
+<h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.tables.Action">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">Action</tt><big>(</big><em>single_func=None</em>, <em>multiple_func=None</em>, <em>handle_func=None</em>, <em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents an action which can be taken on this table&#8217;s data.</p>
+<dl class="attribute">
+<dt id="horizon.tables.Action.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.Action.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required. The short name or &#8220;slug&#8221; representing this
+action. This name should not be changed at runtime.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.verbose_name">
+<tt class="descname">verbose_name</tt><a class="headerlink" href="#horizon.tables.Action.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A descriptive name used for display purposes. Defaults to the
+value of <tt class="docutils literal"><span class="pre">name</span></tt> with the first letter of each word capitalized.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.verbose_name_plural">
+<tt class="descname">verbose_name_plural</tt><a class="headerlink" href="#horizon.tables.Action.verbose_name_plural" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used like <tt class="docutils literal"><span class="pre">verbose_name</span></tt> in cases where <tt class="docutils literal"><span class="pre">handles_multiple</span></tt> is
+<tt class="docutils literal"><span class="pre">True</span></tt>. Defaults to <tt class="docutils literal"><span class="pre">verbose_name</span></tt> with the letter &#8220;s&#8221; appended.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.method">
+<tt class="descname">method</tt><a class="headerlink" href="#horizon.tables.Action.method" title="Permalink to this definition">¶</a></dt>
+<dd><p>The HTTP method for this action. Defaults to <tt class="docutils literal"><span class="pre">POST</span></tt>. Other methods
+may or may not succeed currently.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.requires_input">
+<tt class="descname">requires_input</tt><a class="headerlink" href="#horizon.tables.Action.requires_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value indicating whether or not this action can be taken
+without any additional input (e.g. an object id). Defaults to <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.preempt">
+<tt class="descname">preempt</tt><a class="headerlink" href="#horizon.tables.Action.preempt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value indicating whether this action should be evaluated in
+the period after the table is instantiated but before the data has
+been loaded.</p>
+<p>This can allow actions which don&#8217;t need access to the full table data
+to bypass any API calls and processing which would otherwise be
+required to load the table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.allowed_data_types">
+<tt class="descname">allowed_data_types</tt><a class="headerlink" href="#horizon.tables.Action.allowed_data_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list that contains the allowed data types of the action.  If the
+datum&#8217;s type is in this list, the action will be shown on the row
+for the datum.</p>
+<p>Default to be an empty list (<tt class="docutils literal"><span class="pre">[]</span></tt>). When set to empty, the action
+will accept any kind of data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.Action.policy_rules">
+<tt class="descname">policy_rules</tt><a class="headerlink" href="#horizon.tables.Action.policy_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of scope and rule tuples to do policy checks on, the
+composition of which is (scope, rule)</p>
+<blockquote>
+<div><p>scope: service type managing the policy for action
+rule: string representing the action to be checked</p>
+<dl class="docutils">
+<dt>for a policy that requires a single rule check:</dt>
+<dd><dl class="first last docutils">
+<dt>policy_rules should look like</dt>
+<dd>&#8220;((&#8220;compute&#8221;, &#8220;compute:create_instance&#8221;),)&#8221;</dd>
+</dl>
+</dd>
+<dt>for a policy that requires multiple rule checks:</dt>
+<dd><dl class="first last docutils">
+<dt>rules should look like</dt>
+<dd><dl class="first last docutils">
+<dt>&#8220;((&#8220;identity&#8221;, &#8220;identity:list_users&#8221;),</dt>
+<dd>(&#8220;identity&#8221;, &#8220;identity:list_roles&#8221;))&#8221;</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<p>At least one of the following methods must be defined:</p>
+<dl class="method">
+<dt id="horizon.tables.Action.single">
+<tt class="descname">single</tt><big>(</big><em>self</em>, <em>data_table</em>, <em>request</em>, <em>object_id</em><big>)</big><a class="headerlink" href="#horizon.tables.Action.single" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handler for a single-object action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Action.multiple">
+<tt class="descname">multiple</tt><big>(</big><em>self</em>, <em>data_table</em>, <em>request</em>, <em>object_ids</em><big>)</big><a class="headerlink" href="#horizon.tables.Action.multiple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handler for multi-object actions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Action.handle">
+<tt class="descname">handle</tt><big>(</big><em>self</em>, <em>data_table</em>, <em>request</em>, <em>object_ids</em><big>)</big><a class="headerlink" href="#horizon.tables.Action.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a single function can work for both single-object and
+multi-object cases then simply providing a <tt class="docutils literal"><span class="pre">handle</span></tt> function
+will internally route both <tt class="docutils literal"><span class="pre">single</span></tt> and <tt class="docutils literal"><span class="pre">multiple</span></tt> requests
+to <tt class="docutils literal"><span class="pre">handle</span></tt> with the calls from <tt class="docutils literal"><span class="pre">single</span></tt> being transformed
+into a list containing only the single object id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.Action.get_param_name">
+<tt class="descname">get_param_name</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.Action.get_param_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full POST parameter name for this action.</p>
+<p>Defaults to
+<tt class="docutils literal"><span class="pre">{{</span> <span class="pre">table.name</span> <span class="pre">}}__{{</span> <span class="pre">action.name</span> <span class="pre">}}</span></tt>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.LinkAction">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">LinkAction</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.LinkAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A table action which is simply a link rather than a form POST.</p>
+<dl class="attribute">
+<dt id="horizon.tables.LinkAction.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.LinkAction.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required. The short name or &#8220;slug&#8221; representing this
+action. This name should not be changed at runtime.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.LinkAction.verbose_name">
+<tt class="descname">verbose_name</tt><a class="headerlink" href="#horizon.tables.LinkAction.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string which will be rendered as the link text. (Required)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.LinkAction.url">
+<tt class="descname">url</tt><a class="headerlink" href="#horizon.tables.LinkAction.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string or a callable which resolves to a url to be used as the link
+target. You must either define the <tt class="docutils literal"><span class="pre">url</span></tt> attribute or override
+the <tt class="docutils literal"><span class="pre">get_link_url</span></tt> method on the class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.LinkAction.allowed_data_types">
+<tt class="descname">allowed_data_types</tt><a class="headerlink" href="#horizon.tables.LinkAction.allowed_data_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list that contains the allowed data types of the action.  If the
+datum&#8217;s type is in this list, the action will be shown on the row
+for the datum.</p>
+<p>Defaults to be an empty list (<tt class="docutils literal"><span class="pre">[]</span></tt>). When set to empty, the action
+will accept any kind of data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.LinkAction.get_link_url">
+<tt class="descname">get_link_url</tt><big>(</big><em>datum=None</em><big>)</big><a class="headerlink" href="#horizon.tables.LinkAction.get_link_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the final URL based on the value of <tt class="docutils literal"><span class="pre">url</span></tt>.</p>
+<p>If <tt class="docutils literal"><span class="pre">url</span></tt> is callable it will call the function.
+If not, it will then try to call <tt class="docutils literal"><span class="pre">reverse</span></tt> on <tt class="docutils literal"><span class="pre">url</span></tt>.
+Failing that, it will simply return the value of <tt class="docutils literal"><span class="pre">url</span></tt> as-is.</p>
+<p>When called for a row action, the current row data object will be
+passed as the first parameter.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.FilterAction">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">FilterAction</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.FilterAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class representing a filter action for a table.</p>
+<dl class="attribute">
+<dt id="horizon.tables.FilterAction.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.FilterAction.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The short name or &#8220;slug&#8221; representing this action. Defaults to
+<tt class="docutils literal"><span class="pre">&quot;filter&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.FilterAction.verbose_name">
+<tt class="descname">verbose_name</tt><a class="headerlink" href="#horizon.tables.FilterAction.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A descriptive name used for display purposes. Defaults to the
+value of <tt class="docutils literal"><span class="pre">name</span></tt> with the first letter of each word capitalized.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.FilterAction.param_name">
+<tt class="descname">param_name</tt><a class="headerlink" href="#horizon.tables.FilterAction.param_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string representing the name of the request parameter used for the
+search term. Default: <tt class="docutils literal"><span class="pre">&quot;q&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.FilterAction.filter_type">
+<tt class="descname">filter_type</tt><a class="headerlink" href="#horizon.tables.FilterAction.filter_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string representing the type of this filter. If this is set to
+<tt class="docutils literal"><span class="pre">&quot;server&quot;</span></tt> then <tt class="docutils literal"><span class="pre">filter_choices</span></tt> must also be provided.
+Default: <tt class="docutils literal"><span class="pre">&quot;query&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.FilterAction.filter_choices">
+<tt class="descname">filter_choices</tt><a class="headerlink" href="#horizon.tables.FilterAction.filter_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required for server type filters. A tuple of tuples representing the
+filter options. Tuple composition should evaluate to (string, string,
+boolean), representing the filter parameter, display value, and whether
+or not it should be applied to the API request as an API query
+attribute. API type filters do not need to be accounted for in the
+filter method since the API will do the filtering. However, server
+type filters in general will need to be performed in the filter method.
+By default this attribute is not provided.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.FilterAction.needs_preloading">
+<tt class="descname">needs_preloading</tt><a class="headerlink" href="#horizon.tables.FilterAction.needs_preloading" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, the filter function will be called for the initial
+GET request with an empty <tt class="docutils literal"><span class="pre">filter_string</span></tt>, regardless of the
+value of <tt class="docutils literal"><span class="pre">method</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.FilterAction.filter">
+<tt class="descname">filter</tt><big>(</big><em>table</em>, <em>data</em>, <em>filter_string</em><big>)</big><a class="headerlink" href="#horizon.tables.FilterAction.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the actual filtering logic.</p>
+<p>This method must be overridden by subclasses and return
+the filtered data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.FilterAction.get_param_name">
+<tt class="descname">get_param_name</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.FilterAction.get_param_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full query parameter name for this action.</p>
+<p>Defaults to
+<tt class="docutils literal"><span class="pre">{{</span> <span class="pre">table.name</span> <span class="pre">}}__{{</span> <span class="pre">action.name</span> <span class="pre">}}__{{</span> <span class="pre">action.param_name</span> <span class="pre">}}</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.FilterAction.is_api_filter">
+<tt class="descname">is_api_filter</tt><big>(</big><em>filter_field</em><big>)</big><a class="headerlink" href="#horizon.tables.FilterAction.is_api_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the given filter field should be used as an
+API filter.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.FixedFilterAction">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">FixedFilterAction</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.FixedFilterAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A filter action with fixed buttons.</p>
+<dl class="method">
+<dt id="horizon.tables.FixedFilterAction.categorize">
+<tt class="descname">categorize</tt><big>(</big><em>table</em>, <em>images</em><big>)</big><a class="headerlink" href="#horizon.tables.FixedFilterAction.categorize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override to separate images into categories.</p>
+<p>Return a dict with a key for the value of each fixed button,
+and a value that is a list of images in that category.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.FixedFilterAction.get_fixed_buttons">
+<tt class="descname">get_fixed_buttons</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.FixedFilterAction.get_fixed_buttons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of dictionaries describing the fixed buttons
+to use for filtering.</p>
+<p>Each list item should be a dict with the following keys:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">text</span></tt>: Text to display on the button</li>
+<li><tt class="docutils literal"><span class="pre">icon</span></tt>: Icon class for icon element (inserted before text).</li>
+<li><tt class="docutils literal"><span class="pre">value</span></tt>: Value returned when the button is clicked. This value is
+passed to <tt class="docutils literal"><span class="pre">filter()</span></tt> as <tt class="docutils literal"><span class="pre">filter_string</span></tt>.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.BatchAction">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">BatchAction</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A table action which takes batch action on one or more
+objects. This action should not require user input on a
+per-object basis.</p>
+<dl class="attribute">
+<dt id="horizon.tables.BatchAction.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.BatchAction.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>An internal name for this action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.BatchAction.action_present">
+<tt class="descname">action_present</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction.action_present" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method accepting an integer/long parameter and returning the display
+forms of the name properly pluralised (depending on the integer) and
+translated in a string or tuple/list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">action_present</tt><big>(</big><em>PendingDeprecation</em><big>)</big></dt>
+<dd><p>String or tuple/list. The display forms of the name.
+Should be a transitive verb, capitalized and translated. (&#8220;Delete&#8221;,
+&#8220;Rotate&#8221;, etc.) If tuple or list - then setting
+self.current_present_action = n will set the current active item
+from the list(action_present[n])</p>
+<p>You can pass a complete action name including &#8216;data_type&#8217; by specifying
+&#8216;%(data_type)s&#8217; substitution in action_present (&#8220;Delete %(data_type)s&#8221;).
+Otherwise a complete action name is a format of &#8220;&lt;action&gt; &lt;data_type&gt;&#8221;.
+&lt;data_type&gt; is determined based on the number of items.
+By passing a complete action name you allow translators to control
+the order of words as they want.</p>
+<p>NOTE: action_present attribute is bad for translations and should be
+avoided. Please use the action_present method instead.
+This form is kept for legacy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.BatchAction.action_past">
+<tt class="descname">action_past</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction.action_past" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method accepting an integer/long parameter and returning the display
+forms of the name properly pluralised (depending on the integer) and
+translated in a string or tuple/list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">action_past</tt><big>(</big><em>PendingDeprecation</em><big>)</big></dt>
+<dd><p>String or tuple/list. The past tense of action_present. (&#8220;Deleted&#8221;,
+&#8220;Rotated&#8221;, etc.) If tuple or list - then
+setting self.current_past_action = n will set the current active item
+from the list(action_past[n])</p>
+<p>NOTE: action_past attribute is bad for translations and should be
+avoided. Please use the action_past method instead.
+This form is kept for legacy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.BatchAction.data_type_singular">
+<tt class="descname">data_type_singular</tt><a class="headerlink" href="#horizon.tables.BatchAction.data_type_singular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional display name (if the data_type method is not defined) for the
+type of data that receives the action. (&#8220;Key Pair&#8221;, &#8220;Floating IP&#8221;, etc.)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.BatchAction.data_type_plural">
+<tt class="descname">data_type_plural</tt><a class="headerlink" href="#horizon.tables.BatchAction.data_type_plural" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional plural word (if the data_type method is not defined) for the
+type of data being acted on. Defaults to appending &#8216;s&#8217;. Relying on the
+default is bad for translations and should not be done, so it&#8217;s absence
+will raise a DeprecationWarning. It is currently kept as optional for
+legacy code.</p>
+<p>NOTE: data_type_singular and data_type_plural attributes are bad for
+translations and should be avoided. Please use the action_present and
+action_past methods. This form is kept for legacy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.BatchAction.success_url">
+<tt class="descname">success_url</tt><a class="headerlink" href="#horizon.tables.BatchAction.success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional location to redirect after completion of the delete
+action. Defaults to the current page.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.BatchAction.help_text">
+<tt class="descname">help_text</tt><a class="headerlink" href="#horizon.tables.BatchAction.help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional message for providing an appropriate help text for
+the horizon user.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.BatchAction.action">
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>datum_id</em><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction.action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required. Accepts a single object id and performs the specific
+action.</p>
+<p>Return values are discarded, errors raised are caught and logged.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.BatchAction.get_default_attrs">
+<tt class="descname">get_default_attrs</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction.get_default_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the default HTML attributes for the action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.BatchAction.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><em>request=None</em><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the URL to redirect to after a successful action.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.BatchAction.update">
+<tt class="descname">update</tt><big>(</big><em>request</em>, <em>datum</em><big>)</big><a class="headerlink" href="#horizon.tables.BatchAction.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Switches the action verbose name, if needed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.DeleteAction">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">DeleteAction</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A table action used to perform delete operations on table data.</p>
+<dl class="attribute">
+<dt id="horizon.tables.DeleteAction.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.tables.DeleteAction.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A short name or &#8220;slug&#8221; representing this action.
+Defaults to &#8216;delete&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DeleteAction.action_present">
+<tt class="descname">action_present</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.action_present" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method accepting an integer/long parameter and returning the display
+forms of the name properly pluralised (depending on the integer) and
+translated in a string or tuple/list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">action_present</tt><big>(</big><em>PendingDeprecation</em><big>)</big></dt>
+<dd><p>A string containing the transitive verb describing the delete action.
+Defaults to &#8216;Delete&#8217;</p>
+<p>NOTE: action_present attribute is bad for translations and should be
+avoided. Please use the action_present method instead.
+This form is kept for legacy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DeleteAction.action_past">
+<tt class="descname">action_past</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.action_past" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method accepting an integer/long parameter and returning the display
+forms of the name properly pluralised (depending on the integer) and
+translated in a string or tuple/list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">action_past</tt><big>(</big><em>PendingDeprecation</em><big>)</big></dt>
+<dd><p>A string set to the past tense of action_present.
+Defaults to &#8216;Deleted&#8217;</p>
+<p>NOTE: action_past attribute is bad for translations and should be
+avoided. Please use the action_past method instead.
+This form is kept for legacy.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DeleteAction.data_type_singular">
+<tt class="descname">data_type_singular</tt><big>(</big><em>PendingDeprecation</em><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.data_type_singular" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string used to name the data to be deleted.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.tables.DeleteAction.data_type_plural">
+<tt class="descname">data_type_plural</tt><big>(</big><em>PendingDeprecation</em><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.data_type_plural" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional. Plural of <tt class="docutils literal"><span class="pre">data_type_singular</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">data_type_singular</span></tt> appended with an &#8216;s&#8217;.  Relying on
+the default is bad for translations and should not be done, so it&#8217;s
+absence will raise a DeprecationWarning. It is currently kept as
+optional for legacy code.</p>
+<p>NOTE: data_type_singular and data_type_plural attributes are bad for
+translations and should be avoided. Please use the action_present and
+action_past methods. This form is kept for legacy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DeleteAction.action">
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action entry point. Overrides base class&#8217; action method.</p>
+<p>Accepts a single object id passing it over to the delete method
+responsible for the object&#8217;s destruction.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DeleteAction.delete">
+<tt class="descname">delete</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required. Deletes an object referenced by obj_id.</p>
+<p>Override to provide delete functionality specific to your data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.DeleteAction.get_default_classes">
+<tt class="descname">get_default_classes</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.tables.DeleteAction.get_default_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends <tt class="docutils literal"><span class="pre">btn-danger</span></tt> to the action&#8217;s default css classes.</p>
+<p>This method ensures the corresponding button is highlighted
+as a trigger for a potentially dangerous action.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.UpdateAction">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">UpdateAction</tt><a class="headerlink" href="#horizon.tables.UpdateAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A table action for cell updates by inline editing.</p>
+<dl class="method">
+<dt id="horizon.tables.UpdateAction.allowed">
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum</em>, <em>cell</em><big>)</big><a class="headerlink" href="#horizon.tables.UpdateAction.allowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether updating is allowed for the current request.</p>
+<p>This method is meant to be overridden with more specific checks.
+Data of the row and of the cell are passed to the method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.tables.UpdateAction.update_cell">
+<tt class="descname">update_cell</tt><big>(</big><em>request</em>, <em>datum</em>, <em>obj_id</em>, <em>cell_name</em>, <em>new_cell_value</em><big>)</big><a class="headerlink" href="#horizon.tables.UpdateAction.update_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method for saving data of the cell.</p>
+<p>This method must implements saving logic of the inline edited table
+cell.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="class-based-views">
+<h2>Class-Based Views<a class="headerlink" href="#class-based-views" title="Permalink to this headline">¶</a></h2>
+<p>Several class-based views are provided to make working with DataTables
+easier in your UI.</p>
+<dl class="class">
+<dt id="horizon.tables.DataTableView">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">DataTableView</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.DataTableView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class-based generic view to handle basic DataTable processing.</p>
+<p>Three steps are required to use this view: set the <tt class="docutils literal"><span class="pre">table_class</span></tt>
+attribute with the desired <a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> class;
+define a <tt class="docutils literal"><span class="pre">get_data</span></tt> method which returns a set of data for the
+table; and specify a template for the <tt class="docutils literal"><span class="pre">template_name</span></tt> attribute.</p>
+<p>Optionally, you can override the <tt class="docutils literal"><span class="pre">has_more_data</span></tt> method to trigger
+pagination handling for APIs that support it.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.tables.MultiTableView">
+<em class="property">class </em><tt class="descclassname">horizon.tables.</tt><tt class="descname">MultiTableView</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.tables.MultiTableView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class-based generic view to handle the display and processing of
+multiple <a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> classes in a single view.</p>
+<p>Three steps are required to use this view: set the <tt class="docutils literal"><span class="pre">table_classes</span></tt>
+attribute with a tuple of the desired
+<a class="reference internal" href="#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> classes;
+define a <tt class="docutils literal"><span class="pre">get_{{</span> <span class="pre">table_name</span> <span class="pre">}}_data</span></tt> method for each table class
+which returns a set of data for that table; and specify a template for
+the <tt class="docutils literal"><span class="pre">template_name</span></tt> attribute.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Horizon DataTables</a><ul>
+<li><a class="reference internal" href="#datatable">DataTable</a></li>
+<li><a class="reference internal" href="#datatable-options">DataTable Options</a></li>
+<li><a class="reference internal" href="#formsetdatatable">FormsetDataTable</a></li>
+<li><a class="reference internal" href="#table-components">Table Components</a></li>
+<li><a class="reference internal" href="#actions">Actions</a></li>
+<li><a class="reference internal" href="#class-based-views">Class-Based Views</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="workflows.html"
+                                  title="previous chapter">Horizon Workflows</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tabs.html"
+                                  title="next chapter">Horizon Tabs and TabGroups</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/ref/tables.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tabs.html" title="Horizon Tabs and TabGroups"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="workflows.html" title="Horizon Workflows"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

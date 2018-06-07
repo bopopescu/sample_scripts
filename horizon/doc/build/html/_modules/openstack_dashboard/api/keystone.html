@@ -1,0 +1,879 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.keystone &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.keystone</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 OpenStack Foundation</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">six.moves.urllib.parse</span> <span class="kn">as</span> <span class="nn">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">keystoneclient</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">keystone_exceptions</span>
+
+<span class="kn">from</span> <span class="nn">openstack_auth</span> <span class="kn">import</span> <span class="n">backend</span>
+<span class="kn">from</span> <span class="nn">openstack_auth</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">auth_utils</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">utils</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">policy</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">DEFAULT_ROLE</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<span class="c1"># Set up our data structure for managing Identity API versions, and</span>
+<span class="c1"># add a couple utility methods to it.</span>
+<div class="viewcode-block" id="IdentityAPIVersionManager"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.IdentityAPIVersionManager">[docs]</a><span class="k">class</span> <span class="nc">IdentityAPIVersionManager</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIVersionManager</span><span class="p">):</span>
+<div class="viewcode-block" id="IdentityAPIVersionManager.upgrade_v2_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.IdentityAPIVersionManager.upgrade_v2_user">[docs]</a>    <span class="k">def</span> <span class="nf">upgrade_v2_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;default_project_id&quot;</span><span class="p">,</span>
+                                      <span class="nb">getattr</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;tenantId&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">user</span>
+</div>
+<div class="viewcode-block" id="IdentityAPIVersionManager.get_project_manager"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.IdentityAPIVersionManager.get_project_manager">[docs]</a>    <span class="k">def</span> <span class="nf">get_project_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">tenants</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">projects</span>
+        <span class="k">return</span> <span class="n">manager</span>
+
+</div></div>
+<span class="n">VERSIONS</span> <span class="o">=</span> <span class="n">IdentityAPIVersionManager</span><span class="p">(</span>
+    <span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="n">preferred_version</span><span class="o">=</span><span class="n">auth_utils</span><span class="o">.</span><span class="n">get_keystone_version</span><span class="p">())</span>
+
+
+<span class="c1"># Import from oldest to newest so that &quot;preferred&quot; takes correct precedence.</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">keystoneclient.v2_0</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">keystone_client_v2</span>
+    <span class="n">VERSIONS</span><span class="o">.</span><span class="n">load_supported_version</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;client&quot;</span><span class="p">:</span> <span class="n">keystone_client_v2</span><span class="p">})</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">keystoneclient.v3</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">keystone_client_v3</span>
+    <span class="n">VERSIONS</span><span class="o">.</span><span class="n">load_supported_version</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;client&quot;</span><span class="p">:</span> <span class="n">keystone_client_v3</span><span class="p">})</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@six.python_2_unicode_compatible</span>
+<div class="viewcode-block" id="Service"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.Service">[docs]</a><span class="k">class</span> <span class="nc">Service</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for a dict based on the service data from keystone.&quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Service</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">public_url</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">get_url_for_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span>
+                                                   <span class="s1">&#39;publicURL&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">get_url_for_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="s1">&#39;internalURL&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">hostname</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;identity&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(type)s</span><span class="s2"> (</span><span class="si">%(backend)s</span><span class="s2"> backend)&quot;</span><span class="p">)</span> \
+                <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="n">keystone_backend_name</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Service: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_get_endpoint_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">endpoint_type</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;service_catalog&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                           <span class="n">service_type</span><span class="o">=</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span>
+                           <span class="n">endpoint_type</span><span class="o">=</span><span class="n">endpoint_type</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">auth_url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_KEYSTONE_URL&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region_endpoint&#39;</span><span class="p">,</span> <span class="n">auth_url</span><span class="p">)</span>
+
+    <span class="c1"># TODO(gabriel): When the Service Catalog no longer contains API versions</span>
+    <span class="c1"># in the endpoints this can be removed.</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s1">&#39;v</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">url</span>
+
+
+<div class="viewcode-block" id="keystoneclient"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystoneclient">[docs]</a><span class="k">def</span> <span class="nf">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a client connected to the Keystone backend.</span>
+
+<span class="sd">    Several forms of authentication are supported:</span>
+
+<span class="sd">        * Username + password -&gt; Unscoped authentication</span>
+<span class="sd">        * Username + password + tenant id -&gt; Scoped authentication</span>
+<span class="sd">        * Unscoped token -&gt; Unscoped authentication</span>
+<span class="sd">        * Unscoped token + tenant id -&gt; Scoped authentication</span>
+<span class="sd">        * Scoped token -&gt; Scoped authentication</span>
+
+<span class="sd">    Available services and data from the backend will vary depending on</span>
+<span class="sd">    whether the authentication was scoped or unscoped.</span>
+
+<span class="sd">    Lazy authentication if an ``endpoint`` parameter is provided.</span>
+
+<span class="sd">    Calls requiring the admin endpoint should have ``admin=True`` passed in</span>
+<span class="sd">    as a keyword argument.</span>
+
+<span class="sd">    The client is cached so that subsequent API calls during the same</span>
+<span class="sd">    request/response cycle don&#39;t have to be re-authenticated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span>
+    <span class="k">if</span> <span class="n">admin</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;admin_required&quot;</span><span class="p">),),</span> <span class="n">request</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NotAuthorized</span>
+        <span class="n">endpoint_type</span> <span class="o">=</span> <span class="s1">&#39;adminURL&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">endpoint_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                <span class="s1">&#39;OPENSTACK_ENDPOINT_TYPE&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;internalURL&#39;</span><span class="p">)</span>
+
+    <span class="n">api_version</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_active_version</span><span class="p">()</span>
+
+    <span class="c1"># Take care of client connection caching/fetching a new client.</span>
+    <span class="c1"># Admin vs. non-admin clients are cached separately for token matching.</span>
+    <span class="n">cache_attr</span> <span class="o">=</span> <span class="s2">&quot;_keystoneclient_admin&quot;</span> <span class="k">if</span> <span class="n">admin</span> \
+        <span class="k">else</span> <span class="n">backend</span><span class="o">.</span><span class="n">KEYSTONE_CLIENT_ATTR</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">cache_attr</span><span class="p">)</span> <span class="ow">and</span>
+        <span class="p">(</span><span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span> <span class="ow">or</span>
+         <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">cache_attr</span><span class="p">)</span><span class="o">.</span><span class="n">auth_token</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p">)):</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">cache_attr</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">_get_endpoint_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">endpoint_type</span><span class="p">)</span>
+        <span class="n">insecure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_NO_VERIFY&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">cacert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_CACERT&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating a new keystoneclient connection to </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">endpoint</span><span class="p">)</span>
+        <span class="n">remote_addr</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;REMOTE_ADDR&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">api_version</span><span class="p">[</span><span class="s1">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                            <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+                                            <span class="n">original_ip</span><span class="o">=</span><span class="n">remote_addr</span><span class="p">,</span>
+                                            <span class="n">insecure</span><span class="o">=</span><span class="n">insecure</span><span class="p">,</span>
+                                            <span class="n">cacert</span><span class="o">=</span><span class="n">cacert</span><span class="p">,</span>
+                                            <span class="n">auth_url</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+                                            <span class="n">debug</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">cache_attr</span><span class="p">,</span> <span class="n">conn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span>
+
+</div>
+<div class="viewcode-block" id="domain_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.domain_create">[docs]</a><span class="k">def</span> <span class="nf">domain_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">domains</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span>
+                          <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                          <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="domain_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.domain_get">[docs]</a><span class="k">def</span> <span class="nf">domain_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">domains</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">domain_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="domain_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.domain_delete">[docs]</a><span class="k">def</span> <span class="nf">domain_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">domains</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">domain_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="domain_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.domain_list">[docs]</a><span class="k">def</span> <span class="nf">domain_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">domains</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="domain_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.domain_update">[docs]</a><span class="k">def</span> <span class="nf">domain_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">enabled</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">domains</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">domain_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tenant_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.tenant_create">[docs]</a><span class="k">def</span> <span class="nf">tenant_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_project_manager</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">enabled</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span>
+                                  <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                  <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="get_default_domain"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_default_domain">[docs]</a><span class="k">def</span> <span class="nf">get_default_domain</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets the default domain object to use when creating Identity object.</span>
+
+<span class="sd">    Returns the domain context if is set, otherwise return the domain</span>
+<span class="sd">    of the logon user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">domain_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;domain_context&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="n">domain_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;domain_context_name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="c1"># if running in Keystone V3 or later</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">domain_id</span><span class="p">:</span>
+        <span class="c1"># if no domain context set, default to users&#39; domain</span>
+        <span class="n">domain_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">user_domain_id</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">domain</span> <span class="o">=</span> <span class="n">domain_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain_id</span><span class="p">)</span>
+            <span class="n">domain_name</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve Domain: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">domain_id</span><span class="p">)</span>
+    <span class="n">domain</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">APIDictWrapper</span><span class="p">({</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">domain_id</span><span class="p">,</span>
+                                  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">domain_name</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">domain</span>
+
+
+<span class="c1"># TODO(gabriel): Is there ever a valid case for admin to be false here?</span>
+<span class="c1"># A quick search through the codebase reveals that it&#39;s always called with</span>
+<span class="c1"># admin=true so I suspect we could eliminate it entirely as with the other</span>
+<span class="c1"># tenant commands.</span></div>
+<div class="viewcode-block" id="tenant_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.tenant_get">[docs]</a><span class="k">def</span> <span class="nf">tenant_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_project_manager</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tenant_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.tenant_delete">[docs]</a><span class="k">def</span> <span class="nf">tenant_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_project_manager</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tenant_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.tenant_list">[docs]</a><span class="k">def</span> <span class="nf">tenant_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">paginate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_project_manager</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">)</span>
+    <span class="n">page_size</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_page_size</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">paginate</span><span class="p">:</span>
+        <span class="n">limit</span> <span class="o">=</span> <span class="n">page_size</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">has_more_data</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c1"># if requesting the projects for the current user,</span>
+    <span class="c1"># return the list from the cache</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="o">==</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+        <span class="n">tenants</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">authorized_tenants</span>
+
+    <span class="k">elif</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">tenants</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="n">marker</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">paginate</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tenants</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">page_size</span><span class="p">:</span>
+            <span class="n">tenants</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">has_more_data</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="p">,</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">user</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">filters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+        <span class="n">tenants</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">tenants</span><span class="p">,</span> <span class="n">has_more_data</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="tenant_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.tenant_update">[docs]</a><span class="k">def</span> <span class="nf">tenant_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">enabled</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">get_project_manager</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">enabled</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                  <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="user_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_list">[docs]</a><span class="k">def</span> <span class="nf">user_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tenant_id&quot;</span><span class="p">:</span> <span class="n">project</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">project</span><span class="p">,</span>
+            <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="p">,</span>
+            <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="n">group</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">filters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">VERSIONS</span><span class="o">.</span><span class="n">upgrade_v2_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="user_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_create">[docs]</a><span class="k">def</span> <span class="nf">user_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                <span class="n">enabled</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">upgrade_v2_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+                                  <span class="n">default_project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+                                  <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="user_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_delete">[docs]</a><span class="k">def</span> <span class="nf">user_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="user_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_get">[docs]</a><span class="k">def</span> <span class="nf">user_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">)</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">upgrade_v2_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="user_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_update">[docs]</a><span class="k">def</span> <span class="nf">user_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">keystone_can_edit_user</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">(</span>
+            <span class="mi">405</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Identity service does not allow editing user data.&quot;</span><span class="p">))</span>
+
+    <span class="c1"># The v2 API updates user model and default project separately</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">project</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Update user details</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c1"># Update default tenant</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">user_update_tenant</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">tenantId</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c1"># Check for existing roles</span>
+        <span class="c1"># Show a warning if no role exists for the project</span>
+        <span class="n">user_roles</span> <span class="o">=</span> <span class="n">roles_for_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_roles</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;User </span><span class="si">%s</span><span class="s1"> has no role defined for &#39;</span>
+                               <span class="s1">&#39;that project.&#39;</span><span class="p">)</span>
+                             <span class="o">%</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">error</span>
+
+    <span class="c1"># v3 API is so much simpler...</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="user_update_enabled"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_update_enabled">[docs]</a><span class="k">def</span> <span class="nf">user_update_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update_enabled</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="user_update_password"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_update_password">[docs]</a><span class="k">def</span> <span class="nf">user_update_password</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">keystone_can_edit_user</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">keystone_exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">(</span>
+            <span class="mi">405</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Identity service does not allow editing user password.&quot;</span><span class="p">))</span>
+
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update_password</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="user_verify_admin_password"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_verify_admin_password">[docs]</a><span class="k">def</span> <span class="nf">user_verify_admin_password</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin_password</span><span class="p">):</span>
+    <span class="c1"># attempt to create a new client instance with admin password to</span>
+    <span class="c1"># verify if it&#39;s correct.</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">keystone_client_v2</span> <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">keystone_client_v3</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">_get_endpoint_url</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;internalURL&#39;</span><span class="p">)</span>
+        <span class="n">insecure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_NO_VERIFY&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">cacert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_CACERT&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
+            <span class="n">username</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">admin_password</span><span class="p">,</span>
+            <span class="n">insecure</span><span class="o">=</span><span class="n">insecure</span><span class="p">,</span>
+            <span class="n">cacert</span><span class="o">=</span><span class="n">cacert</span><span class="p">,</span>
+            <span class="n">auth_url</span><span class="o">=</span><span class="n">endpoint</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="user_update_own_password"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_update_own_password">[docs]</a><span class="k">def</span> <span class="nf">user_update_own_password</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">origpassword</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">update_own_password</span><span class="p">(</span><span class="n">origpassword</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">update_password</span><span class="p">(</span><span class="n">origpassword</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="user_update_tenant"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.user_update_tenant">[docs]</a><span class="k">def</span> <span class="nf">user_update_tenant</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update_tenant</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="group_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.group_create">[docs]</a><span class="k">def</span> <span class="nf">group_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">domain</span><span class="o">=</span><span class="n">domain_id</span><span class="p">,</span>
+                          <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                          <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="group_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.group_get">[docs]</a><span class="k">def</span> <span class="nf">group_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="n">admin</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="group_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.group_delete">[docs]</a><span class="k">def</span> <span class="nf">group_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">group_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="group_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.group_list">[docs]</a><span class="k">def</span> <span class="nf">group_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">project</span><span class="p">:</span>
+        <span class="n">project_groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="n">roles_for_group</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">roles</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">roles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">project_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">project_groups</span>
+
+    <span class="k">return</span> <span class="n">groups</span>
+
+</div>
+<div class="viewcode-block" id="group_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.group_update">[docs]</a><span class="k">def</span> <span class="nf">group_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group_id</span><span class="p">,</span>
+                          <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                          <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="add_group_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.add_group_user">[docs]</a><span class="k">def</span> <span class="nf">add_group_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">add_to_group</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group_id</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_group_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.remove_group_user">[docs]</a><span class="k">def</span> <span class="nf">remove_group_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">users</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">remove_from_group</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group_id</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_project_groups_roles"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_project_groups_roles">[docs]</a><span class="k">def</span> <span class="nf">get_project_groups_roles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets the groups roles in a given project.</span>
+
+<span class="sd">    :param request: the request entity containing the login user information</span>
+<span class="sd">    :param project: the project to filter the groups roles. It accepts both</span>
+<span class="sd">                    project object resource or project ID</span>
+
+<span class="sd">    :returns group_roles: a dictionary mapping the groups and their roles in</span>
+<span class="sd">                          given project</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">groups_roles</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">project_role_assignments</span> <span class="o">=</span> <span class="n">role_assignments_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                     <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">role_assignment</span> <span class="ow">in</span> <span class="n">project_role_assignments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">role_assignment</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">group_id</span> <span class="o">=</span> <span class="n">role_assignment</span><span class="o">.</span><span class="n">group</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">role_id</span> <span class="o">=</span> <span class="n">role_assignment</span><span class="o">.</span><span class="n">role</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">groups_roles</span><span class="p">[</span><span class="n">group_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">role_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">groups_roles</span>
+
+</div>
+<div class="viewcode-block" id="role_assignments_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.role_assignments_list">[docs]</a><span class="k">def</span> <span class="nf">role_assignments_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                          <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">effective</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NotAvailable</span>
+
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">role_assignments</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
+                        <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">effective</span><span class="o">=</span><span class="n">effective</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="role_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.role_create">[docs]</a><span class="k">def</span> <span class="nf">role_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="role_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.role_get">[docs]</a><span class="k">def</span> <span class="nf">role_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="role_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.role_update">[docs]</a><span class="k">def</span> <span class="nf">role_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">role_id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="role_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.role_delete">[docs]</a><span class="k">def</span> <span class="nf">role_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role_id</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">role_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="role_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.role_list">[docs]</a><span class="k">def</span> <span class="nf">role_list</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a global list of available roles.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="roles_for_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.roles_for_user">[docs]</a><span class="k">def</span> <span class="nf">roles_for_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list of user roles scoped to a project or domain.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">roles_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_domain_users_roles"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_domain_users_roles">[docs]</a><span class="k">def</span> <span class="nf">get_domain_users_roles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+    <span class="n">users_roles</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">domain_role_assignments</span> <span class="o">=</span> <span class="n">role_assignments_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                    <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">role_assignment</span> <span class="ow">in</span> <span class="n">domain_role_assignments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">role_assignment</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">user_id</span> <span class="o">=</span> <span class="n">role_assignment</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">role_id</span> <span class="o">=</span> <span class="n">role_assignment</span><span class="o">.</span><span class="n">role</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">users_roles</span><span class="p">[</span><span class="n">user_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">role_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">users_roles</span>
+
+</div>
+<div class="viewcode-block" id="add_domain_user_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.add_domain_user_role">[docs]</a><span class="k">def</span> <span class="nf">add_domain_user_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Adds a role for a user on a domain.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">grant</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_domain_user_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.remove_domain_user_role">[docs]</a><span class="k">def</span> <span class="nf">remove_domain_user_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes a given single role for a user from a domain.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_project_users_roles"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_project_users_roles">[docs]</a><span class="k">def</span> <span class="nf">get_project_users_roles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="p">):</span>
+    <span class="n">users_roles</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">project_users</span> <span class="o">=</span> <span class="n">user_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">project_users</span><span class="p">:</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="n">roles_for_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+            <span class="n">roles_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">role</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">]</span>
+            <span class="n">users_roles</span><span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">roles_ids</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">project_role_assignments</span> <span class="o">=</span> <span class="n">role_assignments_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                         <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role_assignment</span> <span class="ow">in</span> <span class="n">project_role_assignments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">role_assignment</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">user_id</span> <span class="o">=</span> <span class="n">role_assignment</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">role_id</span> <span class="o">=</span> <span class="n">role_assignment</span><span class="o">.</span><span class="n">role</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">users_roles</span><span class="p">[</span><span class="n">user_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">role_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">users_roles</span>
+
+</div>
+<div class="viewcode-block" id="add_tenant_user_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.add_tenant_user_role">[docs]</a><span class="k">def</span> <span class="nf">add_tenant_user_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                         <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Adds a role for a user on a tenant.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">add_user_role</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">grant</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                             <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_tenant_user_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.remove_tenant_user_role">[docs]</a><span class="k">def</span> <span class="nf">remove_tenant_user_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                            <span class="n">group</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes a given single role for a user from a tenant.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">if</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">remove_user_role</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                              <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_tenant_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.remove_tenant_user">[docs]</a><span class="k">def</span> <span class="nf">remove_tenant_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes all roles from a user on a tenant, removing them from it.&quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">roles</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">roles_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">:</span>
+        <span class="n">remove_tenant_user_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="roles_for_group"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.roles_for_group">[docs]</a><span class="k">def</span> <span class="nf">roles_for_group</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="add_group_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.add_group_role">[docs]</a><span class="k">def</span> <span class="nf">add_group_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Adds a role for a group on a domain or project.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">grant</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span>
+                         <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_group_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.remove_group_role">[docs]</a><span class="k">def</span> <span class="nf">remove_group_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes a given single role for a group from a domain or project.&quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span>
+    <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">revoke</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+                          <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="remove_group_roles"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.remove_group_roles">[docs]</a><span class="k">def</span> <span class="nf">remove_group_roles</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes all roles from a group on a domain or project.&quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">roles</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">:</span>
+        <span class="n">remove_group_role</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
+                          <span class="n">domain</span><span class="o">=</span><span class="n">domain</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_default_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_default_role">[docs]</a><span class="k">def</span> <span class="nf">get_default_role</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets the default role object from Keystone and saves it as a global.</span>
+
+<span class="sd">    Since this is configured in settings and should not change from request</span>
+<span class="sd">    to request. Supports lookup by name or id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">DEFAULT_ROLE</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_DEFAULT_ROLE&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">default</span> <span class="ow">and</span> <span class="n">DEFAULT_ROLE</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">roles</span><span class="o">.</span><span class="n">list</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">roles</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">roles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">role</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">default</span> <span class="ow">or</span> <span class="n">role</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">default</span><span class="p">:</span>
+                <span class="n">DEFAULT_ROLE</span> <span class="o">=</span> <span class="n">role</span>
+                <span class="k">break</span>
+    <span class="k">return</span> <span class="n">DEFAULT_ROLE</span>
+
+</div>
+<div class="viewcode-block" id="ec2_manager"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.ec2_manager">[docs]</a><span class="k">def</span> <span class="nf">ec2_manager</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">keystoneclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s1">&#39;ec2&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">ec2</span>
+
+    <span class="c1"># Keystoneclient 4.0 was released without the ec2 creds manager.</span>
+    <span class="kn">from</span> <span class="nn">keystoneclient.v2_0</span> <span class="kn">import</span> <span class="n">ec2</span>
+    <span class="k">return</span> <span class="n">ec2</span><span class="o">.</span><span class="n">CredentialsManager</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="list_ec2_credentials"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.list_ec2_credentials">[docs]</a><span class="k">def</span> <span class="nf">list_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ec2_manager</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="create_ec2_credentials"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.create_ec2_credentials">[docs]</a><span class="k">def</span> <span class="nf">create_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ec2_manager</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_user_ec2_credentials"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_user_ec2_credentials">[docs]</a><span class="k">def</span> <span class="nf">get_user_ec2_credentials</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">access_token</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ec2_manager</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">access_token</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keystone_can_edit_domain"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystone_can_edit_domain">[docs]</a><span class="k">def</span> <span class="nf">keystone_can_edit_domain</span><span class="p">():</span>
+    <span class="n">backend_settings</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_BACKEND&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">can_edit_domain</span> <span class="o">=</span> <span class="n">backend_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;can_edit_domain&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">multi_domain_support</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                   <span class="s1">&#39;OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT&#39;</span><span class="p">,</span>
+                                   <span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">can_edit_domain</span> <span class="ow">and</span> <span class="n">multi_domain_support</span>
+
+</div>
+<div class="viewcode-block" id="keystone_can_edit_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystone_can_edit_user">[docs]</a><span class="k">def</span> <span class="nf">keystone_can_edit_user</span><span class="p">():</span>
+    <span class="n">backend_settings</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_BACKEND&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">backend_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;can_edit_user&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keystone_can_edit_project"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystone_can_edit_project">[docs]</a><span class="k">def</span> <span class="nf">keystone_can_edit_project</span><span class="p">():</span>
+    <span class="n">backend_settings</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_BACKEND&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">backend_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;can_edit_project&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keystone_can_edit_group"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystone_can_edit_group">[docs]</a><span class="k">def</span> <span class="nf">keystone_can_edit_group</span><span class="p">():</span>
+    <span class="n">backend_settings</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_BACKEND&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">backend_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;can_edit_group&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keystone_can_edit_role"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystone_can_edit_role">[docs]</a><span class="k">def</span> <span class="nf">keystone_can_edit_role</span><span class="p">():</span>
+    <span class="n">backend_settings</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_BACKEND&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="n">backend_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;can_edit_role&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="keystone_backend_name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.keystone_backend_name">[docs]</a><span class="k">def</span> <span class="nf">keystone_backend_name</span><span class="p">():</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;OPENSTACK_KEYSTONE_BACKEND&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">OPENSTACK_KEYSTONE_BACKEND</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;unknown&#39;</span>
+
+</div>
+<div class="viewcode-block" id="get_version"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.keystone.html#openstack_dashboard.api.keystone.get_version">[docs]</a><span class="k">def</span> <span class="nf">get_version</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">VERSIONS</span><span class="o">.</span><span class="n">active</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

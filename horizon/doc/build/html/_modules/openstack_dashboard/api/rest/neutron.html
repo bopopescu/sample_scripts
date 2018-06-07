@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.rest.neutron &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.rest.neutron</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    (c) Copyright 2015 Hewlett-Packard Development Company, L.P.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;API over the neutron service.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">rest_utils</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">urls</span>
+
+
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Networks"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Networks">[docs]</a><span class="k">class</span> <span class="nc">Networks</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for Neutron Networks</span>
+
+<span class="sd">    http://developer.openstack.org/api-ref-networking-v2.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;neutron/networks/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Networks.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Networks.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of networks for a project</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.  Each item is</span>
+<span class="sd">        a network.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tenant_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_list_for_tenant</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Networks.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Networks.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a network</span>
+
+<span class="sd">        :param  admin_state_up (optional): The administrative state of the</span>
+<span class="sd">                network, which is up (true) or down (false).</span>
+<span class="sd">        :param name (optional): The network name. A request body is optional:</span>
+<span class="sd">                If you include it, it can specify this optional attribute.</span>
+<span class="sd">        :param net_profile_id (optional): network profile id</span>
+<span class="sd">        :param shared (optional): Indicates whether this network is shared</span>
+<span class="sd">                across all tenants. By default, only administrative users can</span>
+<span class="sd">                change this value.</span>
+<span class="sd">        :param tenant_id (optional): Admin-only. The UUID of the tenant that</span>
+<span class="sd">                will own the network. This tenant can be different from the</span>
+<span class="sd">                tenant that makes the create network request. However, only</span>
+<span class="sd">                administrative users can specify a tenant ID other than their</span>
+<span class="sd">                own. You cannot change this value through authorization</span>
+<span class="sd">                policies.</span>
+
+<span class="sd">         :return: JSON representation of a Network</span>
+<span class="sd">         &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_port_profiles_supported</span><span class="p">():</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;net_profile_id&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">new_network</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/neutron/networks/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">new_network</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">new_network</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Subnets"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Subnets">[docs]</a><span class="k">class</span> <span class="nc">Subnets</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for Neutron SubNets</span>
+<span class="sd">    http://developer.openstack.org/api-ref-networking-v2.html#subnets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;neutron/subnets/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Subnets.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Subnets.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of subnets for a project</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.  Each item is</span>
+<span class="sd">        a subnet.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnet_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span>
+</div>
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Subnets.post"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Subnets.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a Subnet for a given Network</span>
+
+<span class="sd">        :param name (optional):  The subnet name.</span>
+<span class="sd">        :param network_id: The ID of the attached network.</span>
+<span class="sd">        :param tenant_id (optional): The ID of the tenant who owns the network.</span>
+<span class="sd">                Only administrative users can specify a tenant ID other than</span>
+<span class="sd">                their own.</span>
+<span class="sd">        :param allocation_pools (optional): The start and end addresses for the</span>
+<span class="sd">                allocation pools.</span>
+<span class="sd">        :param gateway_ip (optional): The gateway IP address.</span>
+<span class="sd">        :param ip_version: The IP version, which is 4 or 6.</span>
+<span class="sd">        :param cidr: The CIDR.</span>
+<span class="sd">        :param id (optional): The ID of the subnet.</span>
+<span class="sd">        :param enable_dhcp (optional): Set to true if DHCP is enabled and false</span>
+<span class="sd">                if DHCP is disabled.</span>
+
+<span class="sd">        :return: JSON representation of a Subnet</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_subnet</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnet_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">CreatedResponse</span><span class="p">(</span>
+            <span class="s1">&#39;/api/neutron/subnets/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">new_subnet</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">new_subnet</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="p">)</span>
+
+</div></div>
+<span class="nd">@urls.register</span>
+<div class="viewcode-block" id="Ports"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Ports">[docs]</a><span class="k">class</span> <span class="nc">Ports</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;API for Neutron Ports</span>
+<span class="sd">    http://developer.openstack.org/api-ref-networking-v2.html#ports</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;neutron/ports/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+<div class="viewcode-block" id="Ports.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.neutron.html#openstack_dashboard.api.rest.neutron.Ports.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of ports for a network</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;.  Each item is</span>
+<span class="sd">        a subnet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># see</span>
+        <span class="c1"># https://github.com/openstack/neutron/blob/master/neutron/api/v2/attributes.py</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">port_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">{</span><span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]}</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

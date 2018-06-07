@@ -1,0 +1,479 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.stacks.mappings &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.stacks.mappings</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">register</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">html</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">safestring</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">six.moves.urllib.parse</span> <span class="kn">as</span> <span class="nn">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">swift</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="n">resource_urls</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;AWS::AutoScaling::AutoScalingGroup&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::CloudFormation::Stack&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::Instance&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:instances:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::InternetGateway&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:ports:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::NetworkInterface&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:ports:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::RouteTable&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:routers:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::SecurityGroup&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:access_and_security:index&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::Subnet&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:subnets:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::Volume&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:volumes:volumes:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::EC2::VPC&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;AWS::S3::Bucket&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:containers:index&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Cinder::Volume&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:volumes:volumes:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::AccessPolicy&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::AutoScalingGroup&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::CloudConfig&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::Firewall&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:firewalls:firewalldetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::FirewallPolicy&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:firewalls:policydetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::FirewallRule&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:firewalls:ruledetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::HARestarter&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::InstanceGroup&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::MultipartMime&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::ResourceGroup&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::SoftwareConfig&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::StructuredConfig&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::StructuredDeployment&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::Stack&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::WaitCondition&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Heat::WaitConditionHandle&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:stacks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::HealthMonitor&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:loadbalancers:monitordetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::IKEPolicy&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:vpn:ikepolicydetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::IPsecPolicy&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:vpn:ipsecpolicydetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::IPsecSiteConnection&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:vpn:ipsecsiteconnectiondetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::Net&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::Pool&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:loadbalancers:pooldetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::PoolMember&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:loadbalancers:memberdetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::Port&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:ports:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::Router&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:routers:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::Subnet&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:networks:subnets:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Neutron::VPNService&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:vpn:vpnservicedetails&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Nova::KeyPair&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:access_and_security:index&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Nova::Server&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:instances:detail&#39;</span><span class="p">},</span>
+    <span class="s2">&quot;OS::Swift::Container&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;link&#39;</span><span class="p">:</span> <span class="s1">&#39;horizon:project:containers:index&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;format_pattern&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">swift</span><span class="o">.</span><span class="n">FOLDER_DELIMITER</span><span class="p">},</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="resource_to_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.mappings.html#openstack_dashboard.dashboards.project.stacks.mappings.resource_to_url">[docs]</a><span class="k">def</span> <span class="nf">resource_to_url</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">resource</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">resource</span><span class="o">.</span><span class="n">physical_resource_id</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">resource_urls</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;link&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="n">format_pattern</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;format_pattern&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span>
+        <span class="n">rid</span> <span class="o">=</span> <span class="n">format_pattern</span> <span class="o">%</span> <span class="n">resource</span><span class="o">.</span><span class="n">physical_resource_id</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="n">mapping</span><span class="p">[</span><span class="s1">&#39;link&#39;</span><span class="p">],</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rid</span><span class="p">,))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">return</span> <span class="n">url</span>
+
+</div>
+<span class="nd">@register.filter</span>
+<div class="viewcode-block" id="stack_output"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.mappings.html#openstack_dashboard.dashboards.project.stacks.mappings.stack_output">[docs]</a><span class="k">def</span> <span class="nf">stack_output</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">output</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">u&#39;&#39;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlsplit</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parts</span><span class="o">.</span><span class="n">netloc</span> <span class="ow">and</span> <span class="n">parts</span><span class="o">.</span><span class="n">scheme</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">,</span> <span class="s1">&#39;https&#39;</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+            <span class="n">safe_link</span> <span class="o">=</span> <span class="s1">u&#39;&lt;a href=&quot;</span><span class="si">%s</span><span class="s1">&quot; target=&quot;_blank&quot;&gt;</span><span class="si">%s</span><span class="s1">&lt;/a&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">safestring</span><span class="o">.</span><span class="n">mark_safe</span><span class="p">(</span><span class="n">safe_link</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">safestring</span><span class="o">.</span><span class="n">mark_safe</span><span class="p">(</span><span class="s1">u&#39;&lt;pre&gt;</span><span class="si">%s</span><span class="s1">&lt;/pre&gt;&#39;</span> <span class="o">%</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
+</div>
+<span class="n">static_url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;STATIC_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;/static/&quot;</span><span class="p">)</span>
+<span class="n">resource_images</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;LB_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/lb-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LB_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/lb-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LB_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/lb-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LB_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/lb-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;LB_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/lb-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DB_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/db-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DB_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/db-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DB_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/db-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DB_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/db-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DB_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/db-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;STACK_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/stack-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;STACK_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/stack-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;STACK_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/stack-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;STACK_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/stack-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;STACK_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/stack-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SERVER_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/server-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SERVER_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/server-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SERVER_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/server-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SERVER_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/server-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SERVER_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/server-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ALARM_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/alarm-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ALARM_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/alarm-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ALARM_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/alarm-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ALARM_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/alarm-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ALARM_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/alarm-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VOLUME_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/volume-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VOLUME_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/volume-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VOLUME_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/volume-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VOLUME_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/volume-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VOLUME_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/volume-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IMAGE_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/image-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IMAGE_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/image-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IMAGE_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/image-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IMAGE_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/image-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;IMAGE_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/image-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WAIT_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/wait-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WAIT_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/wait-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WAIT_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/wait-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WAIT_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/wait-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WAIT_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/wait-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FIREWALL_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/firewall-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FIREWALL_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/firewall-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FIREWALL_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/firewall-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FIREWALL_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/firewall-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FIREWALL_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/firewall-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLOATINGIP_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/floatingip-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLOATINGIP_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/floatingip-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLOATINGIP_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/floatingip-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLOATINGIP_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/floatingip-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLOATINGIP_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/floatingip-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ROUTER_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/router-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ROUTER_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/router-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ROUTER_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/router-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ROUTER_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/router-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ROUTER_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/router-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;POLICY_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/policy-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;POLICY_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/policy-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;POLICY_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/policy-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;POLICY_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/policy-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;POLICY_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/policy-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CONFIG_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/config-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CONFIG_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/config-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CONFIG_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/config-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CONFIG_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/config-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CONFIG_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/config-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NETWORK_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/network-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NETWORK_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/network-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NETWORK_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/network-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NETWORK_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/network-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NETWORK_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/network-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PORT_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/port-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PORT_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/port-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PORT_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/port-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PORT_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/port-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PORT_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/port-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SECURITYGROUP_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/securitygroup-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SECURITYGROUP_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/securitygroup-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SECURITYGROUP_IN_PROGRESS&#39;</span><span class="p">:</span>
+        <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/securitygroup-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SECURITYGROUP_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/securitygroup-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SECURITYGROUP_COMPLETE&#39;</span><span class="p">:</span>
+        <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/securitygroup-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VPN_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/vpn-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VPN_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/vpn-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VPN_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/vpn-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VPN_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/vpn-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VPN_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/vpn-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLAVOR_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/flavor-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLAVOR_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/flavor-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLAVOR_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/flavor-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLAVOR_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/flavor-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FLAVOR_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/flavor-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KEYPAIR_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/keypair-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KEYPAIR_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/keypair-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KEYPAIR_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/keypair-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KEYPAIR_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/keypair-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;KEYPAIR_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/keypair-green.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UNKNOWN_FAILED&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/unknown-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UNKNOWN_DELETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/unknown-red.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UNKNOWN_IN_PROGRESS&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/unknown-gray.gif&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UNKNOWN_INIT&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/unknown-gray.svg&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UNKNOWN_COMPLETE&#39;</span><span class="p">:</span> <span class="n">static_url</span> <span class="o">+</span> <span class="s1">&#39;dashboard/img/unknown-green.svg&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="n">resource_types</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># LB</span>
+    <span class="s1">&#39;LoadBalance&#39;</span><span class="p">:</span> <span class="s1">&#39;LB&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;HealthMonitor&#39;</span><span class="p">:</span> <span class="s1">&#39;LB&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PoolMember&#39;</span><span class="p">:</span> <span class="s1">&#39;LB&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Pool&#39;</span><span class="p">:</span> <span class="s1">&#39;LB&#39;</span><span class="p">,</span>
+    <span class="c1"># DB</span>
+    <span class="s1">&#39;DBInstance&#39;</span><span class="p">:</span> <span class="s1">&#39;DB&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Database&#39;</span><span class="p">:</span> <span class="s1">&#39;DB&#39;</span><span class="p">,</span>
+    <span class="c1"># SERVER</span>
+    <span class="s1">&#39;Instance&#39;</span><span class="p">:</span> <span class="s1">&#39;SERVER&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Server&#39;</span><span class="p">:</span> <span class="s1">&#39;SERVER&#39;</span><span class="p">,</span>
+    <span class="c1"># ALARM</span>
+    <span class="s1">&#39;Alarm&#39;</span><span class="p">:</span> <span class="s1">&#39;ALARM&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CombinationAlarm&#39;</span><span class="p">:</span> <span class="s1">&#39;ALARM&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CWLiteAlarm&#39;</span><span class="p">:</span> <span class="s1">&#39;ALARM&#39;</span><span class="p">,</span>
+    <span class="c1"># VOLUME</span>
+    <span class="s1">&#39;Volume&#39;</span><span class="p">:</span> <span class="s1">&#39;VOLUME&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;VolumeAttachment&#39;</span><span class="p">:</span> <span class="s1">&#39;VOLUME&#39;</span><span class="p">,</span>
+    <span class="c1"># STACK</span>
+    <span class="s1">&#39;stack&#39;</span><span class="p">:</span> <span class="s1">&#39;STACK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;AutoScalingGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;STACK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;InstanceGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;STACK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ServerGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;STACK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ResourceGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;STACK&#39;</span><span class="p">,</span>
+    <span class="c1"># IMAGE</span>
+    <span class="s1">&#39;Image&#39;</span><span class="p">:</span> <span class="s1">&#39;IMAGE&#39;</span><span class="p">,</span>
+    <span class="c1"># WAIT</span>
+    <span class="s1">&#39;WaitCondition&#39;</span><span class="p">:</span> <span class="s1">&#39;WAIT&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;WaitConditionHandle&#39;</span><span class="p">:</span> <span class="s1">&#39;WAIT&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;UpdateWaitConditionHandle&#39;</span><span class="p">:</span> <span class="s1">&#39;WAIT&#39;</span><span class="p">,</span>
+    <span class="c1"># FIREWALL</span>
+    <span class="s1">&#39;Firewall&#39;</span><span class="p">:</span> <span class="s1">&#39;FIREWALL&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FirewallPolicy&#39;</span><span class="p">:</span> <span class="s1">&#39;FIREWALL&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FirewallRule&#39;</span><span class="p">:</span> <span class="s1">&#39;FIREWALL&#39;</span><span class="p">,</span>
+    <span class="c1"># FLOATINGIP</span>
+    <span class="s1">&#39;FloatingIP&#39;</span><span class="p">:</span> <span class="s1">&#39;FLOATINGIP&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FloatingIPAssociation&#39;</span><span class="p">:</span> <span class="s1">&#39;FLOATINGIP&#39;</span><span class="p">,</span>
+    <span class="c1"># ROUTER</span>
+    <span class="s1">&#39;Router&#39;</span><span class="p">:</span> <span class="s1">&#39;ROUTER&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RouterGateway&#39;</span><span class="p">:</span> <span class="s1">&#39;ROUTER&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;RouterInterface&#39;</span><span class="p">:</span> <span class="s1">&#39;ROUTER&#39;</span><span class="p">,</span>
+    <span class="c1"># POLICY</span>
+    <span class="s1">&#39;ScalingPolicy&#39;</span><span class="p">:</span> <span class="s1">&#39;POLICY&#39;</span><span class="p">,</span>
+    <span class="c1"># CONFIG</span>
+    <span class="s1">&#39;CloudConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;MultipartMime&#39;</span><span class="p">:</span> <span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SoftwareConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SoftwareDeployment&#39;</span><span class="p">:</span> <span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StructuredConfig&#39;</span><span class="p">:</span> <span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;StructuredDeployment&#39;</span><span class="p">:</span> <span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span>
+    <span class="c1"># NETWORK</span>
+    <span class="s1">&#39;Net&#39;</span><span class="p">:</span> <span class="s1">&#39;NETWORK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Subnet&#39;</span><span class="p">:</span> <span class="s1">&#39;NETWORK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;NetworkGateway&#39;</span><span class="p">:</span> <span class="s1">&#39;NETWORK&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ProviderNet&#39;</span><span class="p">:</span> <span class="s1">&#39;NETWORK&#39;</span><span class="p">,</span>
+    <span class="c1"># PORT</span>
+    <span class="s1">&#39;Port&#39;</span><span class="p">:</span> <span class="s1">&#39;PORT&#39;</span><span class="p">,</span>
+    <span class="c1"># SECURITYGROUP</span>
+    <span class="s1">&#39;SecurityGroup&#39;</span><span class="p">:</span> <span class="s1">&#39;SECURITYGROUP&#39;</span><span class="p">,</span>
+    <span class="c1"># VPN</span>
+    <span class="s1">&#39;VPNService&#39;</span><span class="p">:</span> <span class="s1">&#39;VPN&#39;</span><span class="p">,</span>
+    <span class="c1"># FLAVOR</span>
+    <span class="s1">&#39;Flavor&#39;</span><span class="p">:</span> <span class="s1">&#39;FLAVOR&#39;</span><span class="p">,</span>
+    <span class="c1"># KEYPAIR</span>
+    <span class="s1">&#39;KeyPair&#39;</span><span class="p">:</span> <span class="s1">&#39;KEYPAIR&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_resource_type"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.mappings.html#openstack_dashboard.dashboards.project.stacks.mappings.get_resource_type">[docs]</a><span class="k">def</span> <span class="nf">get_resource_type</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">resource_types</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="s1">&#39;UNKNOWN&#39;</span>
+
+</div>
+<div class="viewcode-block" id="get_resource_status"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.mappings.html#openstack_dashboard.dashboards.project.stacks.mappings.get_resource_status">[docs]</a><span class="k">def</span> <span class="nf">get_resource_status</span><span class="p">(</span><span class="n">status</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;IN_PROGRESS&#39;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;IN_PROGRESS&#39;</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;FAILED&#39;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;FAILED&#39;</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;DELETE&#39;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;DELETE&#39;</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="s1">&#39;INIT&#39;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;INIT&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;COMPLETE&#39;</span>
+
+</div>
+<div class="viewcode-block" id="get_resource_image"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.mappings.html#openstack_dashboard.dashboards.project.stacks.mappings.get_resource_image">[docs]</a><span class="k">def</span> <span class="nf">get_resource_image</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sets the image url and in_progress action sw based on status.&quot;&quot;&quot;</span>
+    <span class="n">resource_type</span> <span class="o">=</span> <span class="n">get_resource_type</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
+    <span class="n">resource_status</span> <span class="o">=</span> <span class="n">get_resource_status</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+    <span class="n">resource_state</span> <span class="o">=</span> <span class="n">resource_type</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">resource_status</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">resource_images</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">resource_state</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource_images</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

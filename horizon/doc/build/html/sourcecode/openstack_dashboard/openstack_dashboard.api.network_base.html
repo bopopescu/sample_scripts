@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.network_base Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.rest.glance Module" href="openstack_dashboard.api.rest.glance.html" />
+    <link rel="prev" title="The openstack_dashboard.api.cinder Module" href="openstack_dashboard.api.cinder.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-network-base-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.network_base</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-network-base-module" title="Permalink to this headline">¶</a></h1>
+<p>Abstraction layer for networking functionalities.</p>
+<p>This module defines internal APIs for duplicated features between OpenStack
+Compute and OpenStack Networking. The networking abstraction layer expects
+methods defined in this module.</p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.network_base.</tt><tt class="descname">FloatingIpManager</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Abstract class to implement Floating IP methods</p>
+<p>The FloatingIP object returned from methods in this class
+must contains the following attributes:</p>
+<ul>
+<li><p class="first">id: ID of Floating IP</p>
+</li>
+<li><p class="first">ip: Floating IP address</p>
+</li>
+<li><p class="first">pool: ID of Floating IP pool from which the address is allocated</p>
+</li>
+<li><p class="first">fixed_ip: Fixed IP address of a VIF associated with the address</p>
+</li>
+<li><dl class="first docutils">
+<dt>port_id: ID of a VIF associated with the address</dt>
+<dd><p class="first last">(instance_id when Nova floating IP is used)</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">instance_id: Instance ID of an associated with the Floating IP</p>
+</li>
+</ul>
+<dl class="method">
+<dt>
+<tt class="descname">allocate</tt><big>(</big><em>pool=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.allocate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Allocates a floating IP to the tenant.</p>
+<p>You must provide a pool name or id for which you would like to
+allocate an floating IP.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">associate</tt><big>(</big><em>floating_ip_id</em>, <em>port_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.associate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Associates the floating IP to the port.</p>
+<p>port_id is a fixed IP of an instance (Nova) or
+a port_id attached to a VNIC of an instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">disassociate</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.disassociate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Disassociates the floating IP specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Fetches the floating IP.</p>
+<p>It returns a FloatingIp object corresponding to floating_ip_id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_target_id_by_instance</tt><big>(</big><em>instance_id</em>, <em>target_list=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.get_target_id_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a target ID of floating IP association.</p>
+<p>Based on a backend implementation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>instance_id</strong> &#8211; ID of target VM instance</li>
+<li><strong>target_list</strong> &#8211; (optional) a list returned by list_targets().
+If specified, looking up is done against the specified list
+to save extra API calls to a back-end. Otherwise a target
+information is retrieved from a back-end inside the method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_simple_associate_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.is_simple_associate_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns True if the default floating IP pool is enabled.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.is_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns True if floating IP feature is supported.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Fetches a list all floating IPs.</p>
+<p>A returned value is a list of FloatingIp object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_pools</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.list_pools"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Fetches a list of all floating IP pools.</p>
+<p>A list of FloatingIpPool objects is returned.
+FloatingIpPool object is an APIResourceWrapper/APIDictWrapper
+where &#8216;id&#8217; and &#8216;name&#8217; attributes are defined.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_target_id_by_instance</tt><big>(</big><em>instance_id</em>, <em>target_list=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.list_target_id_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a list of instance&#8217;s target IDs of floating IP association.</p>
+<p>Based on the backend implementation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>instance_id</strong> &#8211; ID of target VM instance</li>
+<li><strong>target_list</strong> &#8211; (optional) a list returned by list_targets().
+If specified, looking up is done against the specified list
+to save extra API calls to a back-end. Otherwise target list
+is retrieved from a back-end inside the method.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_targets</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.list_targets"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns a list of association targets of instance VIFs.</p>
+<p>Each association target is represented as FloatingIpTarget object.
+FloatingIpTarget is a APIResourceWrapper/APIDictWrapper and
+&#8216;id&#8217; and &#8216;name&#8217; attributes must be defined in each object.
+FloatingIpTarget.id can be passed as port_id in associate().
+FloatingIpTarget.name is displayed in Floating Ip Association Form.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">release</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#FloatingIpManager.release"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Releases a floating IP specified.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.network_base.</tt><tt class="descname">SecurityGroupManager</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Abstract class to implement Security Group methods</p>
+<p>SecurityGroup object returned from methods in this class
+must contains the following attributes:</p>
+<ul class="simple">
+<li>id: ID of Security Group (int for Nova, uuid for Neutron)</li>
+<li>name</li>
+<li>description</li>
+<li>tenant_id</li>
+<li>rules: A list of SecurityGroupRule objects</li>
+</ul>
+<p>SecurityGroupRule object should have the following attributes
+(The attribute names and their formats are borrowed from nova
+security group implementation):</p>
+<ul class="simple">
+<li>id</li>
+<li>direction</li>
+<li>ethertype</li>
+<li>parent_group_id: security group the rule belongs to</li>
+<li>ip_protocol</li>
+<li>from_port: lower limit of allowed port range (inclusive)</li>
+<li>to_port: upper limit of allowed port range (inclusive)</li>
+<li>ip_range: remote IP CIDR (source for ingress, dest for egress).
+The value should be a format of &#8220;{&#8216;cidr&#8217;: &lt;cidr&gt;}&#8221;</li>
+<li>group: remote security group. The value should be a format of
+&#8220;{&#8216;name&#8217;: &lt;secgroup_name&gt;}&#8221;</li>
+</ul>
+<dl class="method">
+<dt>
+<tt class="descname">create</tt><big>(</big><em>name</em>, <em>desc</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a new security group.</p>
+<p>It returns a SecurityGroup object created.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>sg_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete the specified security group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>sg_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Fetches the security group.</p>
+<p>It returns a SecurityGroup object corresponding to sg_id.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Fetches a list all security groups.</p>
+<p>A returned value is a list of SecurityGroup object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_by_instance</tt><big>(</big><em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.list_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get security groups of an instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">rule_create</tt><big>(</big><em>parent_group_id</em>, <em>direction=None</em>, <em>ethertype=None</em>, <em>ip_protocol=None</em>, <em>from_port=None</em>, <em>to_port=None</em>, <em>cidr=None</em>, <em>group_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.rule_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Create a new security group rule.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parent_group_id</strong> &#8211; security group id a rule is created to</li>
+<li><strong>direction</strong> &#8211; ingress or egress</li>
+<li><strong>ethertype</strong> &#8211; ipv4, ipv6, ...</li>
+<li><strong>ip_protocol</strong> &#8211; tcp, udp, icmp</li>
+<li><strong>from_port</strong> &#8211; L4 port range min</li>
+<li><strong>to_port</strong> &#8211; L4 port range max</li>
+<li><strong>cidr</strong> &#8211; Source IP CIDR</li>
+<li><strong>group_id</strong> &#8211; ID of Source Security Group</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">rule_delete</tt><big>(</big><em>sgr_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.rule_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Delete the specified security group rule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_instance_security_group</tt><big>(</big><em>instance_id</em>, <em>new_security_group_ids</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/network_base.html#SecurityGroupManager.update_instance_security_group"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Update security groups of a specified instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.cinder.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.cinder</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.rest.glance.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.rest.glance</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.network_base.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.rest.glance.html" title="The openstack_dashboard.api.rest.glance Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.cinder.html" title="The openstack_dashboard.api.cinder Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

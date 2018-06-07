@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or</span>
+<span class="c1"># implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">saharaclient.api</span> <span class="kn">import</span> <span class="n">base</span> <span class="k">as</span> <span class="n">api_base</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.sahara.api</span> <span class="kn">import</span> <span class="n">sahara</span> <span class="k">as</span> <span class="n">saharaclient</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.sahara.content.data_processing.</span> \
+    <span class="nn">utils</span> <span class="kn">import</span> <span class="n">helpers</span> <span class="k">as</span> <span class="n">helpers</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.sahara.content.data_processing.</span> \
+    <span class="nn">utils</span> <span class="kn">import</span> <span class="n">anti_affinity</span> <span class="k">as</span> <span class="n">aa</span>
+<span class="kn">import</span> <span class="nn">openstack_dashboard.contrib.sahara.content.data_processing.</span> \
+    <span class="nn">utils.workflow_helpers</span> <span class="kn">as</span> <span class="nn">whelpers</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SelectPluginAction"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.SelectPluginAction">[docs]</a><span class="k">class</span> <span class="nc">SelectPluginAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">hidden_create_field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;hidden_create_field&quot;</span><span class="p">}))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SelectPluginAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">plugins</span> <span class="o">=</span> <span class="n">saharaclient</span><span class="o">.</span><span class="n">plugin_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">plugins</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to fetch plugin list.&quot;</span><span class="p">))</span>
+        <span class="n">plugin_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">plugin</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">plugin</span><span class="o">.</span><span class="n">title</span><span class="p">)</span> <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="n">plugins</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;plugin_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Plugin name&quot;</span><span class="p">),</span>
+            <span class="n">choices</span><span class="o">=</span><span class="n">plugin_choices</span><span class="p">,</span>
+            <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;plugin_name_choice&quot;</span><span class="p">}))</span>
+
+        <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="n">plugins</span><span class="p">:</span>
+            <span class="n">field_name</span> <span class="o">=</span> <span class="n">plugin</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_version&quot;</span>
+            <span class="n">choice_field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Version&quot;</span><span class="p">),</span>
+                <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="n">version</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span> <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">plugin</span><span class="o">.</span><span class="n">versions</span><span class="p">],</span>
+                <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span>
+                    <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;plugin_version_choice &quot;</span>
+                                    <span class="o">+</span> <span class="n">field_name</span> <span class="o">+</span> <span class="s2">&quot;_choice&quot;</span><span class="p">})</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">choice_field</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select plugin and hadoop version for cluster template&quot;</span><span class="p">)</span>
+        <span class="n">help_text_template</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project/data_processing.cluster_templates/&quot;</span>
+                              <span class="s2">&quot;_create_general_help.html&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SelectPlugin"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.SelectPlugin">[docs]</a><span class="k">class</span> <span class="nc">SelectPlugin</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">SelectPluginAction</span>
+
+</div>
+<div class="viewcode-block" id="CreateClusterTemplate"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.CreateClusterTemplate">[docs]</a><span class="k">class</span> <span class="nc">CreateClusterTemplate</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;create_cluster_template&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Cluster Template&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Next&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Created&quot;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Could not create&quot;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:data_processing.cluster_templates:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">SelectPlugin</span><span class="p">,)</span>
+
+</div>
+<div class="viewcode-block" id="GeneralConfigAction"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.GeneralConfigAction">[docs]</a><span class="k">class</span> <span class="nc">GeneralConfigAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">hidden_configure_field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;hidden_configure_field&quot;</span><span class="p">}))</span>
+
+    <span class="n">hidden_to_delete_field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;hidden_to_delete_field&quot;</span><span class="p">}))</span>
+
+    <span class="n">cluster_template_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Template Name&quot;</span><span class="p">))</span>
+
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}))</span>
+
+    <span class="n">use_autoconfig</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Auto-configure&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;If selected, instances of a cluster will be &quot;</span>
+                    <span class="s2">&quot;automatically configured during creation. Otherwise you &quot;</span>
+                    <span class="s2">&quot;should manually specify configuration values&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxInput</span><span class="p">(),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">anti_affinity</span> <span class="o">=</span> <span class="n">aa</span><span class="o">.</span><span class="n">anti_affinity_field</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GeneralConfigAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">plugin</span><span class="p">,</span> <span class="n">hadoop_version</span> <span class="o">=</span> <span class="n">whelpers</span><span class="o">.</span>\
+            <span class="n">get_plugin_and_hadoop_version</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;plugin_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+            <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+            <span class="n">initial</span><span class="o">=</span><span class="n">plugin</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;hadoop_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+            <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+            <span class="n">initial</span><span class="o">=</span><span class="n">hadoop_version</span>
+        <span class="p">)</span>
+
+    <span class="n">populate_anti_affinity_choices</span> <span class="o">=</span> <span class="n">aa</span><span class="o">.</span><span class="n">populate_anti_affinity_choices</span>
+
+<div class="viewcode-block" id="GeneralConfigAction.get_help_text"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.GeneralConfigAction.get_help_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_help_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">extra</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">plugin</span><span class="p">,</span> <span class="n">hadoop_version</span> <span class="o">=</span> <span class="n">whelpers</span>\
+            <span class="o">.</span><span class="n">get_plugin_and_hadoop_version</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="n">extra</span><span class="p">[</span><span class="s2">&quot;plugin_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plugin</span>
+        <span class="n">extra</span><span class="p">[</span><span class="s2">&quot;hadoop_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hadoop_version</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">GeneralConfigAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_help_text</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="GeneralConfigAction.clean"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.GeneralConfigAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">GeneralConfigAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hidden_configure_field&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> \
+                <span class="o">==</span> <span class="s2">&quot;create_nodegroup&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Details&quot;</span><span class="p">)</span>
+        <span class="n">help_text_template</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project/data_processing.cluster_templates/&quot;</span>
+                              <span class="s2">&quot;_configure_general_help.html&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="GeneralConfig"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.GeneralConfig">[docs]</a><span class="k">class</span> <span class="nc">GeneralConfig</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">GeneralConfigAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;hidden_configure_field&quot;</span><span class="p">,</span> <span class="p">)</span>
+
+<div class="viewcode-block" id="GeneralConfig.contribute"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.GeneralConfig.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;general_&quot;</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="n">post</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;anti_affinity_info&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">post</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;anti_affinity&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="ConfigureNodegroupsAction"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureNodegroupsAction">[docs]</a><span class="k">class</span> <span class="nc">ConfigureNodegroupsAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">hidden_nodegroups_field</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;hidden_nodegroups_field&quot;</span><span class="p">}))</span>
+    <span class="n">forms_ids</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConfigureNodegroupsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span> \
+            <span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">plugin</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;plugin_name&quot;</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hadoop_version&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plugin</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">version</span><span class="p">:</span>
+            <span class="n">version_name</span> <span class="o">=</span> <span class="n">plugin</span> <span class="o">+</span> <span class="s2">&quot;_version&quot;</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">version_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">plugin</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">version</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">templates</span> <span class="o">=</span> <span class="n">saharaclient</span><span class="o">.</span><span class="n">nodegroup_template_find</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">templates</span> <span class="o">=</span> <span class="n">saharaclient</span><span class="o">.</span><span class="n">nodegroup_template_find</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">plugin_name</span><span class="o">=</span><span class="n">plugin</span><span class="p">,</span> <span class="n">hadoop_version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="n">deletable</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;deletable&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
+
+        <span class="n">request_source</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="s1">&#39;forms_ids&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+                <span class="n">request_source</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span>
+        <span class="k">elif</span> <span class="s1">&#39;forms_ids&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="p">:</span>
+                <span class="n">request_source</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span>
+        <span class="k">if</span> <span class="n">request_source</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">request_source</span><span class="p">[</span><span class="s1">&#39;forms_ids&#39;</span><span class="p">]):</span>
+                <span class="n">group_name</span> <span class="o">=</span> <span class="s2">&quot;group_name_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+                <span class="n">template_id</span> <span class="o">=</span> <span class="s2">&quot;template_id_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="s2">&quot;count_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+                <span class="n">serialized</span> <span class="o">=</span> <span class="s2">&quot;serialized_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">request_source</span><span class="p">[</span><span class="n">group_name</span><span class="p">],</span>
+                                    <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="n">request_source</span><span class="p">[</span><span class="n">template_id</span><span class="p">],</span>
+                                    <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">request_source</span><span class="p">[</span><span class="n">count</span><span class="p">],</span>
+                                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">,</span>
+                                    <span class="s2">&quot;deletable&quot;</span><span class="p">:</span> <span class="n">deletable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                                        <span class="n">request_source</span><span class="p">[</span><span class="n">group_name</span><span class="p">],</span> <span class="s2">&quot;true&quot;</span><span class="p">),</span>
+                                    <span class="s2">&quot;serialized&quot;</span><span class="p">:</span> <span class="n">request_source</span><span class="p">[</span><span class="n">serialized</span><span class="p">]})</span>
+
+                <span class="n">whelpers</span><span class="o">.</span><span class="n">build_node_group_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                 <span class="n">group_name</span><span class="p">,</span>
+                                                 <span class="n">template_id</span><span class="p">,</span>
+                                                 <span class="n">count</span><span class="p">,</span>
+                                                 <span class="n">serialized</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigureNodegroupsAction.clean"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureNodegroupsAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ConfigureNodegroupsAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hidden_nodegroups_field&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> \
+                <span class="o">==</span> <span class="s2">&quot;create_nodegroup&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Node Groups&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ConfigureNodegroups"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureNodegroups">[docs]</a><span class="k">class</span> <span class="nc">ConfigureNodegroups</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">ConfigureNodegroupsAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;hidden_nodegroups_field&quot;</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;project/data_processing.cluster_templates/&quot;</span>
+                     <span class="s2">&quot;cluster_node_groups_template.html&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigureNodegroups.contribute"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureNodegroups.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;ng_&quot;</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="ConfigureClusterTemplate"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureClusterTemplate">[docs]</a><span class="k">class</span> <span class="nc">ConfigureClusterTemplate</span><span class="p">(</span><span class="n">whelpers</span><span class="o">.</span><span class="n">ServiceParametersWorkflow</span><span class="p">,</span>
+                               <span class="n">whelpers</span><span class="o">.</span><span class="n">StatusFormatMixin</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;configure_cluster_template&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Cluster Template&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Created Cluster Template </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">name_property</span> <span class="o">=</span> <span class="s2">&quot;general_cluster_template_name&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:data_processing.cluster_templates:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">GeneralConfig</span><span class="p">,</span>
+                     <span class="n">ConfigureNodegroups</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context_seed</span><span class="p">,</span> <span class="n">entry_point</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">ConfigureClusterTemplate</span><span class="o">.</span><span class="n">_cls_registry</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>
+
+        <span class="n">hlps</span> <span class="o">=</span> <span class="n">helpers</span><span class="o">.</span><span class="n">Helpers</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">plugin</span><span class="p">,</span> <span class="n">hadoop_version</span> <span class="o">=</span> <span class="n">whelpers</span><span class="o">.</span>\
+            <span class="n">get_plugin_and_hadoop_version</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">general_parameters</span> <span class="o">=</span> <span class="n">hlps</span><span class="o">.</span><span class="n">get_cluster_general_configs</span><span class="p">(</span>
+            <span class="n">plugin</span><span class="p">,</span>
+            <span class="n">hadoop_version</span><span class="p">)</span>
+        <span class="n">service_parameters</span> <span class="o">=</span> <span class="n">hlps</span><span class="o">.</span><span class="n">get_targeted_cluster_configs</span><span class="p">(</span>
+            <span class="n">plugin</span><span class="p">,</span>
+            <span class="n">hadoop_version</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_populate_tabs</span><span class="p">(</span><span class="n">general_parameters</span><span class="p">,</span> <span class="n">service_parameters</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConfigureClusterTemplate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                       <span class="n">context_seed</span><span class="p">,</span>
+                                                       <span class="n">entry_point</span><span class="p">,</span>
+                                                       <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigureClusterTemplate.is_valid"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureClusterTemplate.is_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">steps_valid</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">steps_valid</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">step</span><span class="o">.</span><span class="n">has_errors</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">errors_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">errors_fields</span> <span class="o">=</span> <span class="n">errors_fields</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">steps_valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">steps_valid</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ConfigureClusterTemplate.handle"><a class="viewcode-back" href="../../../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.html#openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.ConfigureClusterTemplate.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">node_groups</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">configs_dict</span> <span class="o">=</span> <span class="n">whelpers</span><span class="o">.</span><span class="n">parse_configs_from_context</span><span class="p">(</span><span class="n">context</span><span class="p">,</span>
+                                                               <span class="bp">self</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+
+            <span class="n">ids</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;ng_forms_ids&#39;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;ng_group_name_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)]</span>
+                <span class="n">template_id</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;ng_template_id_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)]</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;ng_count_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)]</span>
+
+                <span class="n">raw_ng</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ng_serialized_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">raw_ng</span> <span class="ow">and</span> <span class="n">raw_ng</span> <span class="o">!=</span> <span class="s1">&#39;null&#39;</span><span class="p">:</span>
+                    <span class="n">ng</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">raw_ng</span><span class="p">)))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ng</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">ng</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+                <span class="n">ng</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span>
+                <span class="k">if</span> <span class="n">template_id</span> <span class="ow">and</span> <span class="n">template_id</span> <span class="o">!=</span> <span class="s1">u&#39;None&#39;</span><span class="p">:</span>
+                    <span class="n">ng</span><span class="p">[</span><span class="s2">&quot;node_group_template_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">template_id</span>
+                <span class="n">node_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ng</span><span class="p">)</span>
+
+            <span class="n">plugin</span><span class="p">,</span> <span class="n">hadoop_version</span> <span class="o">=</span> <span class="n">whelpers</span><span class="o">.</span>\
+                <span class="n">get_plugin_and_hadoop_version</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+            <span class="c1"># TODO(nkonovalov): Fix client to support default_image_id</span>
+            <span class="n">saharaclient</span><span class="o">.</span><span class="n">cluster_template_create</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">[</span><span class="s2">&quot;general_cluster_template_name&quot;</span><span class="p">],</span>
+                <span class="n">plugin</span><span class="p">,</span>
+                <span class="n">hadoop_version</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">[</span><span class="s2">&quot;general_description&quot;</span><span class="p">],</span>
+                <span class="n">configs_dict</span><span class="p">,</span>
+                <span class="n">node_groups</span><span class="p">,</span>
+                <span class="n">context</span><span class="p">[</span><span class="s2">&quot;anti_affinity_info&quot;</span><span class="p">],</span>
+                <span class="n">use_autoconfig</span><span class="o">=</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;general_use_autoconfig&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">hlps</span> <span class="o">=</span> <span class="n">helpers</span><span class="o">.</span><span class="n">Helpers</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hlps</span><span class="o">.</span><span class="n">is_from_guide</span><span class="p">():</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;guide_cluster_template_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">context</span><span class="p">[</span><span class="s2">&quot;general_cluster_template_name&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;horizon:project:data_processing.wizard:cluster_guide&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="n">api_base</span><span class="o">.</span><span class="n">APIException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_description</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Cluster template creation failed&quot;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.admin.metering.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.admin.metering.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse_lazy</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">import</span> <span class="nn">django.views</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">csvbase</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">ceilometer</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.admin.metering</span> <span class="kn">import</span> <span class="n">forms</span> <span class="k">as</span> \
+    <span class="n">metering_forms</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.admin.metering</span> <span class="kn">import</span> <span class="n">tabs</span> <span class="k">as</span> \
+    <span class="n">metering_tabs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.utils</span> <span class="kn">import</span> <span class="n">metering</span> <span class="k">as</span> <span class="n">metering_utils</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IndexView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.IndexView">[docs]</a><span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabbedTableView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">metering_tabs</span><span class="o">.</span><span class="n">CeilometerOverviewTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;admin/metering/index.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Resources Usage Overview&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="CreateUsageReport"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.CreateUsageReport">[docs]</a><span class="k">class</span> <span class="nc">CreateUsageReport</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">metering_forms</span><span class="o">.</span><span class="n">UsageReportForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;admin/metering/daily.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s1">&#39;horizon:admin:metering:index&#39;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Modify Usage Report Parameters&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SamplesView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.SamplesView">[docs]</a><span class="k">class</span> <span class="nc">SamplesView</span><span class="p">(</span><span class="n">django</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">generic</span><span class="o">.</span><span class="n">TemplateView</span><span class="p">):</span>
+<div class="viewcode-block" id="SamplesView.get"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.SamplesView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">meter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;meter&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">meter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({}),</span>
+                                <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+
+        <span class="n">meter_name</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="n">date_options</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_options&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">date_from</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_from&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">date_to</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_to&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">stats_attr</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stats_attr&#39;</span><span class="p">,</span> <span class="s1">&#39;avg&#39;</span><span class="p">)</span>
+        <span class="n">group_by</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_by&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">calc_date_args</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span>
+                                                               <span class="n">date_to</span><span class="p">,</span>
+                                                               <span class="n">date_options</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Dates cannot be recognized.&#39;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">group_by</span> <span class="o">==</span> <span class="s1">&#39;project&#39;</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">ProjectAggregatesQuery</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                          <span class="n">date_from</span><span class="p">,</span>
+                                                          <span class="n">date_to</span><span class="p">,</span>
+                                                          <span class="mi">3600</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">MeterQuery</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">date_from</span><span class="p">,</span>
+                                              <span class="n">date_to</span><span class="p">,</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>
+
+        <span class="n">resources</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">meter</span><span class="p">)</span>
+        <span class="n">series</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">series_for_meter</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">resources</span><span class="p">,</span>
+                                                 <span class="n">group_by</span><span class="p">,</span> <span class="n">meter</span><span class="p">,</span>
+                                                 <span class="n">meter_name</span><span class="p">,</span> <span class="n">stats_attr</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+
+        <span class="n">series</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">normalize_series_by_unit</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;series&#39;</span><span class="p">:</span> <span class="n">series</span><span class="p">,</span> <span class="s1">&#39;settings&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ret</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CsvReportView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.CsvReportView">[docs]</a><span class="k">class</span> <span class="nc">CsvReportView</span><span class="p">(</span><span class="n">django</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="CsvReportView.get"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.CsvReportView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">response_kwargs</span><span class="p">):</span>
+        <span class="n">render_class</span> <span class="o">=</span> <span class="n">ReportCsvRenderer</span>
+        <span class="n">response_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="s2">&quot;usage.csv&quot;</span><span class="p">)</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;usage&#39;</span><span class="p">:</span> <span class="n">load_report_data</span><span class="p">(</span><span class="n">request</span><span class="p">)}</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">render_class</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span>
+                            <span class="n">template</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                            <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+                            <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;csv&#39;</span><span class="p">,</span>
+                            <span class="o">**</span><span class="n">response_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span>
+
+</div></div>
+<div class="viewcode-block" id="ReportCsvRenderer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.ReportCsvRenderer">[docs]</a><span class="k">class</span> <span class="nc">ReportCsvRenderer</span><span class="p">(</span><span class="n">csvbase</span><span class="o">.</span><span class="n">BaseCsvResponse</span><span class="p">):</span>
+
+    <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project Name&quot;</span><span class="p">),</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Meter&quot;</span><span class="p">),</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+               <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Service&quot;</span><span class="p">),</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">),</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Value (Avg)&quot;</span><span class="p">),</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unit&quot;</span><span class="p">)]</span>
+
+<div class="viewcode-block" id="ReportCsvRenderer.get_row_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.ReportCsvRenderer.get_row_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_row_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;usage&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">p</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="s2">&quot;project&quot;</span><span class="p">],</span>
+                       <span class="n">u</span><span class="p">[</span><span class="s2">&quot;meter&quot;</span><span class="p">],</span>
+                       <span class="n">u</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span>
+                       <span class="n">u</span><span class="p">[</span><span class="s2">&quot;service&quot;</span><span class="p">],</span>
+                       <span class="n">u</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span>
+                       <span class="n">u</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+                       <span class="n">u</span><span class="p">[</span><span class="s2">&quot;unit&quot;</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="load_report_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.metering.views.html#openstack_dashboard.dashboards.admin.metering.views.load_report_data">[docs]</a><span class="k">def</span> <span class="nf">load_report_data</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">meters</span> <span class="o">=</span> <span class="n">ceilometer</span><span class="o">.</span><span class="n">Meters</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="n">services</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Nova&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_nova</span><span class="p">(),</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Neutron&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_neutron</span><span class="p">(),</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Glance&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_glance</span><span class="p">(),</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Cinder&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_cinder</span><span class="p">(),</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Swift_meters&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_swift</span><span class="p">(),</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Kwapi&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_kwapi</span><span class="p">(),</span>
+        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;IPMI&#39;</span><span class="p">):</span> <span class="n">meters</span><span class="o">.</span><span class="n">list_ipmi</span><span class="p">(),</span>
+    <span class="p">}</span>
+    <span class="n">project_rows</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">date_options</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_options&#39;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="n">date_from</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_from&#39;</span><span class="p">)</span>
+    <span class="n">date_to</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;date_to&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">date_from</span><span class="p">,</span> <span class="n">date_to</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">calc_date_args</span><span class="p">(</span><span class="n">date_from</span><span class="p">,</span>
+                                                           <span class="n">date_to</span><span class="p">,</span>
+                                                           <span class="n">date_options</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Dates cannot be recognized.&#39;</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">project_aggregates</span> <span class="o">=</span> <span class="n">metering_utils</span><span class="o">.</span><span class="n">ProjectAggregatesQuery</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                                   <span class="n">date_from</span><span class="p">,</span>
+                                                                   <span class="n">date_to</span><span class="p">,</span>
+                                                                   <span class="mi">3600</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                          <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve project list.&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">meter</span> <span class="ow">in</span> <span class="n">meters</span><span class="o">.</span><span class="n">_cached_meters</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">service</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">m_list</span> <span class="ow">in</span> <span class="n">services</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">meter</span> <span class="ow">in</span> <span class="n">m_list</span><span class="p">:</span>
+                <span class="n">service</span> <span class="o">=</span> <span class="n">name</span>
+                <span class="k">break</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">project_aggregates</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">meter</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get_meter</span><span class="p">(</span><span class="n">meter</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                           <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                           <span class="s2">&quot;meter&quot;</span><span class="p">:</span> <span class="n">meter</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                           <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">meter</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                           <span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="n">service</span><span class="p">,</span>
+                           <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">_apiresource</span><span class="o">.</span><span class="n">period_end</span><span class="p">,</span>
+                           <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">_apiresource</span><span class="o">.</span><span class="n">avg</span><span class="p">,</span>
+                           <span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="n">meter</span><span class="o">.</span><span class="n">unit</span><span class="p">}</span>
+                    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">project_rows</span><span class="p">:</span>
+                        <span class="n">project_rows</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">project_rows</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">project_rows</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

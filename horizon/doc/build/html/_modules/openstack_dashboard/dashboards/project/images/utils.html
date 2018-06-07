@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.images.utils &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.images.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon.templatetags</span> <span class="kn">import</span> <span class="n">sizeformat</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">glance</span>
+
+
+<div class="viewcode-block" id="get_available_images"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.utils.html#openstack_dashboard.dashboards.project.images.utils.get_available_images">[docs]</a><span class="k">def</span> <span class="nf">get_available_images</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">images_cache</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list of images that are public or owned by the given</span>
+<span class="sd">    project_id. If project_id is not specified, only public images</span>
+<span class="sd">    are returned.</span>
+
+<span class="sd">    :param images_cache: An optional dict-like object in which to</span>
+<span class="sd">     cache public and per-project id image metadata.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">images_cache</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">images_cache</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">public_images</span> <span class="o">=</span> <span class="n">images_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;public_images&#39;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">images_by_project</span> <span class="o">=</span> <span class="n">images_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;images_by_project&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="s1">&#39;public_images&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">images_cache</span><span class="p">:</span>
+        <span class="n">public</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;is_public&quot;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+                  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">images</span><span class="p">,</span> <span class="n">_more</span><span class="p">,</span> <span class="n">_prev</span> <span class="o">=</span> <span class="n">glance</span><span class="o">.</span><span class="n">image_list_detailed</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">public</span><span class="p">)</span>
+            <span class="p">[</span><span class="n">public_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">]</span>
+            <span class="n">images_cache</span><span class="p">[</span><span class="s1">&#39;public_images&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">public_images</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve public images.&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Preempt if we don&#39;t have a project_id yet.</span>
+    <span class="k">if</span> <span class="n">project_id</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">images_by_project</span><span class="p">[</span><span class="n">project_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">project_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">images_by_project</span><span class="p">:</span>
+        <span class="n">owner</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;property-owner_id&quot;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">,</span>
+                 <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">owned_images</span><span class="p">,</span> <span class="n">_more</span><span class="p">,</span> <span class="n">_prev</span> <span class="o">=</span> <span class="n">glance</span><span class="o">.</span><span class="n">image_list_detailed</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">owner</span><span class="p">)</span>
+            <span class="n">images_by_project</span><span class="p">[</span><span class="n">project_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">owned_images</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">owned_images</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve images for &quot;</span>
+                                <span class="s2">&quot;the current project.&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">owned_images</span> <span class="o">=</span> <span class="n">images_by_project</span><span class="p">[</span><span class="n">project_id</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s1">&#39;images_by_project&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">images_cache</span><span class="p">:</span>
+        <span class="n">images_cache</span><span class="p">[</span><span class="s1">&#39;images_by_project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">images_by_project</span>
+
+    <span class="n">images</span> <span class="o">=</span> <span class="n">owned_images</span> <span class="o">+</span> <span class="n">public_images</span>
+
+    <span class="c1"># Remove duplicate images</span>
+    <span class="n">image_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">final_images</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">image_ids</span><span class="p">:</span>
+            <span class="n">image_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">final_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">final_images</span>
+            <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">container_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;aki&#39;</span><span class="p">,</span> <span class="s1">&#39;ari&#39;</span><span class="p">)]</span>
+
+</div>
+<div class="viewcode-block" id="image_field_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.utils.html#openstack_dashboard.dashboards.project.images.utils.image_field_data">[docs]</a><span class="k">def</span> <span class="nf">image_field_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">include_empty_option</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list of tuples of all images.</span>
+
+<span class="sd">    Generates a sorted list of images available. And returns a list of</span>
+<span class="sd">    (id, name) tuples.</span>
+
+<span class="sd">    :param request: django http request object</span>
+<span class="sd">    :param include_empty_option: flag to include a empty tuple in the front of</span>
+<span class="sd">        the list</span>
+
+<span class="sd">    :return: list of (id, name) tuples</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">get_available_images</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve images&#39;</span><span class="p">))</span>
+    <span class="n">images</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">images_list</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Select Image&#39;</span><span class="p">))]</span>
+    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+        <span class="n">image_label</span> <span class="o">=</span> <span class="s2">u&quot;{} ({})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                        <span class="n">sizeformat</span><span class="o">.</span><span class="n">diskgbformat</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="n">images_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image_label</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">images</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No images available&quot;</span><span class="p">)),</span> <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">images_list</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

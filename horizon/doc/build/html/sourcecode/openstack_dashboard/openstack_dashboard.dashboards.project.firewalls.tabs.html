@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.firewalls.tabs Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.firewalls.urls Module" href="openstack_dashboard.dashboards.project.firewalls.urls.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.firewalls Module" href="openstack_dashboard.dashboards.project.firewalls.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-firewalls-tabs-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.tabs</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-firewalls-tabs-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">FirewallDetailsTab</tt><big>(</big><em>tab_group</em>, <em>request=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#FirewallDetailsTab"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.Tab</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b72cdcd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#FirewallDetailsTab.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b72cdd50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'firewalldetails'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/firewalls/_firewall_details.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">FirewallDetailsTabs</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#FirewallDetailsTabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TabGroup</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'firewalltabs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tabs</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tabs.FirewallDetailsTab'&gt;,)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">FirewallTabs</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#FirewallTabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TabGroup</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'fwtabs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">sticky</tt><em class="property"> = True</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tabs</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tabs.FirewallsTab'&gt;, &lt;class 'openstack_dashboard.dashboards.project.firewalls.tabs.PoliciesTab'&gt;, &lt;class 'openstack_dashboard.dashboards.project.firewalls.tabs.RulesTab'&gt;)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">FirewallsTab</tt><big>(</big><em>tab_group</em>, <em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#FirewallsTab"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TableTab</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_firewallstable_data</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#FirewallsTab.get_firewallstable_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a383d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'firewalls'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_classes</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tables.FirewallsTable'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'horizon/common/_detail_table.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">PoliciesTab</tt><big>(</big><em>tab_group</em>, <em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#PoliciesTab"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TableTab</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_policiestable_data</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#PoliciesTab.get_policiestable_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a38810&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'policies'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_classes</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tables.PoliciesTable'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'horizon/common/_detail_table.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">PolicyDetailsTab</tt><big>(</big><em>tab_group</em>, <em>request=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#PolicyDetailsTab"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.Tab</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7684610&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#PolicyDetailsTab.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b769f990&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'policydetails'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/firewalls/_policy_details.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">PolicyDetailsTabs</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#PolicyDetailsTabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TabGroup</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'policytabs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tabs</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tabs.PolicyDetailsTab'&gt;,)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">RuleDetailsTab</tt><big>(</big><em>tab_group</em>, <em>request=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#RuleDetailsTab"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.Tab</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_url</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a38190&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#RuleDetailsTab.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7a38310&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'ruledetails'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/firewalls/_rule_details.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">RuleDetailsTabs</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#RuleDetailsTabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TabGroup</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'ruletabs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tabs</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tabs.RuleDetailsTab'&gt;,)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.firewalls.tabs.</tt><tt class="descname">RulesTab</tt><big>(</big><em>tab_group</em>, <em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#RulesTab"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.base.TableTab</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get_rulestable_data</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/firewalls/tabs.html#RulesTab.get_rulestable_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b84dc950&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'rules'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_classes</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.firewalls.tables.RulesTable'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'horizon/common/_detail_table.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.firewalls.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.firewalls.urls.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.firewalls.urls</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.firewalls.tabs.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.firewalls.urls.html" title="The openstack_dashboard.dashboards.project.firewalls.urls Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.firewalls.html" title="The openstack_dashboard.dashboards.project.firewalls Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

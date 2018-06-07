@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Horizon Forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Horizon Middleware" href="middleware.html" />
+    <link rel="prev" title="Horizon Tabs and TabGroups" href="tabs.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="horizon-forms">
+<h1>Horizon Forms<a class="headerlink" href="#horizon-forms" title="Permalink to this headline">¶</a></h1>
+<p>Horizon ships with some very useful base form classes, form fields,
+class-based views, and javascript helpers which streamline most of the common
+tasks related to form handling.</p>
+<div class="section" id="module-horizon.forms.base">
+<span id="form-classes"></span><h2>Form Classes<a class="headerlink" href="#module-horizon.forms.base" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.forms.base.DateForm">
+<em class="property">class </em><tt class="descclassname">horizon.forms.base.</tt><tt class="descname">DateForm</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/base.html#DateForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.base.DateForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple form for selecting a range of time.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.base.SelfHandlingForm">
+<em class="property">class </em><tt class="descclassname">horizon.forms.base.</tt><tt class="descname">SelfHandlingForm</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/base.html#SelfHandlingForm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.base.SelfHandlingForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base <tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt> class which includes
+processing logic in its subclasses.</p>
+<dl class="method">
+<dt id="horizon.forms.base.SelfHandlingForm.api_error">
+<tt class="descname">api_error</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/base.html#SelfHandlingForm.api_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.base.SelfHandlingForm.api_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an error to the form&#8217;s error dictionary after validation
+based on problems reported via the API. This is useful when you
+wish for API errors to appear as errors on the form rather than
+using the messages framework.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.forms.base.SelfHandlingForm.set_warning">
+<tt class="descname">set_warning</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/base.html#SelfHandlingForm.set_warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.base.SelfHandlingForm.set_warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a warning on the form.</p>
+<p>Unlike NON_FIELD_ERRORS, this doesn&#8217;t fail form validation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-horizon.forms.fields">
+<span id="form-fields"></span><h2>Form Fields<a class="headerlink" href="#module-horizon.forms.fields" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.forms.fields.DynamicChoiceField">
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">DynamicChoiceField</tt><big>(</big><em>add_item_link=None</em>, <em>add_item_link_args=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/fields.html#DynamicChoiceField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.fields.DynamicChoiceField" title="Permalink to this definition">¶</a></dt>
+<dd><p>A subclass of <tt class="docutils literal"><span class="pre">ChoiceField</span></tt> with additional properties that make
+dynamically updating its elements easier.</p>
+<p>Notably, the field declaration takes an extra argument, <tt class="docutils literal"><span class="pre">add_item_link</span></tt>
+which may be a string or callable defining the URL that should be used
+for the &#8220;add&#8221; link associated with the field.</p>
+<dl class="attribute">
+<dt id="horizon.forms.fields.DynamicChoiceField.widget">
+<tt class="descname">widget</tt><a class="headerlink" href="#horizon.forms.fields.DynamicChoiceField.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#horizon.forms.fields.DynamicSelectWidget" title="horizon.forms.fields.DynamicSelectWidget"><tt class="xref py py-class docutils literal"><span class="pre">DynamicSelectWidget</span></tt></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.fields.DynamicSelectWidget">
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">DynamicSelectWidget</tt><big>(</big><em>attrs=None</em>, <em>choices=()</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/fields.html#DynamicSelectWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.fields.DynamicSelectWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>A subclass of the <tt class="docutils literal"><span class="pre">Select</span></tt> widget which renders extra attributes for
+use in callbacks to handle dynamic changes to the available choices.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.fields.DynamicTypedChoiceField">
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">DynamicTypedChoiceField</tt><big>(</big><em>add_item_link=None</em>, <em>add_item_link_args=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/fields.html#DynamicTypedChoiceField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.fields.DynamicTypedChoiceField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple mix of <tt class="docutils literal"><span class="pre">DynamicChoiceField</span></tt> and <tt class="docutils literal"><span class="pre">TypedChoiceField</span></tt>.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.fields.IPField">
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">IPField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/fields.html#IPField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.fields.IPField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Form field for entering IP/range values, with validation.
+Supports IPv4/IPv6 in the format:
+.. xxx.xxx.xxx.xxx
+.. xxx.xxx.xxx.xxx/zz
+.. ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+.. ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/zz
+and all compressed forms. Also the short forms
+are supported:
+xxx/yy
+xxx.xxx/yy</p>
+<dl class="attribute">
+<dt id="horizon.forms.fields.IPField.version">
+<tt class="descname">version</tt><a class="headerlink" href="#horizon.forms.fields.IPField.version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies which IP version to validate,
+valid values are 1 (fields.IPv4), 2 (fields.IPv6) or
+both - 3 (fields.IPv4 | fields.IPv6).
+Defaults to IPv4 (1)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.IPField.mask">
+<tt class="descname">mask</tt><a class="headerlink" href="#horizon.forms.fields.IPField.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean flag to validate subnet masks along with IP address.
+E.g: 10.0.0.1/32</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.IPField.mask_range_from">
+<tt class="descname">mask_range_from</tt><a class="headerlink" href="#horizon.forms.fields.IPField.mask_range_from" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">Subnet range limitation, e.g. 16</tt></dt>
+<dt>
+<tt class="descname">That means the input mask will be checked to be in the range</tt></dt>
+<dt>
+<tt class="descname">16:max_value. Useful to limit the subnet ranges</tt></dt>
+<dt>
+<tt class="descname">to A/B/C-class networks.</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.fields.MultiIPField">
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">MultiIPField</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/fields.html#MultiIPField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.fields.MultiIPField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends IPField to allow comma-separated lists of addresses.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.fields.SelectWidget">
+<em class="property">class </em><tt class="descclassname">horizon.forms.fields.</tt><tt class="descname">SelectWidget</tt><big>(</big><em>attrs=None</em>, <em>choices=()</em>, <em>data_attrs=()</em>, <em>transform=None</em>, <em>transform_html_attrs=None</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/fields.html#SelectWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.fields.SelectWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customizable select widget, that allows to render
+data-xxx attributes from choices. This widget also
+allows user to specify additional html attributes
+for choices.</p>
+<dl class="attribute">
+<dt id="horizon.forms.fields.SelectWidget.data_attrs">
+<tt class="descname">data_attrs</tt><a class="headerlink" href="#horizon.forms.fields.SelectWidget.data_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies object properties to serialize as
+data-xxx attribute. If passed (&#8216;id&#8217;, ),
+this will be rendered as:
+&lt;option data-id=&#8221;123&#8221;&gt;option_value&lt;/option&gt;
+where 123 is the value of choice_value.id</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.SelectWidget.transform">
+<tt class="descname">transform</tt><a class="headerlink" href="#horizon.forms.fields.SelectWidget.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable used to render the display value
+from the option object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.forms.fields.SelectWidget.transform_html_attrs">
+<tt class="descname">transform_html_attrs</tt><a class="headerlink" href="#horizon.forms.fields.SelectWidget.transform_html_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>A callable used to render additional HTML attributes
+for the option object. It returns a dictionary
+containing the html attributes and their values.
+For example, to define a title attribute for the
+choices:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>helpText = { &#39;Apple&#39;: &#39;This is a fruit&#39;,
+          &#39;Carrot&#39;: &#39;This is a vegetable&#39; }
+
+def get_title(data):
+    text = helpText.get(data, None)
+    if text:
+        return {&#39;title&#39;: text}
+    else:
+        return {}
+
+....
+....
+
+widget=forms.SelectWidget( attrs={&#39;class&#39;: &#39;switchable&#39;,
+                                 &#39;data-slug&#39;: &#39;source&#39;},
+                        transform_html_attrs=get_title )
+
+self.fields[&lt;field name&gt;].choices =
+    ([
+        (&#39;apple&#39;,&#39;Apple&#39;),
+        (&#39;carrot&#39;,&#39;Carrot&#39;)
+    ])
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-horizon.forms.views">
+<span id="form-views"></span><h2>Form Views<a class="headerlink" href="#module-horizon.forms.views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.forms.views.ModalBackdropMixin">
+<em class="property">class </em><tt class="descclassname">horizon.forms.views.</tt><tt class="descname">ModalBackdropMixin</tt><a class="reference internal" href="../_modules/horizon/forms/views.html#ModalBackdropMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.views.ModalBackdropMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>This mixin class is to be used for together with ModalFormView and
+WorkflowView classes to augment them with modal_backdrop context data.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.forms.views.ModalFormView">
+<em class="property">class </em><tt class="descclassname">horizon.forms.views.</tt><tt class="descname">ModalFormView</tt><a class="reference internal" href="../_modules/horizon/forms/views.html#ModalFormView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.views.ModalFormView" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main view class from which all views which handle forms in Horizon
+should inherit. It takes care of all details with processing
+<a class="reference internal" href="#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">SelfHandlingForm</span></tt></a> classes, and modal concerns
+when the associated template inherits from
+<cite>horizon/common/_modal_form.html</cite>.</p>
+<p>Subclasses must define a <tt class="docutils literal"><span class="pre">form_class</span></tt> and <tt class="docutils literal"><span class="pre">template_name</span></tt> attribute
+at minimum.</p>
+<p>See Django&#8217;s documentation on the <a class="reference external" href="https://docs.djangoproject.com/en/dev/ref/class-based-views/generic-editing/#formview">FormView</a> class for
+more details.</p>
+<dl class="method">
+<dt id="horizon.forms.views.ModalFormView.get_object_display">
+<tt class="descname">get_object_display</tt><big>(</big><em>obj</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/views.html#ModalFormView.get_object_display"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.views.ModalFormView.get_object_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>For dynamic insertion of resources created in modals, this method
+returns the display name of the created object. Defaults to returning
+the <tt class="docutils literal"><span class="pre">name</span></tt> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.forms.views.ModalFormView.get_object_id">
+<tt class="descname">get_object_id</tt><big>(</big><em>obj</em><big>)</big><a class="reference internal" href="../_modules/horizon/forms/views.html#ModalFormView.get_object_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.forms.views.ModalFormView.get_object_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>For dynamic insertion of resources created in modals, this method
+returns the id of the created object. Defaults to returning the <tt class="docutils literal"><span class="pre">id</span></tt>
+attribute.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="forms-javascript">
+<h2>Forms Javascript<a class="headerlink" href="#forms-javascript" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="switchable-fields">
+<h3>Switchable Fields<a class="headerlink" href="#switchable-fields" title="Permalink to this headline">¶</a></h3>
+<p>By marking fields with the <tt class="docutils literal"><span class="pre">&quot;switchable&quot;</span></tt> and <tt class="docutils literal"><span class="pre">&quot;switched&quot;</span></tt> classes along
+with defining a few data attributes you can programmatically hide, show,
+and rename fields in a form.</p>
+<p>The triggers are fields using a <tt class="docutils literal"><span class="pre">select</span></tt> input widget, marked with the
+&#8220;switchable&#8221; class, and defining a &#8220;data-slug&#8221; attribute. When they are changed,
+any input with the <tt class="docutils literal"><span class="pre">&quot;switched&quot;</span></tt> class and defining a <tt class="docutils literal"><span class="pre">&quot;data-switch-on&quot;</span></tt>
+attribute which matches the <tt class="docutils literal"><span class="pre">select</span></tt> input&#8217;s <tt class="docutils literal"><span class="pre">&quot;data-slug&quot;</span></tt> attribute will be
+evaluated for necessary changes. In simpler terms, if the <tt class="docutils literal"><span class="pre">&quot;switched&quot;</span></tt> target
+input&#8217;s <tt class="docutils literal"><span class="pre">&quot;switch-on&quot;</span></tt> matches the <tt class="docutils literal"><span class="pre">&quot;slug&quot;</span></tt> of the <tt class="docutils literal"><span class="pre">&quot;switchable&quot;</span></tt> trigger
+input, it gets switched. Simple, right?</p>
+<p>The <tt class="docutils literal"><span class="pre">&quot;switched&quot;</span></tt> inputs also need to define states. For each state in which
+the input should be shown, it should define a data attribute like the
+following: <tt class="docutils literal"><span class="pre">data-&lt;slug&gt;-&lt;value&gt;=&quot;&lt;desired</span> <span class="pre">label&gt;&quot;</span></tt>. When the switch event
+happens the value of the <tt class="docutils literal"><span class="pre">&quot;switchable&quot;</span></tt> field will be compared to the
+data attributes and the correct label will be applied to the field. If
+a corresponding label for that value is <em>not</em> found, the field will
+be hidden instead.</p>
+<p>A simplified example is as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Source&#39;</span><span class="p">),</span>
+    <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;cidr&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;CIDR&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;sg&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Security Group&#39;</span><span class="p">))</span>
+    <span class="p">],</span>
+    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span>
+    <span class="p">})</span>
+<span class="p">)</span>
+
+<span class="n">cidr</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IPField</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;CIDR&quot;</span><span class="p">),</span>
+    <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;data-source-cidr&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;CIDR&#39;</span><span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">)</span>
+
+<span class="n">security_group</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Security Group&#39;</span><span class="p">),</span>
+    <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;data-source-sg&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Security Group&#39;</span><span class="p">)</span>
+    <span class="p">})</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>That code would create the <tt class="docutils literal"><span class="pre">&quot;switchable&quot;</span></tt> control field <tt class="docutils literal"><span class="pre">source</span></tt>, and the
+two <tt class="docutils literal"><span class="pre">&quot;switched&quot;</span></tt> fields <tt class="docutils literal"><span class="pre">cidr</span></tt> and <tt class="docutils literal"><span class="pre">security</span> <span class="pre">group</span></tt> which are hidden or
+shown depending on the value of <tt class="docutils literal"><span class="pre">source</span></tt>.</p>
+<p>NOTE: A field can only safely define one slug in its <tt class="docutils literal"><span class="pre">&quot;switch-on&quot;</span></tt> attribute.
+While switching on multiple fields is possible, the behavior is very hard to
+predict due to the events being fired from the various switchable fields in
+order. You generally end up just having it hidden most of the time by accident,
+so it&#8217;s not recommended. Instead just add a second field to the form and control
+the two independently, then merge their results in the form&#8217;s clean or handle
+methods at the end.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Horizon Forms</a><ul>
+<li><a class="reference internal" href="#module-horizon.forms.base">Form Classes</a></li>
+<li><a class="reference internal" href="#module-horizon.forms.fields">Form Fields</a></li>
+<li><a class="reference internal" href="#module-horizon.forms.views">Form Views</a></li>
+<li><a class="reference internal" href="#forms-javascript">Forms Javascript</a><ul>
+<li><a class="reference internal" href="#switchable-fields">Switchable Fields</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tabs.html"
+                                  title="previous chapter">Horizon Tabs and TabGroups</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="middleware.html"
+                                  title="next chapter">Horizon Middleware</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/ref/forms.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="middleware.html" title="Horizon Middleware"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tabs.html" title="Horizon Tabs and TabGroups"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

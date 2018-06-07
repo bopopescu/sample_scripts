@@ -1,0 +1,474 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.images.images.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.images.images.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Views for managing images.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">validators</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">ValidationError</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.forms.widgets</span> <span class="kn">import</span> <span class="n">HiddenInput</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">policy</span>
+
+
+<span class="n">IMAGE_BACKEND_SETTINGS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_IMAGE_BACKEND&#39;</span><span class="p">,</span> <span class="p">{})</span>
+<span class="n">IMAGE_FORMAT_CHOICES</span> <span class="o">=</span> <span class="n">IMAGE_BACKEND_SETTINGS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_formats&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+
+<div class="viewcode-block" id="create_image_metadata"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.images.forms.html#openstack_dashboard.dashboards.project.images.images.forms.create_image_metadata">[docs]</a><span class="k">def</span> <span class="nf">create_image_metadata</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Use the given dict of image form data to generate the metadata used for</span>
+<span class="sd">    creating the image in glance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Glance does not really do anything with container_format at the</span>
+    <span class="c1"># moment. It requires it is set to the same disk_format for the three</span>
+    <span class="c1"># Amazon image types, otherwise it just treats them as &#39;bare.&#39; As such</span>
+    <span class="c1"># we will just set that to be that here instead of bothering the user</span>
+    <span class="c1"># with asking them for information we can already determine.</span>
+    <span class="n">disk_format</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">disk_format</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;ami&#39;</span><span class="p">,</span> <span class="s1">&#39;aki&#39;</span><span class="p">,</span> <span class="s1">&#39;ari&#39;</span><span class="p">,):</span>
+        <span class="n">container_format</span> <span class="o">=</span> <span class="n">disk_format</span>
+    <span class="k">elif</span> <span class="n">disk_format</span> <span class="o">==</span> <span class="s1">&#39;docker&#39;</span><span class="p">:</span>
+        <span class="c1"># To support docker containers we allow the user to specify</span>
+        <span class="c1"># &#39;docker&#39; as the format. In that case we really want to use</span>
+        <span class="c1"># &#39;raw&#39; as the disk format and &#39;docker&#39; as the container format.</span>
+        <span class="n">disk_format</span> <span class="o">=</span> <span class="s1">&#39;raw&#39;</span>
+        <span class="n">container_format</span> <span class="o">=</span> <span class="s1">&#39;docker&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">container_format</span> <span class="o">=</span> <span class="s1">&#39;bare&#39;</span>
+
+    <span class="c1"># The Create form uses &#39;is_public&#39; but the Update form uses &#39;public&#39;. Just</span>
+    <span class="c1"># being tolerant here so we don&#39;t break anything else.</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;is_public&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;is_public&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;public&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)),</span>
+            <span class="s1">&#39;protected&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;protected&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;disk_format&#39;</span><span class="p">:</span> <span class="n">disk_format</span><span class="p">,</span>
+            <span class="s1">&#39;container_format&#39;</span><span class="p">:</span> <span class="n">container_format</span><span class="p">,</span>
+            <span class="s1">&#39;min_disk&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;minimum_disk&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s1">&#39;min_ram&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;minimum_ram&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]:</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kernel&#39;</span><span class="p">):</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;kernel_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ramdisk&#39;</span><span class="p">):</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;ramdisk_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;ramdisk&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;architecture&#39;</span><span class="p">):</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;architecture&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;architecture&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">meta</span>
+
+</div>
+<div class="viewcode-block" id="CreateImageForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.images.forms.html#openstack_dashboard.dashboards.project.images.images.forms.CreateImageForm">[docs]</a><span class="k">class</span> <span class="nc">CreateImageForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">source_type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image Source&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image Location&#39;</span><span class="p">)),</span>
+                 <span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image File&#39;</span><span class="p">))],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">}))</span>
+    <span class="n">image_url</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image Location&quot;</span><span class="p">),</span>
+                               <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;An external (HTTP) URL to load &quot;</span>
+                                           <span class="s2">&quot;the image from.&quot;</span><span class="p">),</span>
+                               <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                   <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;data-source-url&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image Location&#39;</span><span class="p">),</span>
+                                   <span class="s1">&#39;ng-model&#39;</span><span class="p">:</span> <span class="s1">&#39;copyFrom&#39;</span><span class="p">,</span>
+                                   <span class="s1">&#39;ng-change&#39;</span><span class="p">:</span>
+                                   <span class="s1">&#39;ctrl.selectImageFormat(copyFrom)&#39;</span><span class="p">}),</span>
+                               <span class="n">validators</span><span class="o">=</span><span class="p">[</span><span class="n">validators</span><span class="o">.</span><span class="n">URLValidator</span><span class="p">(</span>
+                                   <span class="n">schemes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;http&quot;</span><span class="p">,</span> <span class="s2">&quot;https&quot;</span><span class="p">])],</span>
+                               <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">image_file</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image File&quot;</span><span class="p">),</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;A local image to upload.&quot;</span><span class="p">),</span>
+                                 <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">FileInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                     <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;data-source-file&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image File&#39;</span><span class="p">),</span>
+                                     <span class="s1">&#39;ng-model&#39;</span><span class="p">:</span> <span class="s1">&#39;imageFile&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;ng-change&#39;</span><span class="p">:</span>
+                                     <span class="s1">&#39;ctrl.selectImageFormat(imageFile.name)&#39;</span><span class="p">,</span>
+                                     <span class="s1">&#39;image-file-on-change&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">}),</span>
+                                 <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Kernel&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">defaultfilters</span><span class="o">.</span><span class="n">filesizeformat</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))))</span>
+    <span class="n">ramdisk</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Ramdisk&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">defaultfilters</span><span class="o">.</span><span class="n">filesizeformat</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">))))</span>
+    <span class="n">disk_format</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Format&#39;</span><span class="p">),</span>
+                                    <span class="n">choices</span><span class="o">=</span><span class="p">[],</span>
+                                    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                        <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;ng-model&#39;</span><span class="p">:</span> <span class="s1">&#39;ctrl.diskFormat&#39;</span><span class="p">}))</span>
+    <span class="n">architecture</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Architecture&quot;</span><span class="p">),</span>
+                                   <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">minimum_disk</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Minimum Disk (GB)&quot;</span><span class="p">),</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The minimum disk size required to boot the image. &#39;</span>
+                    <span class="s1">&#39;If unspecified, this value defaults to 0 (no minimum).&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">minimum_ram</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Minimum RAM (MB)&quot;</span><span class="p">),</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The minimum memory size required to boot the image. &#39;</span>
+                    <span class="s1">&#39;If unspecified, this value defaults to 0 (no minimum).&#39;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">is_copying</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Copy Data&quot;</span><span class="p">),</span> <span class="n">initial</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Specify this option to copy image data to the image &#39;</span>
+                    <span class="s1">&#39;service. If unspecified, image data will be used in its &#39;</span>
+                    <span class="s1">&#39;current location.&#39;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-source-url&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image Location&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">}))</span>
+    <span class="n">is_public</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Public&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">protected</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Protected&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateImageForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">HORIZON_IMAGES_ALLOW_UPLOAD</span> <span class="ow">or</span>
+                <span class="ow">not</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;upload_image&quot;</span><span class="p">),),</span> <span class="n">request</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hide_file_source_type</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;set_image_location&quot;</span><span class="p">),),</span> <span class="n">request</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hide_url_source_type</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;publicize_image&quot;</span><span class="p">),),</span> <span class="n">request</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hide_is_public</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">IMAGE_FORMAT_CHOICES</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kernel_images</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_list_detailed</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;disk_format&#39;</span><span class="p">:</span> <span class="s1">&#39;aki&#39;</span><span class="p">})[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">kernel_images</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve image list.&#39;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kernel_images</span><span class="p">:</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose an image&quot;</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">kernel_images</span><span class="p">:</span>
+                <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ramdisk_images</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_list_detailed</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;disk_format&#39;</span><span class="p">:</span> <span class="s1">&#39;ari&#39;</span><span class="p">})[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">ramdisk_images</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve image list.&#39;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ramdisk_images</span><span class="p">:</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose an image&quot;</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">ramdisk_images</span><span class="p">:</span>
+                <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ramdisk&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ramdisk&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_hide_file_source_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_file&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">HiddenInput</span><span class="p">()</span>
+        <span class="n">source_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;source_type&#39;</span><span class="p">]</span>
+        <span class="n">source_type</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">source_type</span><span class="o">.</span><span class="n">choices</span>
+                               <span class="k">if</span> <span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;file&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_type</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">source_type</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">HiddenInput</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_hide_url_source_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">HiddenInput</span><span class="p">()</span>
+        <span class="n">source_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;source_type&#39;</span><span class="p">]</span>
+        <span class="n">source_type</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">choice</span> <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">source_type</span><span class="o">.</span><span class="n">choices</span>
+                               <span class="k">if</span> <span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;url&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_type</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">source_type</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">HiddenInput</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_hide_is_public</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;is_public&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">HiddenInput</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;is_public&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="CreateImageForm.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.images.forms.html#openstack_dashboard.dashboards.project.images.images.forms.CreateImageForm.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreateImageForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="c1"># The image_file key can be missing based on particular upload</span>
+        <span class="c1"># conditions. Code defensively for it here...</span>
+        <span class="n">image_file</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_file&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">image_url</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_url&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">image_url</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">image_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="s2">&quot;A image or external image location must be specified.&quot;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">image_url</span> <span class="ow">and</span> <span class="n">image_file</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Can not specify both image and external image location.&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+</div>
+<div class="viewcode-block" id="CreateImageForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.images.forms.html#openstack_dashboard.dashboards.project.images.images.forms.CreateImageForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">create_image_metadata</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Add image source file or URL to metadata</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">HORIZON_IMAGES_ALLOW_UPLOAD</span> <span class="ow">and</span>
+                <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;upload_image&quot;</span><span class="p">),),</span> <span class="n">request</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_file&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)):</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;image_file&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;is_copying&#39;</span><span class="p">]:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;copy_from&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;image_url&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;image_url&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">meta</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Your image </span><span class="si">%s</span><span class="s1"> has been queued for creation.&#39;</span><span class="p">)</span> <span class="o">%</span>
+                             <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">image</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create new image&#39;</span><span class="p">)</span>
+            <span class="c1"># TODO(nikunj2512): Fix this once it is fixed in glance client</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">400</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;Invalid disk format&quot;</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create new image: Invalid disk format &#39;</span>
+                            <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> for image.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="s2">&quot;Image name too long&quot;</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create new image: Image name too long.&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;not supported&quot;</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">details</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create new image: URL scheme not &#39;</span>
+                            <span class="s1">&#39;supported.&#39;</span><span class="p">)</span>
+
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateImageForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.images.forms.html#openstack_dashboard.dashboards.project.images.images.forms.UpdateImageForm">[docs]</a><span class="k">class</span> <span class="nc">UpdateImageForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">image_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Kernel ID&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+    <span class="p">)</span>
+    <span class="n">ramdisk</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Ramdisk ID&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+    <span class="p">)</span>
+    <span class="n">architecture</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Architecture&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+    <span class="p">)</span>
+    <span class="n">disk_format</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Format&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">minimum_disk</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Minimum Disk (GB)&quot;</span><span class="p">),</span>
+                                      <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                      <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The minimum disk size&#39;</span>
+                                                  <span class="s1">&#39; required to boot the&#39;</span>
+                                                  <span class="s1">&#39; image. If unspecified,&#39;</span>
+                                                  <span class="s1">&#39; this value defaults to&#39;</span>
+                                                  <span class="s1">&#39; 0 (no minimum).&#39;</span><span class="p">),</span>
+                                      <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">minimum_ram</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Minimum RAM (MB)&quot;</span><span class="p">),</span>
+                                     <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                     <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The minimum memory size&#39;</span>
+                                                 <span class="s1">&#39; required to boot the&#39;</span>
+                                                 <span class="s1">&#39; image. If unspecified,&#39;</span>
+                                                 <span class="s1">&#39; this value defaults to&#39;</span>
+                                                 <span class="s1">&#39; 0 (no minimum).&#39;</span><span class="p">),</span>
+                                     <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">public</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Public&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">protected</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Protected&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UpdateImageForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span><span class="p">,</span>
+                                              <span class="n">name</span> <span class="ow">in</span> <span class="n">IMAGE_FORMAT_CHOICES</span>
+                                              <span class="k">if</span> <span class="n">value</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(((</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;publicize_image&quot;</span><span class="p">),),</span> <span class="n">request</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;public&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CheckboxInput</span><span class="p">(</span>
+                <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">})</span>
+
+<div class="viewcode-block" id="UpdateImageForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.images.images.forms.html#openstack_dashboard.dashboards.project.images.images.forms.UpdateImageForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">image_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;image_id&#39;</span><span class="p">]</span>
+        <span class="n">error_updating</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to update image &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">create_image_metadata</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># Ensure we do not delete properties that have already been</span>
+        <span class="c1"># set on an image.</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;purge_props&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">,</span> <span class="o">**</span><span class="n">meta</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image was successfully updated.&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">image</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">error_updating</span> <span class="o">%</span> <span class="n">image_id</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

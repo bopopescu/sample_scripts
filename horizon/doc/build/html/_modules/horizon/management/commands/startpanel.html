@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>horizon.management.commands.startpanel &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../index.html" />
+    <link rel="up" title="horizon" href="../../../horizon.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for horizon.management.commands.startpanel</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">make_option</span>  <span class="c1"># noqa</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">CommandError</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.core.management.templates</span> <span class="kn">import</span> <span class="n">TemplateCommand</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.importlib</span> <span class="kn">import</span> <span class="n">import_module</span>  <span class="c1"># noqa</span>
+
+<span class="kn">import</span> <span class="nn">horizon</span>
+
+
+<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../../../sourcecode/horizon/horizon.management.commands.startpanel.html#horizon.management.commands.startpanel.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">TemplateCommand</span><span class="p">):</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="s2">&quot;[name] [dashboard name] [optional destination directory]&quot;</span>
+    <span class="n">option_list</span> <span class="o">=</span> <span class="n">TemplateCommand</span><span class="o">.</span><span class="n">option_list</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">make_option</span><span class="p">(</span><span class="s1">&#39;--dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;-d&#39;</span><span class="p">,</span>
+                    <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;dashboard&#39;</span><span class="p">,</span>
+                    <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                    <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The dotted python path to the &#39;</span>
+                         <span class="s1">&#39;dashboard which this panel will be &#39;</span>
+                         <span class="s1">&#39;registered with.&#39;</span><span class="p">),</span>
+        <span class="n">make_option</span><span class="p">(</span><span class="s1">&#39;--target&#39;</span><span class="p">,</span>
+                    <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">,</span>
+                    <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store&#39;</span><span class="p">,</span>
+                    <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The directory in which the panel &#39;</span>
+                         <span class="s1">&#39;should be created. Defaults to the &#39;</span>
+                         <span class="s1">&#39;current directory. The value &quot;auto&quot; &#39;</span>
+                         <span class="s1">&#39;may also be used to automatically &#39;</span>
+                         <span class="s1">&#39;create the panel inside the specified &#39;</span>
+                         <span class="s1">&#39;dashboard module.&#39;</span><span class="p">),)</span>
+    <span class="n">template</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;conf&quot;</span><span class="p">,</span> <span class="s2">&quot;panel_template&quot;</span><span class="p">)</span>
+    <span class="n">help</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Creates a Django app directory structure for a new panel &quot;</span>
+            <span class="s2">&quot;with the given name in the current directory or optionally in &quot;</span>
+            <span class="s2">&quot;the given directory.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Command.handle"><a class="viewcode-back" href="../../../../sourcecode/horizon/horizon.management.commands.startpanel.html#horizon.management.commands.startpanel.Command.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">panel_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">panel_name</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s2">&quot;You must provide a panel name.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dashboard&#39;</span><span class="p">):</span>
+            <span class="n">dashboard_path</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dashboard&#39;</span><span class="p">)</span>
+            <span class="n">dashboard_mod_path</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">dashboard_path</span><span class="p">,</span> <span class="s2">&quot;dashboard&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Check the dashboard.py file in the dashboard app can be imported.</span>
+        <span class="c1"># Add the dashboard information to our options to pass along if all</span>
+        <span class="c1"># goes well.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dashboard_mod</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">dashboard_mod_path</span><span class="p">)</span>
+                <span class="n">options</span><span class="p">[</span><span class="s2">&quot;dash_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dashboard_path</span>
+                <span class="n">options</span><span class="p">[</span><span class="s2">&quot;dash_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dashboard_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s2">&quot;A dashboard.py module could not be &quot;</span>
+                                   <span class="s2">&quot;imported from the dashboard at </span><span class="si">%r</span><span class="s2">.&quot;</span>
+                                   <span class="o">%</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dashboard&quot;</span><span class="p">))</span>
+
+        <span class="n">target</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dashboard_mod</span><span class="o">.</span><span class="n">__file__</span><span class="p">),</span>
+                                  <span class="n">panel_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s2">&quot;Unable to create panel directory: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                                       <span class="o">%</span> <span class="n">exc</span><span class="p">)</span>
+
+        <span class="c1"># Use our default template if one isn&#39;t specified.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span>
+
+        <span class="c1"># We have html templates as well, so make sure those are included.</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;extensions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;tmpl&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Check that the app_name cannot be imported.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">import_module</span><span class="p">(</span><span class="n">panel_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> conflicts with the name of an existing &quot;</span>
+                               <span class="s2">&quot;Python module and cannot be used as an app &quot;</span>
+                               <span class="s2">&quot;name. Please try another name.&quot;</span> <span class="o">%</span> <span class="n">panel_name</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Command</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="s1">&#39;panel&#39;</span><span class="p">,</span> <span class="n">panel_name</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">curdir</span><span class="p">,</span> <span class="n">panel_name</span><span class="p">)</span>
+
+        <span class="c1"># Rename our python template files.</span>
+        <span class="n">file_names</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;*.py.tmpl&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">file_names</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../../horizon.html" accesskey="U">horizon</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

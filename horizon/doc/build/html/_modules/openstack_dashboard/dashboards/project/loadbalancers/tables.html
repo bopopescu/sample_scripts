@@ -1,0 +1,692 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.loadbalancers.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.loadbalancers.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1">#    Copyright 2013, Big Switch Networks, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span> <span class="k">as</span> <span class="n">filters</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django.utils.http</span> <span class="kn">import</span> <span class="n">urlencode</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">conf</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.access_and_security.floating_ips</span> \
+    <span class="kn">import</span> <span class="n">workflows</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">policy</span>
+
+
+<div class="viewcode-block" id="AddPoolLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddPoolLink">[docs]</a><span class="k">class</span> <span class="nc">AddPoolLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;addpool&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add Pool&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:addpool&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;create_pool&quot;</span><span class="p">),)</span>
+
+</div>
+<div class="viewcode-block" id="AddVipLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddVipLink">[docs]</a><span class="k">class</span> <span class="nc">AddVipLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;addvip&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add VIP&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;create_vip&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="AddVipLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddVipLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:addvip&quot;</span><span class="p">,</span>
+                           <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">base_url</span>
+</div>
+<div class="viewcode-block" id="AddVipLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddVipLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datum</span> <span class="ow">and</span> <span class="n">datum</span><span class="o">.</span><span class="n">vip_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="AddMemberLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddMemberLink">[docs]</a><span class="k">class</span> <span class="nc">AddMemberLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;addmember&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add Member&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:addmember&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;create_member&quot;</span><span class="p">),)</span>
+
+</div>
+<div class="viewcode-block" id="AddMonitorLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddMonitorLink">[docs]</a><span class="k">class</span> <span class="nc">AddMonitorLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;addmonitor&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add Monitor&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:addmonitor&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;create_health_monitor&quot;</span><span class="p">),)</span>
+
+</div>
+<div class="viewcode-block" id="DeleteVipLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteVipLink">[docs]</a><span class="k">class</span> <span class="nc">DeleteVipLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;deletevip&quot;</span>
+    <span class="n">preempt</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Delete VIP&quot;</span><span class="p">)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;delete_vip&quot;</span><span class="p">),)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;btn-danger&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="DeleteVipLink.get_help_text"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteVipLink.get_help_text">[docs]</a>    <span class="k">def</span> <span class="nf">get_help_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Deleting VIP </span><span class="si">%s</span><span class="s2"> from this pool cannot be undone.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">vip_id</span>
+</div>
+<div class="viewcode-block" id="DeleteVipLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteVipLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datum</span> <span class="ow">and</span> <span class="n">datum</span><span class="o">.</span><span class="n">vip_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_help_text</span><span class="p">(</span><span class="n">datum</span><span class="o">.</span><span class="n">vip_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="DeleteVipLink.single"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteVipLink.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">vip_id</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span><span class="o">.</span><span class="n">vip_id</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to locate VIP to delete. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+                              <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vip_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">vip_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Deleted VIP </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">vip_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                  <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to delete VIP. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeletePoolLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePoolLink">[docs]</a><span class="k">class</span> <span class="nc">DeletePoolLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;deletepool&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;delete_pool&quot;</span><span class="p">),)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeletePoolLink.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePoolLink.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Pool&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Pools&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeletePoolLink.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePoolLink.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Scheduled deletion of Pool&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Scheduled deletion of Pools&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeletePoolLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePoolLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datum</span> <span class="ow">and</span> <span class="n">datum</span><span class="o">.</span><span class="n">vip_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="DeletePoolLink.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePoolLink.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Deleted pool </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to delete pool. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteMonitorLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMonitorLink">[docs]</a><span class="k">class</span> <span class="nc">DeleteMonitorLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span>
+                        <span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;deletemonitor&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;delete_health_monitor&quot;</span><span class="p">),)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteMonitorLink.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMonitorLink.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Monitor&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Monitors&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteMonitorLink.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMonitorLink.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Scheduled deletion of Monitor&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Scheduled deletion of Monitors&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteMonitorLink.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMonitorLink.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_health_monitor_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Deleted monitor </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to delete monitor. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteMemberLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMemberLink">[docs]</a><span class="k">class</span> <span class="nc">DeleteMemberLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;deletemember&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;delete_member&quot;</span><span class="p">),)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteMemberLink.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMemberLink.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Member&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Members&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteMemberLink.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMemberLink.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Scheduled deletion of Member&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Scheduled deletion of Members&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteMemberLink.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeleteMemberLink.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">member_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Deleted member </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to delete member. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdatePoolLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdatePoolLink">[docs]</a><span class="k">class</span> <span class="nc">UpdatePoolLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;updatepool&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Pool&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-update&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;update_pool&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UpdatePoolLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdatePoolLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:updatepool&quot;</span><span class="p">,</span>
+                           <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">base_url</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateVipLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateVipLink">[docs]</a><span class="k">class</span> <span class="nc">UpdateVipLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;updatevip&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit VIP&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-update&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;update_vip&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UpdateVipLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateVipLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:updatevip&quot;</span><span class="p">,</span>
+                           <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;vip_id&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip_id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">base_url</span>
+</div>
+<div class="viewcode-block" id="UpdateVipLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateVipLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datum</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">datum</span><span class="o">.</span><span class="n">vip_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateMemberLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateMemberLink">[docs]</a><span class="k">class</span> <span class="nc">UpdateMemberLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;updatemember&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Member&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-update&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;update_member&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UpdateMemberLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateMemberLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">member</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:updatemember&quot;</span><span class="p">,</span>
+                           <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;member_id&#39;</span><span class="p">:</span> <span class="n">member</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">base_url</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateMonitorLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateMonitorLink">[docs]</a><span class="k">class</span> <span class="nc">UpdateMonitorLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;updatemonitor&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Monitor&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-update&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;update_health_monitor&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UpdateMonitorLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateMonitorLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">monitor</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:updatemonitor&quot;</span><span class="p">,</span>
+                           <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">base_url</span>
+
+</div></div>
+<div class="viewcode-block" id="AddPMAssociationLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddPMAssociationLink">[docs]</a><span class="k">class</span> <span class="nc">AddPMAssociationLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span>
+                           <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;addassociation&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Associate Monitor&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:addassociation&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;create_pool_health_monitor&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="AddPMAssociationLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddPMAssociationLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_health_monitor_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                          <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">monitors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">datum</span><span class="p">[</span><span class="s1">&#39;health_monitors&#39;</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Failed to retrieve health monitors.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="DeletePMAssociationLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePMAssociationLink">[docs]</a><span class="k">class</span> <span class="nc">DeletePMAssociationLink</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span>
+                              <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;deleteassociation&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Disassociate Monitor&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:deleteassociation&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-danger&quot;</span><span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;remove&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;delete_pool_health_monitor&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="DeletePMAssociationLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.DeletePMAssociationLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">datum</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">datum</span><span class="p">[</span><span class="s1">&#39;health_monitors&#39;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="AddVIPFloatingIP"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddVIPFloatingIP">[docs]</a><span class="k">class</span> <span class="nc">AddVIPFloatingIP</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add floating ip to VIP</span>
+
+<span class="sd">    This class is extremely similar to AssociateIP from</span>
+<span class="sd">    the instances page</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;associate&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Associate Floating IP&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:access_and_security:floating_ips:associate&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;link&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;network:associate_floating_ip&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="AddVIPFloatingIP.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddVIPFloatingIP.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">floating_ip_supported</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">floating_ip_simple_associate_supported</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="s2">&quot;vip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span><span class="p">:</span>
+            <span class="n">vip</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span>
+            <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">vip</span><span class="p">,</span> <span class="s2">&quot;fip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vip</span><span class="o">.</span><span class="n">fip</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="AddVIPFloatingIP.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.AddVIPFloatingIP.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">next_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_full_url</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">workflows</span><span class="o">.</span><span class="n">IPAssociationWorkflow</span><span class="o">.</span><span class="n">redirect_param_name</span><span class="p">:</span> <span class="n">next_url</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="s2">&quot;vip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">datum</span><span class="o">.</span><span class="n">vip</span><span class="p">:</span>
+            <span class="n">vip</span> <span class="o">=</span> <span class="n">datum</span><span class="o">.</span><span class="n">vip</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;port_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vip</span><span class="o">.</span><span class="n">port_id</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;?&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">base_url</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="RemoveVIPFloatingIP"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.RemoveVIPFloatingIP">[docs]</a><span class="k">class</span> <span class="nc">RemoveVIPFloatingIP</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove floating IP from VIP</span>
+
+<span class="sd">    This class is extremely similar to the project instance table</span>
+<span class="sd">    SimpleDisassociateIP feature, but just different enough to not</span>
+<span class="sd">    be able to share much code</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;disassociate&quot;</span>
+    <span class="n">preempt</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;unlink&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Disassociate Floating IP&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;btn-danger&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-disassociate&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;network:disassociate_floating_ip&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="RemoveVIPFloatingIP.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.RemoveVIPFloatingIP.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">floating_ip_supported</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">conf</span><span class="o">.</span><span class="n">HORIZON_CONFIG</span><span class="p">[</span><span class="s2">&quot;simple_ip_management&quot;</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="s2">&quot;vip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span><span class="p">:</span>
+            <span class="n">vip</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">vip</span><span class="p">,</span> <span class="s2">&quot;fip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vip</span><span class="o">.</span><span class="n">fip</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="RemoveVIPFloatingIP.single"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.RemoveVIPFloatingIP.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">)</span>
+            <span class="n">fips</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">tenant_floating_ip_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">vip_fips</span> <span class="o">=</span> <span class="p">[</span><span class="n">fip</span> <span class="k">for</span> <span class="n">fip</span> <span class="ow">in</span> <span class="n">fips</span>
+                        <span class="k">if</span> <span class="n">fip</span><span class="o">.</span><span class="n">port_id</span> <span class="o">==</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span><span class="o">.</span><span class="n">port_id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">vip_fips</span><span class="p">:</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No floating IPs to disassociate.&quot;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">floating_ip_disassociate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                     <span class="n">vip_fips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                 <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Successfully disassociated &quot;</span>
+                                   <span class="s2">&quot;floating IP: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">fip</span><span class="o">.</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to disassociate floating IP.&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">())</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdatePoolsRow"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdatePoolsRow">[docs]</a><span class="k">class</span> <span class="nc">UpdatePoolsRow</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="UpdatePoolsRow.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdatePoolsRow.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">):</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">vip</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">vip_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip_id</span><span class="p">)</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">vip</span> <span class="o">=</span> <span class="n">vip</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">subnet</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnet_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="o">.</span><span class="n">subnet_id</span><span class="p">)</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">subnet_name</span> <span class="o">=</span> <span class="n">subnet</span><span class="o">.</span><span class="n">cidr</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">subnet_name</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">subnet_id</span>
+        <span class="k">return</span> <span class="n">pool</span>
+
+</div></div>
+<span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">&quot;Active&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Down&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+<span class="p">)</span>
+
+
+<span class="n">STATUS_DISPLAY_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">&quot;Active&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                             <span class="s2">u&quot;Active&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Down&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                           <span class="s2">u&quot;Down&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                            <span class="s2">u&quot;Error&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Created&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                              <span class="s2">u&quot;Created&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Pending_Create&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                                     <span class="s2">u&quot;Pending Create&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Pending_Update&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                                     <span class="s2">u&quot;Pending Update&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Pending_Delete&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                                     <span class="s2">u&quot;Pending Delete&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;Inactive&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Current status of a Pool&quot;</span><span class="p">,</span>
+                               <span class="s2">u&quot;Inactive&quot;</span><span class="p">)),</span>
+<span class="p">)</span>
+
+
+<span class="n">ADMIN_STATE_DISPLAY_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">&quot;UP&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Admin state of a Load balancer&quot;</span><span class="p">,</span> <span class="s2">u&quot;UP&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;DOWN&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Admin state of a Load balancer&quot;</span><span class="p">,</span> <span class="s2">u&quot;DOWN&quot;</span><span class="p">)),</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_vip_name"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.get_vip_name">[docs]</a><span class="k">def</span> <span class="nf">get_vip_name</span><span class="p">(</span><span class="n">pool</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="s2">&quot;vip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span><span class="p">:</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/_pool_table_vip_cell.html&#39;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;vip&quot;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">vip</span><span class="p">,</span> <span class="p">}</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="get_subnet"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.get_subnet">[docs]</a><span class="k">def</span> <span class="nf">get_subnet</span><span class="p">(</span><span class="n">pool</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="s2">&quot;subnet&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pool</span><span class="o">.</span><span class="n">subnet</span><span class="p">:</span>
+        <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/_pool_table_subnet_cell.html&#39;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;subnet&quot;</span><span class="p">:</span> <span class="n">pool</span><span class="o">.</span><span class="n">subnet</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="PoolsTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.PoolsTable">[docs]</a><span class="k">class</span> <span class="nc">PoolsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">METHOD_DISPLAY_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;round_robin&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;load balancing method&quot;</span><span class="p">,</span>
+                                      <span class="s2">u&quot;Round Robin&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;least_connections&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;load balancing method&quot;</span><span class="p">,</span>
+                                            <span class="s2">u&quot;Least Connections&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;source_ip&quot;</span><span class="p">,</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;load balancing method&quot;</span><span class="p">,</span>
+                                    <span class="s2">u&quot;Source IP&quot;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name_or_id&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:loadbalancers:pooldetails&quot;</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">))</span>
+    <span class="n">provider</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;provider&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Provider&quot;</span><span class="p">),</span>
+                             <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">filters</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;N/A&#39;</span><span class="p">)),))</span>
+    <span class="n">subnet_name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_subnet</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Subnet&quot;</span><span class="p">))</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;protocol&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Protocol&quot;</span><span class="p">))</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;lb_method&#39;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;LB Method&quot;</span><span class="p">),</span>
+                           <span class="n">display_choices</span><span class="o">=</span><span class="n">METHOD_DISPLAY_CHOICES</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">),</span>
+                           <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                           <span class="n">status_choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+                           <span class="n">display_choices</span><span class="o">=</span><span class="n">STATUS_DISPLAY_CHOICES</span><span class="p">)</span>
+    <span class="n">vip_name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_vip_name</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;VIP&quot;</span><span class="p">))</span>
+    <span class="n">admin_state</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;admin_state&quot;</span><span class="p">,</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin State&quot;</span><span class="p">),</span>
+                                <span class="n">display_choices</span><span class="o">=</span><span class="n">ADMIN_STATE_DISPLAY_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PoolsTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.PoolsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;poolstable&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Pools&quot;</span><span class="p">)</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">UpdatePoolsRow</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddPoolLink</span><span class="p">,</span> <span class="n">DeletePoolLink</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">UpdatePoolLink</span><span class="p">,</span> <span class="n">AddVipLink</span><span class="p">,</span> <span class="n">UpdateVipLink</span><span class="p">,</span>
+                       <span class="n">DeleteVipLink</span><span class="p">,</span> <span class="n">AddPMAssociationLink</span><span class="p">,</span>
+                       <span class="n">DeletePMAssociationLink</span><span class="p">,</span> <span class="n">DeletePoolLink</span><span class="p">,</span>
+                       <span class="n">AddVIPFloatingIP</span><span class="p">,</span> <span class="n">RemoveVIPFloatingIP</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="get_pool_link"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.get_pool_link">[docs]</a><span class="k">def</span> <span class="nf">get_pool_link</span><span class="p">(</span><span class="n">member</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:pooldetails&quot;</span><span class="p">,</span>
+                   <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">pool_id</span><span class="p">),))</span>
+
+</div>
+<div class="viewcode-block" id="get_member_link"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.get_member_link">[docs]</a><span class="k">def</span> <span class="nf">get_member_link</span><span class="p">(</span><span class="n">member</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:memberdetails&quot;</span><span class="p">,</span>
+                   <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">member</span><span class="o">.</span><span class="n">id</span><span class="p">),))</span>
+
+</div>
+<div class="viewcode-block" id="UpdateMemberRow"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateMemberRow">[docs]</a><span class="k">class</span> <span class="nc">UpdateMemberRow</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="UpdateMemberRow.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.UpdateMemberRow.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">):</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">member_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member</span><span class="o">.</span><span class="n">pool_id</span><span class="p">)</span>
+            <span class="n">member</span><span class="o">.</span><span class="n">pool_name</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">member</span><span class="o">.</span><span class="n">pool_name</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">pool_id</span>
+        <span class="k">return</span> <span class="n">member</span>
+
+</div></div>
+<div class="viewcode-block" id="MembersTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.MembersTable">[docs]</a><span class="k">class</span> <span class="nc">MembersTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">address</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">,</span>
+                            <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP Address&quot;</span><span class="p">),</span>
+                            <span class="n">link</span><span class="o">=</span><span class="n">get_member_link</span><span class="p">,</span>
+                            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s2">&quot;ip&quot;</span><span class="p">})</span>
+    <span class="n">protocol_port</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;protocol_port&#39;</span><span class="p">,</span>
+                                  <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Protocol Port&quot;</span><span class="p">))</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Weight&quot;</span><span class="p">))</span>
+    <span class="n">pool_name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;pool_name&#39;</span><span class="p">,</span>
+                              <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Pool&quot;</span><span class="p">),</span> <span class="n">link</span><span class="o">=</span><span class="n">get_pool_link</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span>
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">),</span>
+                           <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                           <span class="n">status_choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+                           <span class="n">display_choices</span><span class="o">=</span><span class="n">STATUS_DISPLAY_CHOICES</span><span class="p">)</span>
+    <span class="n">admin_state</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;admin_state&quot;</span><span class="p">,</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin State&quot;</span><span class="p">),</span>
+                                <span class="n">display_choices</span><span class="o">=</span><span class="n">ADMIN_STATE_DISPLAY_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MembersTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.MembersTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;memberstable&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Members&quot;</span><span class="p">)</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">UpdateMemberRow</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddMemberLink</span><span class="p">,</span> <span class="n">DeleteMemberLink</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">UpdateMemberLink</span><span class="p">,</span> <span class="n">DeleteMemberLink</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="get_monitor_details"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.get_monitor_details">[docs]</a><span class="k">def</span> <span class="nf">get_monitor_details</span><span class="p">(</span><span class="n">monitor</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">monitor</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;HTTP&#39;</span><span class="p">,</span> <span class="s1">&#39;HTTPS&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%(http_method)s</span><span class="s2"> </span><span class="si">%(url_path)s</span><span class="s2"> =&gt; </span><span class="si">%(codes)s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                <span class="p">{</span><span class="s1">&#39;http_method&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">http_method</span><span class="p">,</span>
+                 <span class="s1">&#39;url_path&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">url_path</span><span class="p">,</span>
+                 <span class="s1">&#39;codes&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">expected_codes</span><span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MonitorsTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.MonitorsTable">[docs]</a><span class="k">class</span> <span class="nc">MonitorsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">monitor_type</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Monitor Type&quot;</span><span class="p">),</span>
+        <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:project:loadbalancers:monitordetails&quot;</span><span class="p">)</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;delay&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Delay&quot;</span><span class="p">))</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Timeout&quot;</span><span class="p">))</span>
+    <span class="n">max_retries</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;max_retries&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Max Retries&quot;</span><span class="p">))</span>
+    <span class="n">details</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_monitor_details</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Details&quot;</span><span class="p">))</span>
+    <span class="n">admin_state</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;admin_state&quot;</span><span class="p">,</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin State&quot;</span><span class="p">),</span>
+                                <span class="n">display_choices</span><span class="o">=</span><span class="n">ADMIN_STATE_DISPLAY_CHOICES</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MonitorsTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.tables.html#openstack_dashboard.dashboards.project.loadbalancers.tables.MonitorsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;monitorstable&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Monitors&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddMonitorLink</span><span class="p">,</span> <span class="n">DeleteMonitorLink</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">UpdateMonitorLink</span><span class="p">,</span> <span class="n">DeleteMonitorLink</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

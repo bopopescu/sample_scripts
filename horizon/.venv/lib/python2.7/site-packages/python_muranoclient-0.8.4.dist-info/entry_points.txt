@@ -1,0 +1,6 @@
+[console_scripts]
+murano = muranoclient.shell:main
+
+[openstack.cli.extension]
+application_catalog = muranoclient.osc.plugin
+

@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Frequently Asked Questions &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="index.html" />
+    <link rel="next" title="Glossary" href="glossary.html" />
+    <link rel="prev" title="Horizon 2014.2 “Juno”" href="releases/2014_2.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="frequently-asked-questions">
+<h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<p>What is the relationship between <tt class="docutils literal"><span class="pre">Dashboards</span></tt>, <tt class="docutils literal"><span class="pre">Panels</span></tt>, and navigation?</p>
+<blockquote>
+<div><p>The navigational structure is strongly encouraged to flow from
+<tt class="docutils literal"><span class="pre">Dashboard</span></tt> objects as top-level navigation items to <tt class="docutils literal"><span class="pre">Panel</span></tt> objects as
+sub-navigation items as in the current implementation. Template tags
+are provided to automatically generate this structure.</p>
+<p>That said, you are not required to use the provided tools and can write
+templates and URLconfs by hand to create any desired structure.</p>
+</div></blockquote>
+<p>Does a panel have to be an app in <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>?</p>
+<blockquote>
+<div>A panel can live in any Python module. It can be a standalone which ties
+into an existing dashboard, or it can be contained alongside others within
+a larger dashboard &#8220;app&#8221;. There is no strict enforcement here. Python
+is &#8220;a language for consenting adults.&#8221; A module containing a Panel does
+not need to be added to <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>, but this is a common and
+convenient way to load a standalone panel.</div></blockquote>
+<p>Could I hook an external service into a panel using, for example, an iFrame?</p>
+<blockquote>
+<div>Panels are just entry-points to hook views into the larger dashboard
+navigational structure and enforce common attributes like RBAC. The
+view and corresponding templates can contain anything you would like,
+including iFrames.</div></blockquote>
+<p>What does this mean for visual design?</p>
+<blockquote>
+<div>The ability to add an arbitrary number of top-level navigational items
+(<tt class="docutils literal"><span class="pre">Dashboard</span></tt> objects) poses a new design challenge. Horizon&#8217;s lead
+designer has taken on the challenge of providing a reference design
+for Horizon which supports this possibility.</div></blockquote>
+<p>What browsers are supported?</p>
+<blockquote>
+<div>Horizon is primarily tested and supported on the latest version of Firefox,
+the latest version of Chrome, and IE9+. Issues related to Safari and Opera
+will also be considered. The list of supported browsers and versions is
+informally documented on the <a class="reference external" href="https://wiki.openstack.org/wiki/Horizon/BrowserSupport">Browser Support wiki page</a>.</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="releases/2014_2.html"
+                                  title="previous chapter">Horizon 2014.2 &#8220;Juno&#8221;</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="glossary.html"
+                                  title="next chapter">Glossary</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/faq.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="Glossary"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="releases/2014_2.html" title="Horizon 2014.2 “Juno”"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

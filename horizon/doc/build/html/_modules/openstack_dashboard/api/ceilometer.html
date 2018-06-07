@@ -1,0 +1,1431 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.ceilometer &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.ceilometer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">ceilometerclient</span> <span class="kn">import</span> <span class="n">client</span> <span class="k">as</span> <span class="n">ceilometer_client</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.memoized</span> <span class="kn">import</span> <span class="n">memoized</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">base</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">keystone</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">nova</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_flavor_names"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.get_flavor_names">[docs]</a><span class="k">def</span> <span class="nf">get_flavor_names</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="c1"># TODO(lsmola) The flavors can be set per project,</span>
+    <span class="c1"># so it should show only valid ones.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">flavors</span> <span class="o">=</span> <span class="n">nova</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;m1.tiny&#39;</span><span class="p">,</span> <span class="s1">&#39;m1.small&#39;</span><span class="p">,</span> <span class="s1">&#39;m1.medium&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;m1.large&#39;</span><span class="p">,</span> <span class="s1">&#39;m1.xlarge&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="is_iterable"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.is_iterable">[docs]</a><span class="k">def</span> <span class="nf">is_iterable</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return True if the given is list or tuple.&quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span>
+            <span class="nb">issubclass</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)))</span>
+
+</div>
+<div class="viewcode-block" id="make_query"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.make_query">[docs]</a><span class="k">def</span> <span class="nf">make_query</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+               <span class="n">user_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tenant_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns query built from given parameters.</span>
+
+<span class="sd">    This query can be then used for querying resources, meters and</span>
+<span class="sd">    statistics.</span>
+
+<span class="sd">    :Parameters:</span>
+<span class="sd">      - `user_id`: user_id, has a priority over list of ids</span>
+<span class="sd">      - `tenant_id`: tenant_id, has a priority over list of ids</span>
+<span class="sd">      - `resource_id`: resource_id, has a priority over list of ids</span>
+<span class="sd">      - `user_ids`: list of user_ids</span>
+<span class="sd">      - `tenant_ids`: list of tenant_ids</span>
+<span class="sd">      - `resource_ids`: list of resource_ids</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_ids</span> <span class="o">=</span> <span class="n">user_ids</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="n">tenant_ids</span> <span class="o">=</span> <span class="n">tenant_ids</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="n">resource_ids</span> <span class="o">=</span> <span class="n">resource_ids</span> <span class="ow">or</span> <span class="p">[]</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">user_id</span><span class="p">:</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user_id</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">u_id</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">:</span>
+        <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;user_id&quot;</span><span class="p">,</span> <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;eq&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">u_id</span><span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">tenant_id</span><span class="p">:</span>
+        <span class="n">tenant_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">tenant_id</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">t_id</span> <span class="ow">in</span> <span class="n">tenant_ids</span><span class="p">:</span>
+        <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;project_id&quot;</span><span class="p">,</span> <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;eq&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">t_id</span><span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">resource_id</span><span class="p">:</span>
+        <span class="n">resource_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">resource_id</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">r_id</span> <span class="ow">in</span> <span class="n">resource_ids</span><span class="p">:</span>
+        <span class="n">query</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;resource_id&quot;</span><span class="p">,</span> <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;eq&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">r_id</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">query</span>
+
+</div>
+<div class="viewcode-block" id="Meter"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meter">[docs]</a><span class="k">class</span> <span class="nc">Meter</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents one Ceilometer meter.&quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;unit&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span> <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;project_id&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Meter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="Meter.augment"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meter.augment">[docs]</a>    <span class="k">def</span> <span class="nf">augment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">label</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="n">description</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Meter.description"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meter.description">[docs]</a>    <span class="k">def</span> <span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_description</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Meter.label"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meter.label">[docs]</a>    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+
+</div></div>
+<div class="viewcode-block" id="Resource"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource">[docs]</a><span class="k">class</span> <span class="nc">Resource</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents one Ceilometer resource.&quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;resource_id&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;project_id&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;links&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">,</span> <span class="n">ceilometer_usage</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Resource</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+        <span class="c1"># Save empty strings to IDs rather than None, so it gets</span>
+        <span class="c1"># serialized correctly. We don&#39;t want &#39;None&#39; strings.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">__</span><span class="si">%s</span><span class="s2">__</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span><span class="p">)</span>
+
+        <span class="c1"># Meters with statistics data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meters</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># TODO(lsmola) make parallel obtaining of tenant and user</span>
+        <span class="c1"># make the threading here, thread join into resource_list</span>
+        <span class="k">if</span> <span class="n">ceilometer_usage</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tenant</span> <span class="o">=</span> <span class="n">ceilometer_usage</span><span class="o">.</span><span class="n">get_tenant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tenant</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">if</span> <span class="n">ceilometer_usage</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="n">ceilometer_usage</span><span class="o">.</span><span class="n">get_user</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="o">=</span> <span class="n">make_query</span><span class="p">(</span><span class="n">tenant_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                                 <span class="n">user_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span>
+                                 <span class="n">resource_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display_name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.id"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.tenant"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.tenant">[docs]</a>    <span class="k">def</span> <span class="nf">tenant</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tenant</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.user">[docs]</a>    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.resource"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.resource">[docs]</a>    <span class="k">def</span> <span class="nf">resource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.query"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Resource.meters"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.meters">[docs]</a>    <span class="k">def</span> <span class="nf">meters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meters</span>
+</div>
+<div class="viewcode-block" id="Resource.get_meter"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.get_meter">[docs]</a>    <span class="k">def</span> <span class="nf">get_meter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">meter_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Resource.set_meter"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Resource.set_meter">[docs]</a>    <span class="k">def</span> <span class="nf">set_meter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meters</span><span class="p">[</span><span class="n">meter_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+</div></div>
+<div class="viewcode-block" id="ResourceAggregate"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.ResourceAggregate">[docs]</a><span class="k">class</span> <span class="nc">ResourceAggregate</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents aggregate of more resources together.</span>
+
+<span class="sd">    Aggregate of resources can be obtained by specifying</span>
+<span class="sd">    multiple ids in one parameter or by not specifying</span>
+<span class="sd">    one parameter.</span>
+<span class="sd">    It can also be specified by query directly.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        We can obtain an aggregate of resources by specifying</span>
+<span class="sd">        multiple resource_ids in resource_id parameter in init.</span>
+<span class="sd">        Or we can specify only tenant_id, which will return</span>
+<span class="sd">        all resources of that tenant.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">tenant_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">resource_ids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">ceilometer_usage</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">identifier</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="n">identifier</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tenant_id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c1"># Meters with statistics data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meters</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">query</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="o">=</span> <span class="n">query</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># TODO(lsmola) make parallel obtaining of tenant and user</span>
+            <span class="c1"># make the threading here, thread join into resource_list</span>
+            <span class="k">if</span> <span class="n">ceilometer_usage</span> <span class="ow">and</span> <span class="n">tenant_id</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tenant_id</span> <span class="o">=</span> <span class="n">tenant_id</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tenant</span> <span class="o">=</span> <span class="n">ceilometer_usage</span><span class="o">.</span><span class="n">get_tenant</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tenant</span> <span class="o">=</span> <span class="bp">None</span>
+
+            <span class="k">if</span> <span class="n">ceilometer_usage</span> <span class="ow">and</span> <span class="n">user_id</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">user_id</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="n">ceilometer_usage</span><span class="o">.</span><span class="n">get_user</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="bp">None</span>
+
+            <span class="k">if</span> <span class="n">resource_id</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="n">resource_id</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query</span> <span class="o">=</span> <span class="n">make_query</span><span class="p">(</span><span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user_id</span><span class="p">,</span>
+                                     <span class="n">resource_id</span><span class="o">=</span><span class="n">resource_id</span><span class="p">,</span>
+                                     <span class="n">tenant_ids</span><span class="o">=</span><span class="n">tenant_ids</span><span class="p">,</span>
+                                     <span class="n">user_ids</span><span class="o">=</span><span class="n">user_ids</span><span class="p">,</span>
+                                     <span class="n">resource_ids</span><span class="o">=</span><span class="n">resource_ids</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ResourceAggregate.id"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.ResourceAggregate.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+</div></div>
+<div class="viewcode-block" id="Sample"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Sample">[docs]</a><span class="k">class</span> <span class="nc">Sample</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents one Ceilometer sample.&quot;&quot;&quot;</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;counter_name&#39;</span><span class="p">,</span> <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_id&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;resource_metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;counter_unit&#39;</span><span class="p">,</span> <span class="s1">&#39;counter_volume&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;project_id&#39;</span><span class="p">,</span> <span class="s1">&#39;counter_type&#39;</span><span class="p">,</span> <span class="s1">&#39;resource_metadata&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Sample.instance"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Sample.instance">[docs]</a>    <span class="k">def</span> <span class="nf">instance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;display_name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instance_id&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="n">instance_id</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Sample.name"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Sample.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display_name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">display_name</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+</div></div>
+<div class="viewcode-block" id="Statistic"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Statistic">[docs]</a><span class="k">class</span> <span class="nc">Statistic</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">APIResourceWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents one Ceilometer statistic.&quot;&quot;&quot;</span>
+
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="s1">&#39;period_start&#39;</span><span class="p">,</span> <span class="s1">&#39;period_end&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;avg&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;duration&#39;</span><span class="p">,</span> <span class="s1">&#39;duration_start&#39;</span><span class="p">,</span> <span class="s1">&#39;duration_end&#39;</span><span class="p">]</span>
+
+</div>
+<span class="nd">@memoized</span>
+<div class="viewcode-block" id="ceilometerclient"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.ceilometerclient">[docs]</a><span class="k">def</span> <span class="nf">ceilometerclient</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initialization of Ceilometer client.&quot;&quot;&quot;</span>
+
+    <span class="n">endpoint</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;metering&#39;</span><span class="p">)</span>
+    <span class="n">insecure</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_NO_VERIFY&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">cacert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_SSL_CACERT&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ceilometer_client</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="s1">&#39;2&#39;</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span>
+                                    <span class="n">token</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p">),</span>
+                                    <span class="n">insecure</span><span class="o">=</span><span class="n">insecure</span><span class="p">,</span>
+                                    <span class="n">cacert</span><span class="o">=</span><span class="n">cacert</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="resource_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.resource_list">[docs]</a><span class="k">def</span> <span class="nf">resource_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ceilometer_usage_object</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List the resources.&quot;&quot;&quot;</span>
+    <span class="n">resources</span> <span class="o">=</span> <span class="n">ceilometerclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Resource</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">ceilometer_usage_object</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="sample_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.sample_list">[docs]</a><span class="k">def</span> <span class="nf">sample_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">meter_name</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List the samples for this meters.&quot;&quot;&quot;</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">ceilometerclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">meter_name</span><span class="o">=</span><span class="n">meter_name</span><span class="p">,</span>
+                                                     <span class="n">q</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Sample</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="meter_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.meter_list">[docs]</a><span class="k">def</span> <span class="nf">meter_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List the user&#39;s meters.&quot;&quot;&quot;</span>
+    <span class="n">meters</span> <span class="o">=</span> <span class="n">ceilometerclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">meters</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Meter</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">meters</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="statistic_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.statistic_list">[docs]</a><span class="k">def</span> <span class="nf">statistic_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">meter_name</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;List of statistics.&quot;&quot;&quot;</span>
+    <span class="n">statistics</span> <span class="o">=</span> <span class="n">ceilometerclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span>\
+        <span class="n">statistics</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="n">meter_name</span><span class="o">=</span><span class="n">meter_name</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Statistic</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">statistics</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="ThreadedUpdateResourceWithStatistics"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.ThreadedUpdateResourceWithStatistics">[docs]</a><span class="k">class</span> <span class="nc">ThreadedUpdateResourceWithStatistics</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Multithread wrapper for update_with_statistics method of</span>
+<span class="sd">    resource_usage.</span>
+
+<span class="sd">    A join logic is placed in process_list class method. All resources</span>
+<span class="sd">    will have its statistics attribute filled in separate threads.</span>
+
+<span class="sd">    The resource_usage object is shared between threads. Each thread is</span>
+<span class="sd">    updating one Resource.</span>
+
+<span class="sd">    :Parameters:</span>
+<span class="sd">      - `resource`: Resource or ResourceAggregate object, that will</span>
+<span class="sd">                    be filled by statistic data.</span>
+<span class="sd">      - `resources`: List of Resource or ResourceAggregate object,</span>
+<span class="sd">                     that will be filled by statistic data.</span>
+<span class="sd">      - `resource_usage`: Wrapping resource usage object, that holds</span>
+<span class="sd">                          all statistics data.</span>
+<span class="sd">      - `meter_names`: List of meter names of the statistics we want.</span>
+<span class="sd">      - `period`: In seconds. If no period is given, only one aggregate</span>
+<span class="sd">                  statistic is returned. If given, a faceted result will be</span>
+<span class="sd">                  returned, divided into given periods. Periods with no</span>
+<span class="sd">                  data are ignored.</span>
+<span class="sd">      - `stats_attr`: String representing the attribute name of the stats.</span>
+<span class="sd">                      E.g. (avg, max, min...) If None is given, whole</span>
+<span class="sd">                      statistic object is returned,</span>
+<span class="sd">      - `additional_query`: Additional query for the statistics.</span>
+<span class="sd">                            E.g. timespan, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO(lsmola) Can be removed once Ceilometer supports sample-api</span>
+    <span class="c1"># and group-by, so all of this optimization will not be necessary.</span>
+    <span class="c1"># It is planned somewhere to I.</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_usage</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">meter_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stats_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">additional_query</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ThreadedUpdateResourceWithStatistics</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_usage</span> <span class="o">=</span> <span class="n">resource_usage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meter_names</span> <span class="o">=</span> <span class="n">meter_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats_attr</span> <span class="o">=</span> <span class="n">stats_attr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">additional_query</span> <span class="o">=</span> <span class="n">additional_query</span>
+
+<div class="viewcode-block" id="ThreadedUpdateResourceWithStatistics.run"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.ThreadedUpdateResourceWithStatistics.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Run the job</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_usage</span><span class="o">.</span><span class="n">update_with_statistics</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+            <span class="n">meter_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">meter_names</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">,</span>
+            <span class="n">stats_attr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stats_attr</span><span class="p">,</span> <span class="n">additional_query</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">additional_query</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ThreadedUpdateResourceWithStatistics.process_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.ThreadedUpdateResourceWithStatistics.process_list">[docs]</a>    <span class="k">def</span> <span class="nf">process_list</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">resource_usage</span><span class="p">,</span> <span class="n">resources</span><span class="p">,</span> <span class="n">meter_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stats_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                     <span class="n">additional_query</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">threads</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+            <span class="c1"># add statistics data into resource</span>
+            <span class="n">thread</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="n">resource_usage</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">meter_names</span><span class="o">=</span><span class="n">meter_names</span><span class="p">,</span>
+                         <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span> <span class="n">stats_attr</span><span class="o">=</span><span class="n">stats_attr</span><span class="p">,</span>
+                         <span class="n">additional_query</span><span class="o">=</span><span class="n">additional_query</span><span class="p">)</span>
+            <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">thread</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">thread</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+            <span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="CeilometerUsage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage">[docs]</a><span class="k">class</span> <span class="nc">CeilometerUsage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents wrapper of any Ceilometer queries.</span>
+
+<span class="sd">    One instance of this class should be shared between resources</span>
+<span class="sd">    as this class provides a place where users and tenants are</span>
+<span class="sd">    cached. So there are no duplicate queries to API.</span>
+
+<span class="sd">    This class also wraps Ceilometer API calls and provides parallel</span>
+<span class="sd">    HTTP calls to API.</span>
+
+<span class="sd">    This class should also serve as reasonable abstraction, that will</span>
+<span class="sd">    cover huge amount of optimization due to optimization of Ceilometer</span>
+<span class="sd">    service, without changing of the interface.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="n">request</span>
+
+        <span class="c1"># Cached users and tenants.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_users</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tenants</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="CeilometerUsage.get_user"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.get_user">[docs]</a>    <span class="k">def</span> <span class="nf">get_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns user fetched from API.</span>
+
+<span class="sd">        Caching the result, so it doesn&#39;t contact API twice with the</span>
+<span class="sd">        same query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_users</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">keystone</span><span class="o">.</span><span class="n">user_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span> <span class="n">user_id</span><span class="p">)</span>
+            <span class="c1"># caching the user, for later use</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="k">return</span> <span class="n">user</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.preload_all_users"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.preload_all_users">[docs]</a>    <span class="k">def</span> <span class="nf">preload_all_users</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Preloads all users into dictionary.</span>
+
+<span class="sd">        It&#39;s more effective to preload all users, rather than fetching many</span>
+<span class="sd">        users by separate API get calls.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">users</span> <span class="o">=</span> <span class="n">keystone</span><span class="o">.</span><span class="n">user_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span>
+        <span class="c1"># Cache all users on right indexes, this is more effective than to</span>
+        <span class="c1"># obtain large number of users one by one by keystone.user_get</span>
+        <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">users</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_users</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.get_tenant"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.get_tenant">[docs]</a>    <span class="k">def</span> <span class="nf">get_tenant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns tenant fetched from API.</span>
+
+<span class="sd">        Caching the result, so it doesn&#39;t contact API twice with the</span>
+<span class="sd">        same query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tenant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tenants</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tenant_id</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tenant</span><span class="p">:</span>
+            <span class="n">tenant</span> <span class="o">=</span> <span class="n">keystone</span><span class="o">.</span><span class="n">tenant_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">)</span>
+            <span class="c1"># caching the tenant for later use</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tenants</span><span class="p">[</span><span class="n">tenant_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">tenant</span>
+        <span class="k">return</span> <span class="n">tenant</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.preload_all_tenants"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.preload_all_tenants">[docs]</a>    <span class="k">def</span> <span class="nf">preload_all_tenants</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Preloads all tenants into dictionary.</span>
+
+<span class="sd">        It&#39;s more effective to preload all tenants, rather than fetching each</span>
+<span class="sd">        tenant by separate API get calls.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tenants</span><span class="p">,</span> <span class="n">more</span> <span class="o">=</span> <span class="n">keystone</span><span class="o">.</span><span class="n">tenant_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">)</span>
+        <span class="c1"># Cache all tenants on right indexes, this is more effective than to</span>
+        <span class="c1"># obtain large number of tenants one by one by keystone.tenant_get</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tenants</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tenants</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.global_data_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.global_data_get">[docs]</a>    <span class="k">def</span> <span class="nf">global_data_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_cls</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                        <span class="n">with_statistics</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">additional_query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                        <span class="n">with_users_and_tenants</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtaining a resources for table view.</span>
+
+<span class="sd">        It obtains resources with statistics data according to declaration</span>
+<span class="sd">        in used_cls class.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `user_cls`: Class wrapper for usage data. It acts as wrapper for</span>
+<span class="sd">                        settings needed. See the call of this method for</span>
+<span class="sd">                        details.</span>
+<span class="sd">          - `query`: Explicit query definition for fetching the resources. If</span>
+<span class="sd">                     no query is provided, it takes a default_query from</span>
+<span class="sd">                     used_cls. If no default query is provided, it fetches</span>
+<span class="sd">                     all the resources and filters them by meters defined</span>
+<span class="sd">                     in used_cls.</span>
+<span class="sd">          - `with_statistic`: Define whether statistics data from the meters</span>
+<span class="sd">                              defined in used_cls should be fetched.</span>
+<span class="sd">                              Can be used to first obtain only the pure</span>
+<span class="sd">                              resources, then with the statistics data by</span>
+<span class="sd">                              AJAX.</span>
+<span class="sd">          - `additional_query`: Additional query for the statistics.</span>
+<span class="sd">                                E.g. timespan, etc.</span>
+<span class="sd">          - `with_users_and_tenants`: If true a user and a tenant object will</span>
+<span class="sd">                                      be added to each resource object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">default_query</span> <span class="o">=</span> <span class="n">used_cls</span><span class="o">.</span><span class="n">default_query</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="ow">or</span> <span class="n">default_query</span>
+        <span class="n">filter_func</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">def</span> <span class="nf">filter_resources</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Method for filtering resources by their links.rel attr.</span>
+
+<span class="sd">            The links.rel attributes contain all meters the resource has.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">resource</span><span class="o">.</span><span class="n">links</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">link</span><span class="p">[</span><span class="s1">&#39;rel&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">used_cls</span><span class="o">.</span><span class="n">meters</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">query</span><span class="p">:</span>
+            <span class="c1"># Not all resource types can be obtained by query, if there is not</span>
+            <span class="c1"># a query, we are filtering all resources by this function.</span>
+            <span class="n">filter_func</span> <span class="o">=</span> <span class="n">filter_resources</span>
+
+        <span class="k">if</span> <span class="n">with_statistics</span><span class="p">:</span>
+            <span class="c1"># Will add statistic data into resources.</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resources_with_statistics</span><span class="p">(</span>
+                <span class="n">query</span><span class="p">,</span>
+                <span class="n">used_cls</span><span class="o">.</span><span class="n">meters</span><span class="p">,</span>
+                <span class="n">filter_func</span><span class="o">=</span><span class="n">filter_func</span><span class="p">,</span>
+                <span class="n">stats_attr</span><span class="o">=</span><span class="n">used_cls</span><span class="o">.</span><span class="n">stats_attr</span><span class="p">,</span>
+                <span class="n">additional_query</span><span class="o">=</span><span class="n">additional_query</span><span class="p">,</span>
+                <span class="n">with_users_and_tenants</span><span class="o">=</span><span class="n">with_users_and_tenants</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Will load only resources without statistical data.</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="p">(</span>
+                <span class="n">query</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="n">filter_func</span><span class="p">,</span>
+                <span class="n">with_users_and_tenants</span><span class="o">=</span><span class="n">with_users_and_tenants</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">used_cls</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span> <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.query_from_object_id"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.query_from_object_id">[docs]</a>    <span class="k">def</span> <span class="nf">query_from_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtaining a query from resource id.</span>
+
+<span class="sd">        Query can be then used to identify a resource in resources or meters</span>
+<span class="sd">        API calls. ID is being built in the Resource initializer, or returned</span>
+<span class="sd">        by Datatable into UpdateRow functionality.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">resource_id</span> <span class="o">=</span> <span class="n">object_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">make_query</span><span class="p">(</span><span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="n">user_id</span><span class="p">,</span>
+                          <span class="n">resource_id</span><span class="o">=</span><span class="n">resource_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.update_with_statistics"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.update_with_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">update_with_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">meter_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                               <span class="n">stats_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">additional_query</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adding statistical data into one Resource or ResourceAggregate.</span>
+
+<span class="sd">        It adds each statistic of each meter_names into the resource</span>
+<span class="sd">        attributes. Attribute name is the meter name with replaced &#39;.&#39; to &#39;_&#39;.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `resource`: Resource or ResourceAggregate object, that will</span>
+<span class="sd">                        be filled by statistic data.</span>
+<span class="sd">          - `meter_names`: List of meter names of which we want the</span>
+<span class="sd">                           statistics.</span>
+<span class="sd">          - `period`: In seconds. If no period is given, only one aggregate</span>
+<span class="sd">                      statistic is returned. If given a faceted result will be</span>
+<span class="sd">                      returned, dividend into given periods. Periods with no</span>
+<span class="sd">                      data are ignored.</span>
+<span class="sd">          - `stats_attr`: String representing the specific name of the stats.</span>
+<span class="sd">                          E.g. (avg, max, min...) If defined, meter attribute</span>
+<span class="sd">                          will contain just the one value. If None is given,</span>
+<span class="sd">                          meter attribute will contain the whole Statistic</span>
+<span class="sd">                          object.</span>
+<span class="sd">          - `additional_query`: Additional query for the statistics.</span>
+<span class="sd">                                E.g. timespan, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">meter_names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;meter_names and resources must be defined to be &quot;</span>
+                             <span class="s2">&quot;able to obtain the statistics.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># query for identifying one resource in meters</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">query</span>
+        <span class="k">if</span> <span class="n">additional_query</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_iterable</span><span class="p">(</span><span class="n">additional_query</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Additional query must be list of&quot;</span>
+                                 <span class="s2">&quot; conditions. See the docs for format.&quot;</span><span class="p">)</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="o">+</span> <span class="n">additional_query</span>
+
+        <span class="c1"># TODO(lsmola) thread for each meter will be probably overkill</span>
+        <span class="c1"># but I should test lets say thread pool with 100 of threads</span>
+        <span class="c1"># and apply it only to this code.</span>
+        <span class="c1"># Though I do expect Ceilometer will support bulk requests,</span>
+        <span class="c1"># so all of this optimization will not be necessary.</span>
+        <span class="k">for</span> <span class="n">meter</span> <span class="ow">in</span> <span class="n">meter_names</span><span class="p">:</span>
+            <span class="n">statistics</span> <span class="o">=</span> <span class="n">statistic_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span> <span class="n">meter</span><span class="p">,</span>
+                                        <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+            <span class="n">meter</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">statistics</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stats_attr</span><span class="p">:</span>
+                    <span class="c1"># I want to load only a specific attribute</span>
+                    <span class="n">resource</span><span class="o">.</span><span class="n">set_meter</span><span class="p">(</span>
+                        <span class="n">meter</span><span class="p">,</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">statistics</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stats_attr</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># I want a dictionary of all statistics</span>
+                    <span class="n">resource</span><span class="o">.</span><span class="n">set_meter</span><span class="p">(</span><span class="n">meter</span><span class="p">,</span> <span class="n">statistics</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">resource</span><span class="o">.</span><span class="n">set_meter</span><span class="p">(</span><span class="n">meter</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resource</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.resources"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.resources">[docs]</a>    <span class="k">def</span> <span class="nf">resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">with_users_and_tenants</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtaining resources with the query or filter_func.</span>
+
+<span class="sd">        Obtains resources and also fetch tenants and users associated</span>
+<span class="sd">        with those resources if with_users_and_tenants flag is true.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `query`: Query for fetching the Ceilometer Resources.</span>
+<span class="sd">          - `filter_func`: Callable for filtering of the obtained</span>
+<span class="sd">                           resources.</span>
+<span class="sd">          - `with_users_and_tenants`: If true a user and a tenant object will</span>
+<span class="sd">                                      be added to each resource object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">with_users_and_tenants</span><span class="p">:</span>
+            <span class="n">ceilometer_usage_object</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ceilometer_usage_object</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">resource_list</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span>
+            <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">ceilometer_usage_object</span><span class="o">=</span><span class="n">ceilometer_usage_object</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filter_func</span><span class="p">:</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="p">[</span><span class="n">resource</span> <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span> <span class="k">if</span>
+                         <span class="n">filter_func</span><span class="p">(</span><span class="n">resource</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">resources</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.resources_with_statistics"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.resources_with_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">resources_with_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">meter_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                  <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                  <span class="n">stats_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">additional_query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                  <span class="n">with_users_and_tenants</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtaining resources with statistics data inside.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `query`: Query for fetching the Ceilometer Resources.</span>
+<span class="sd">          - `filter_func`: Callable for filtering of the obtained</span>
+<span class="sd">                           resources.</span>
+<span class="sd">          - `meter_names`: List of meter names of which we want the</span>
+<span class="sd">                           statistics.</span>
+<span class="sd">          - `period`: In seconds. If no period is given, only one aggregate</span>
+<span class="sd">                      statistic is returned. If given, a faceted result will</span>
+<span class="sd">                      be returned, divided into given periods. Periods with</span>
+<span class="sd">                      no data are ignored.</span>
+<span class="sd">          - `stats_attr`: String representing the specific name of the stats.</span>
+<span class="sd">                          E.g. (avg, max, min...) If defined, meter attribute</span>
+<span class="sd">                          will contain just the one value. If None is given,</span>
+<span class="sd">                          meter attribute will contain the whole Statistic</span>
+<span class="sd">                          object.</span>
+<span class="sd">          - `additional_query`: Additional query for the statistics.</span>
+<span class="sd">                                E.g. timespan, etc.</span>
+<span class="sd">          - `with_users_and_tenants`: If true a user and a tenant object will</span>
+<span class="sd">                                      be added to each resource object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="p">(</span>
+            <span class="n">query</span><span class="p">,</span> <span class="n">filter_func</span><span class="o">=</span><span class="n">filter_func</span><span class="p">,</span>
+            <span class="n">with_users_and_tenants</span><span class="o">=</span><span class="n">with_users_and_tenants</span><span class="p">)</span>
+
+        <span class="n">ThreadedUpdateResourceWithStatistics</span><span class="o">.</span><span class="n">process_list</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">resources</span><span class="p">,</span>
+            <span class="n">meter_names</span><span class="o">=</span><span class="n">meter_names</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span> <span class="n">stats_attr</span><span class="o">=</span><span class="n">stats_attr</span><span class="p">,</span>
+            <span class="n">additional_query</span><span class="o">=</span><span class="n">additional_query</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resources</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.resource_aggregates"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.resource_aggregates">[docs]</a>    <span class="k">def</span> <span class="nf">resource_aggregates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtaining resource aggregates with queries.</span>
+
+<span class="sd">        Representing a resource aggregate by query is a most general way</span>
+<span class="sd">        how to obtain a resource aggregates.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `queries`: Dictionary of named queries that defines a bulk of</span>
+<span class="sd">                       resource aggregates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_aggregates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">queries</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">resource_aggregates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ResourceAggregate</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+                                       <span class="n">ceilometer_usage</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                       <span class="n">identifier</span><span class="o">=</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">resource_aggregates</span>
+</div>
+<div class="viewcode-block" id="CeilometerUsage.resource_aggregates_with_statistics"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.CeilometerUsage.resource_aggregates_with_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">resource_aggregates_with_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                            <span class="n">meter_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                            <span class="n">filter_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">stats_attr</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                            <span class="n">additional_query</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtaining resource aggregates with statistics data inside.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `queries`: Dictionary of named queries that defines a bulk of</span>
+<span class="sd">                       resource aggregates.</span>
+<span class="sd">          - `meter_names`: List of meter names of which we want the</span>
+<span class="sd">                           statistics.</span>
+<span class="sd">          - `period`: In seconds. If no period is given, only one aggregate</span>
+<span class="sd">                      statistic is returned. If given, a faceted result will</span>
+<span class="sd">                      be returned, divided into given periods. Periods with</span>
+<span class="sd">                      no data are ignored.</span>
+<span class="sd">          - `stats_attr`: String representing the specific name of the stats.</span>
+<span class="sd">                          E.g. (avg, max, min...) If defined, meter attribute</span>
+<span class="sd">                          will contain just the one value. If None is given,</span>
+<span class="sd">                          meter attribute will contain the whole Statistic</span>
+<span class="sd">                          object.</span>
+<span class="sd">          - `additional_query`: Additional query for the statistics.</span>
+<span class="sd">                                E.g. timespan, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_aggregates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_aggregates</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
+
+        <span class="n">ThreadedUpdateResourceWithStatistics</span><span class="o">.</span><span class="n">process_list</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">resource_aggregates</span><span class="p">,</span> <span class="n">meter_names</span><span class="o">=</span><span class="n">meter_names</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+            <span class="n">stats_attr</span><span class="o">=</span><span class="n">stats_attr</span><span class="p">,</span> <span class="n">additional_query</span><span class="o">=</span><span class="n">additional_query</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">resource_aggregates</span>
+
+</div></div>
+<div class="viewcode-block" id="diff_lists"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.diff_lists">[docs]</a><span class="k">def</span> <span class="nf">diff_lists</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">b</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="Meters"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters">[docs]</a><span class="k">class</span> <span class="nc">Meters</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class for listing of available meters.</span>
+
+<span class="sd">    It is listing meters defined in this class that are available</span>
+<span class="sd">    in Ceilometer meter_list.</span>
+
+<span class="sd">    It is storing information that is not available in Ceilometer, i.e.</span>
+<span class="sd">    label, description.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ceilometer_meter_list</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Storing the request.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="n">request</span>
+
+        <span class="c1"># Storing the Ceilometer meter list</span>
+        <span class="k">if</span> <span class="n">ceilometer_meter_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ceilometer_meter_list</span> <span class="o">=</span> <span class="n">ceilometer_meter_list</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ceilometer_meter_list</span> <span class="o">=</span> <span class="n">meter_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ceilometer_meter_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">,</span>
+                                  <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve Ceilometer meter &#39;</span>
+                                    <span class="s1">&#39;list.&#39;</span><span class="p">))</span>
+
+        <span class="c1"># Storing the meters info categorized by their services.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nova_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nova_meters_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_neutron_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_neutron_meters_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_glance_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_glance_meters_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cinder_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cinder_meters_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_swift_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_swift_meters_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwapi_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_kwapi_meters_info</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ipmi_meters_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ipmi_meters_info</span><span class="p">()</span>
+
+        <span class="c1"># Storing the meters info of all services together.</span>
+        <span class="n">all_services_meters</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nova_meters_info</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_neutron_meters_info</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_glance_meters_info</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_cinder_meters_info</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_swift_meters_info</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_kwapi_meters_info</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_ipmi_meters_info</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_meters_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">service_meters</span> <span class="ow">in</span> <span class="n">all_services_meters</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_all_meters_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">meter_name</span><span class="p">,</span> <span class="n">meter_info</span><span class="p">)</span>
+                                               <span class="k">for</span> <span class="n">meter_name</span><span class="p">,</span> <span class="n">meter_info</span>
+                                               <span class="ow">in</span> <span class="n">service_meters</span><span class="o">.</span><span class="n">items</span><span class="p">()]))</span>
+
+        <span class="c1"># Here will be the cached Meter objects, that will be reused for</span>
+        <span class="c1"># repeated listing.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_meters</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="Meters.list_all"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_all">[docs]</a>    <span class="k">def</span> <span class="nf">list_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">only_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters based on the meters names.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `only_meters`: The list of meter names we want to show.</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="n">only_meters</span><span class="p">,</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_nova"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_nova">[docs]</a>    <span class="k">def</span> <span class="nf">list_nova</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to nova.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_nova_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_neutron"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_neutron">[docs]</a>    <span class="k">def</span> <span class="nf">list_neutron</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to neutron.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_neutron_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_glance"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_glance">[docs]</a>    <span class="k">def</span> <span class="nf">list_glance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to glance.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_glance_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_cinder"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_cinder">[docs]</a>    <span class="k">def</span> <span class="nf">list_cinder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to cinder.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cinder_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_swift"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_swift">[docs]</a>    <span class="k">def</span> <span class="nf">list_swift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to swift.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_swift_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_kwapi"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_kwapi">[docs]</a>    <span class="k">def</span> <span class="nf">list_kwapi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to kwapi.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_kwapi_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Meters.list_ipmi"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.ceilometer.html#openstack_dashboard.api.ceilometer.Meters.list_ipmi">[docs]</a>    <span class="k">def</span> <span class="nf">list_ipmi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters tied to ipmi</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list</span><span class="p">(</span><span class="n">only_meters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ipmi_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                          <span class="n">except_meters</span><span class="o">=</span><span class="n">except_meters</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">only_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">except_meters</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of meters based on the meters names.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `only_meters`: The list of meter names we want to show.</span>
+<span class="sd">          - `except_meters`: The list of meter names we don&#39;t want to show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get all wanted meter names.</span>
+        <span class="k">if</span> <span class="n">only_meters</span><span class="p">:</span>
+            <span class="n">meter_names</span> <span class="o">=</span> <span class="n">only_meters</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">meter_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">meter_name</span> <span class="k">for</span> <span class="n">meter_name</span>
+                           <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_meters_info</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+
+        <span class="n">meter_names</span> <span class="o">=</span> <span class="n">diff_lists</span><span class="p">(</span><span class="n">meter_names</span><span class="p">,</span> <span class="n">except_meters</span><span class="p">)</span>
+        <span class="c1"># Collect meters for wanted meter names.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_meters</span><span class="p">(</span><span class="n">meter_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_meters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtain meters based on meter_names.</span>
+
+<span class="sd">        The meters that do not exist in Ceilometer meter list are left out.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `meter_names`: A list of meter names we want to fetch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">meters</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">meter_name</span> <span class="ow">in</span> <span class="n">meter_names</span><span class="p">:</span>
+            <span class="n">meter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_meter</span><span class="p">(</span><span class="n">meter_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">meter</span><span class="p">:</span>
+                <span class="n">meters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meter</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">meters</span>
+
+    <span class="k">def</span> <span class="nf">_get_meter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meter_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Obtains a meter.</span>
+
+<span class="sd">        Obtains meter either from cache or from Ceilometer meter list</span>
+<span class="sd">        joined with statically defined meter info like label and description.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">          - `meter_name`: A meter name we want to fetch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">meter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_meters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">meter_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">meter</span><span class="p">:</span>
+            <span class="n">meter_candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ceilometer_meter_list</span>
+                                <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">meter_name</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">meter_candidates</span><span class="p">:</span>
+                <span class="n">meter_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_meters_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">meter_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">meter_info</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="n">meter_info</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+                    <span class="n">description</span> <span class="o">=</span> <span class="n">meter_info</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">meter</span> <span class="o">=</span> <span class="n">meter_candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">meter</span><span class="o">.</span><span class="n">augment</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cached_meters</span><span class="p">[</span><span class="n">meter_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">meter</span>
+
+        <span class="k">return</span> <span class="n">meter</span>
+
+    <span class="k">def</span> <span class="nf">_get_nova_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter.</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="n">meters_info</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s2">&quot;instance&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of instance&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;instance:&lt;type&gt;&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of instance &lt;type&gt; &quot;</span>
+                                 <span class="s2">&quot;(openstack types)&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;memory&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume of RAM&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;memory.usage&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume of RAM used&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;CPU time used&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;cpu_util&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average CPU utilization&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;vcpus&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of VCPUs&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.read.requests&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of read requests&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.write.requests&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of write requests&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.read.bytes&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume of reads&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.write.bytes&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume of writes&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.read.requests.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate of read requests&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.write.requests.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate of write requests&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.read.bytes.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate of reads&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.write.bytes.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average volume of writes&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.root.size&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of root disk&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;disk.ephemeral.size&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of ephemeral disk&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.incoming.bytes&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of incoming bytes &quot;</span>
+                                 <span class="s2">&quot;on the network for a VM interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.outgoing.bytes&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of outgoing bytes &quot;</span>
+                                 <span class="s2">&quot;on the network for a VM interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.incoming.packets&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of incoming &quot;</span>
+                                 <span class="s2">&quot;packets for a VM interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.outgoing.packets&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of outgoing &quot;</span>
+                                 <span class="s2">&quot;packets for a VM interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.incoming.bytes.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate per sec of incoming &quot;</span>
+                                 <span class="s2">&quot;bytes on a VM network interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.outgoing.bytes.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate per sec of outgoing &quot;</span>
+                                 <span class="s2">&quot;bytes on a VM network interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.incoming.packets.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate per sec of incoming &quot;</span>
+                                 <span class="s2">&quot;packets on a VM network interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;network.outgoing.packets.rate&quot;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Average rate per sec of outgoing &quot;</span>
+                                 <span class="s2">&quot;packets on a VM network interface&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span>
+        <span class="c1"># Adding flavor based meters into meters_info dict</span>
+        <span class="c1"># TODO(lsmola) this kind of meter will be probably deprecated</span>
+        <span class="c1"># https://bugs.launchpad.net/ceilometer/+bug/1208365 . Delete it then.</span>
+        <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">get_flavor_names</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;instance:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">flavor</span>
+            <span class="n">meters_info</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">meters_info</span><span class="p">[</span><span class="s2">&quot;instance:&lt;type&gt;&quot;</span><span class="p">])</span>
+
+            <span class="n">meters_info</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Duration of instance type </span><span class="si">%s</span><span class="s1"> (openstack flavor)&#39;</span><span class="p">)</span> <span class="o">%</span>
+                <span class="n">flavor</span><span class="p">)</span>
+
+        <span class="c1"># TODO(lsmola) allow to set specific in local_settings. For all meters</span>
+        <span class="c1"># because users can have their own agents and meters.</span>
+        <span class="k">return</span> <span class="n">meters_info</span>
+
+    <span class="k">def</span> <span class="nf">_get_neutron_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter.</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of network&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;network.create&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Creation requests for this network&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;network.update&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update requests for this network&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;subnet&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of subnet&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;subnet.create&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Creation requests for this subnet&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;subnet.update&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update requests for this subnet&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of port&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;port.create&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Creation requests for this port&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;port.update&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update requests for this port&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;router&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of router&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;router.create&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Creation requests for this router&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;router.update&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update requests for this router&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;ip.floating&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of floating ip&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;ip.floating.create&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Creation requests for this floating ip&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;ip.floating.update&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update requests for this floating ip&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_glance_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter.</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image existence check&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;image.size&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Uploaded image size&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;image.update&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of image updates&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;image.upload&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of image uploads&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;image.delete&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of image deletions&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;image.download&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image is downloaded&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;image.serve&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image is served out&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_cinder_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter.</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Existence of volume&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;volume.size&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of volume&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_swift_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter.</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;storage.objects&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of objects&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;storage.objects.size&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Total size of stored objects&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;storage.objects.containers&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of containers&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;storage.objects.incoming.bytes&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of incoming bytes&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;storage.objects.outgoing.bytes&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of outgoing bytes&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;storage.api.request&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of API requests against swift&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_kwapi_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter.</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Amount of energy&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;power&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Power consumption&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_get_ipmi_meters_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns additional info for each meter</span>
+
+<span class="sd">        That will be used for augmenting the Ceilometer meter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO(lsmola) Unless the Ceilometer will provide the information</span>
+        <span class="c1"># below, I need to define it as a static here. I will be joining this</span>
+        <span class="c1"># to info that I am able to obtain from Ceilometer meters, hopefully</span>
+        <span class="c1"># some day it will be supported all.</span>
+        <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">([</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.power&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System Current Power&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.fan&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Fan RPM&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.temperature&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Sensor Temperature Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.current&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Sensor Current Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.voltage&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Sensor Voltage Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.temperature&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System Temperature Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.outlet_temperature&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System Outlet Temperature Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.airflow&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System Airflow Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.cups&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System CUPS Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.cpu_util&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System CPU Utility Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.mem_util&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System Memory Utility Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+            <span class="p">(</span><span class="s1">&#39;hardware.ipmi.node.io_util&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System IO Utility Reading&quot;</span><span class="p">),</span>
+            <span class="p">}),</span>
+        <span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

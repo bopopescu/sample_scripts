@@ -1,0 +1,881 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.nova Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.lbaas Module" href="openstack_dashboard.api.lbaas.html" />
+    <link rel="prev" title="The openstack_dashboard.api.neutron Module" href="openstack_dashboard.api.neutron.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-nova-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.nova</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-nova-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">FlavorExtraSpec</tt><big>(</big><em>flavor_id</em>, <em>key</em>, <em>val</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FlavorExtraSpec"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">FloatingIp</tt><big>(</big><em>fip</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIp"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">FloatingIpManager</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.network_base.FloatingIpManager</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allocate</tt><big>(</big><em>pool</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.allocate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">associate</tt><big>(</big><em>floating_ip_id</em>, <em>port_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.associate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">disassociate</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.disassociate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_target_id_by_instance</tt><big>(</big><em>instance_id</em>, <em>target_list=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.get_target_id_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_simple_associate_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.is_simple_associate_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">is_supported</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.is_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_pools</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.list_pools"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_target_id_by_instance</tt><big>(</big><em>instance_id</em>, <em>target_list=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.list_target_id_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_targets</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.list_targets"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">release</tt><big>(</big><em>floating_ip_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpManager.release"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">FloatingIpPool</tt><big>(</big><em>pool</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpPool"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">FloatingIpTarget</tt><big>(</big><em>server</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#FloatingIpTarget"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">Hypervisor</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Hypervisor"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<p>Simple wrapper around novaclient.hypervisors.Hypervisor.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">servers</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Hypervisor.servers"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">NovaUsage</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+<p>Simple wrapper around contrib/simple_usage.py.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">disk_gb_hours</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.disk_gb_hours"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_summary</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.get_summary"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">local_gb</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.local_gb"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">memory_mb</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.memory_mb"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">memory_mb_hours</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.memory_mb_hours"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">total_active_instances</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.total_active_instances"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">vcpu_hours</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.vcpu_hours"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">vcpus</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#NovaUsage.vcpus"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">RDPConsole</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#RDPConsole"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<p>Wrapper for the &#8220;console&#8221; dictionary.</p>
+<p>Returned by the novaclient.servers.get_rdp_console method.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">SPICEConsole</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SPICEConsole"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<p>Wrapper for the &#8220;console&#8221; dictionary.</p>
+<p>Returned by the novaclient.servers.get_spice_console method.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">SecurityGroup</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+<p>Wrapper around novaclient.security_groups.SecurityGroup.</p>
+<p>Wraps its rules in SecurityGroupRule objects and allows access to them.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">rules</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroup.rules"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Wraps transmitted rule info in the novaclient rule class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">to_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroup.to_dict"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">SecurityGroupManager</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.network_base.SecurityGroupManager</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">backend</tt><em class="property"> = 'nova'</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">create</tt><big>(</big><em>name</em>, <em>desc</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>security_group_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>sg_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">list_by_instance</tt><big>(</big><em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.list_by_instance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets security groups of an instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">rule_create</tt><big>(</big><em>parent_group_id</em>, <em>direction=None</em>, <em>ethertype=None</em>, <em>ip_protocol=None</em>, <em>from_port=None</em>, <em>to_port=None</em>, <em>cidr=None</em>, <em>group_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.rule_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">rule_delete</tt><big>(</big><em>security_group_rule_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.rule_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update</tt><big>(</big><em>sg_id</em>, <em>name</em>, <em>desc</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_instance_security_group</tt><big>(</big><em>instance_id</em>, <em>new_security_group_ids</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupManager.update_instance_security_group"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">SecurityGroupRule</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupRule"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+<p>Wrapper for individual rules in a SecurityGroup.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">direction</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupRule.direction"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">ethertype</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SecurityGroupRule.ethertype"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">SerialConsole</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#SerialConsole"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<p>Wrapper for the &#8220;console&#8221; dictionary.</p>
+<p>Returned by the novaclient.servers.get_serial_console method.</p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">Server</tt><big>(</big><em>apiresource</em>, <em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Server"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+<p>Simple wrapper around novaclient.server.Server.</p>
+<p>Preserves the request info so image name can later be retrieved.</p>
+<dl class="attribute">
+<dt>
+<tt class="descname">availability_zone</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Server.availability_zone"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">host_server</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Server.host_server"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">image_name</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Server.image_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">internal_name</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#Server.internal_name"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">VNCConsole</tt><big>(</big><em>apidict</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#VNCConsole"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIDictWrapper</span></tt></p>
+<p>Wrapper for the &#8220;console&#8221; dictionary.</p>
+<p>Returned by the novaclient.servers.get_vnc_console method.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">add_host_to_aggregate</tt><big>(</big><em>request</em>, <em>aggregate_id</em>, <em>host</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#add_host_to_aggregate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">add_tenant_to_flavor</tt><big>(</big><em>request</em>, <em>flavor</em>, <em>tenant</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#add_tenant_to_flavor"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Add a tenant to the given flavor access list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">aggregate_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>availability_zone=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#aggregate_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">aggregate_delete</tt><big>(</big><em>request</em>, <em>aggregate_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#aggregate_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">aggregate_details_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#aggregate_details_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">aggregate_get</tt><big>(</big><em>request</em>, <em>aggregate_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#aggregate_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">aggregate_set_metadata</tt><big>(</big><em>request</em>, <em>aggregate_id</em>, <em>metadata</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#aggregate_set_metadata"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">aggregate_update</tt><big>(</big><em>request</em>, <em>aggregate_id</em>, <em>values</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#aggregate_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">availability_zone_list</tt><big>(</big><em>request</em>, <em>detailed=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#availability_zone_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">can_set_mount_point</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#can_set_mount_point"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Return the Hypervisor&#8217;s capability of setting mount points.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">can_set_server_password</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#can_set_server_password"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">default_quota_get</tt><big>(</big><em>request</em>, <em>tenant_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#default_quota_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">default_quota_update</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#default_quota_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">evacuate_host</tt><big>(</big><em>request</em>, <em>host</em>, <em>target=None</em>, <em>on_shared_storage=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#evacuate_host"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">extension_supported</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#extension_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Determine if nova supports a given extension name.</p>
+<p>Example values for the extension_name include AdminActions, ConsoleOutput,
+etc.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_access_list</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_access_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the list of access instance sizes (flavors).</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>memory</em>, <em>vcpu</em>, <em>disk</em>, <em>flavorid='auto'</em>, <em>ephemeral=0</em>, <em>swap=0</em>, <em>metadata=None</em>, <em>is_public=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_delete</tt><big>(</big><em>request</em>, <em>flavor_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_extra_delete</tt><big>(</big><em>request</em>, <em>flavor_id</em>, <em>keys</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_extra_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Unset the flavor extra spec keys.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_extra_set</tt><big>(</big><em>request</em>, <em>flavor_id</em>, <em>metadata</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_extra_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Set the flavor extra spec keys.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_get</tt><big>(</big><em>request</em>, <em>flavor_id</em>, <em>get_extras=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_get_extras</tt><big>(</big><em>request</em>, <em>flavor_id</em>, <em>raw=False</em>, <em>flavor=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_get_extras"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get flavor extra specs.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">flavor_list</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#flavor_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Get the list of available instance sizes (flavors).</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">get_password</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>private_key=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#get_password"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">get_x509_credentials</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#get_x509_credentials"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">get_x509_root_certificate</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#get_x509_root_certificate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">host_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#host_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">hypervisor_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#hypervisor_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">hypervisor_search</tt><big>(</big><em>request</em>, <em>query</em>, <em>servers=True</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#hypervisor_search"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">hypervisor_stats</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#hypervisor_stats"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">instance_action_list</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#instance_action_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">instance_volume_attach</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>instance_id</em>, <em>device</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#instance_volume_attach"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">instance_volume_detach</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>att_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#instance_volume_detach"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">instance_volumes_list</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#instance_volumes_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">interface_attach</tt><big>(</big><em>request</em>, <em>server</em>, <em>port_id=None</em>, <em>net_id=None</em>, <em>fixed_ip=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#interface_attach"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">interface_detach</tt><big>(</big><em>request</em>, <em>server</em>, <em>port_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#interface_detach"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">keypair_create</tt><big>(</big><em>request</em>, <em>name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#keypair_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">keypair_delete</tt><big>(</big><em>request</em>, <em>keypair_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#keypair_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">keypair_get</tt><big>(</big><em>request</em>, <em>keypair_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#keypair_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">keypair_import</tt><big>(</big><em>request</em>, <em>name</em>, <em>public_key</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#keypair_import"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">keypair_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#keypair_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">list_extensions</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#list_extensions"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>List all nova extensions, except the ones in the blacklist.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">migrate_host</tt><big>(</big><em>request</em>, <em>host</em>, <em>live_migrate=False</em>, <em>disk_over_commit=False</em>, <em>block_migration=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#migrate_host"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">novaclient</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#novaclient"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">remove_host_from_aggregate</tt><big>(</big><em>request</em>, <em>aggregate_id</em>, <em>host</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#remove_host_from_aggregate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">remove_tenant_from_flavor</tt><big>(</big><em>request</em>, <em>flavor</em>, <em>tenant</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#remove_tenant_from_flavor"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Remove a tenant from the given flavor access list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">requires_keypair</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#requires_keypair"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_confirm_resize</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_confirm_resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_console_output</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>tail_length=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_console_output"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Gets console output of an instance.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>image</em>, <em>flavor</em>, <em>key_name</em>, <em>user_data</em>, <em>security_groups</em>, <em>block_device_mapping=None</em>, <em>block_device_mapping_v2=None</em>, <em>nics=None</em>, <em>availability_zone=None</em>, <em>instance_count=1</em>, <em>admin_pass=None</em>, <em>disk_config=None</em>, <em>config_drive=None</em>, <em>meta=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_delete</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_get</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_list</tt><big>(</big><em>request</em>, <em>search_opts=None</em>, <em>all_tenants=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_live_migrate</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>host</em>, <em>block_migration=False</em>, <em>disk_over_commit=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_live_migrate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_lock</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_lock"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_migrate</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_migrate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_pause</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_pause"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_rdp_console</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>console_type='rdp-html5'</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_rdp_console"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_reboot</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>soft_reboot=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_reboot"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_rebuild</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>image_id</em>, <em>password=None</em>, <em>disk_config=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_rebuild"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_resize</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>flavor</em>, <em>disk_config=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_resume</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_resume"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_revert_resize</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_revert_resize"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_serial_console</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>console_type='serial'</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_serial_console"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_shelve</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_shelve"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_spice_console</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>console_type='spice-html5'</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_spice_console"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_start</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_start"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_stop</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_stop"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_suspend</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_suspend"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_unlock</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_unlock"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_unpause</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_unpause"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_unshelve</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_unshelve"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_update</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">server_vnc_console</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>console_type='novnc'</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#server_vnc_console"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">service_disable</tt><big>(</big><em>request</em>, <em>host</em>, <em>binary</em>, <em>reason=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#service_disable"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">service_enable</tt><big>(</big><em>request</em>, <em>host</em>, <em>binary</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#service_enable"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">service_list</tt><big>(</big><em>request</em>, <em>binary=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#service_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">snapshot_create</tt><big>(</big><em>request</em>, <em>instance_id</em>, <em>name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#snapshot_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">tenant_absolute_limits</tt><big>(</big><em>request</em>, <em>reserved=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#tenant_absolute_limits"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">tenant_quota_get</tt><big>(</big><em>request</em>, <em>tenant_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#tenant_quota_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">tenant_quota_update</tt><big>(</big><em>request</em>, <em>tenant_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#tenant_quota_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">usage_get</tt><big>(</big><em>request</em>, <em>tenant_id</em>, <em>start</em>, <em>end</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#usage_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">usage_list</tt><big>(</big><em>request</em>, <em>start</em>, <em>end</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#usage_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.nova.</tt><tt class="descname">virtual_interfaces_list</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/nova.html#virtual_interfaces_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.neutron.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.neutron</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.lbaas.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.lbaas</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.nova.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.lbaas.html" title="The openstack_dashboard.api.lbaas Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.neutron.html" title="The openstack_dashboard.api.neutron Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

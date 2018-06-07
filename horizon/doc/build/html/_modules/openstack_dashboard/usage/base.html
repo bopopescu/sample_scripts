@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.usage.base &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.usage.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.usage</span> <span class="kn">import</span> <span class="n">quotas</span>
+
+
+<div class="viewcode-block" id="BaseUsage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage">[docs]</a><span class="k">class</span> <span class="nc">BaseUsage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">show_terminated</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">project_id</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">request</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summary</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">usage_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quotas</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="BaseUsage.today"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.today">[docs]</a>    <span class="k">def</span> <span class="nf">today</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="BaseUsage.get_start"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_start">[docs]</a>    <span class="k">def</span> <span class="nf">get_start</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">timezone</span><span class="o">.</span><span class="n">make_aware</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="BaseUsage.get_end"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_end">[docs]</a>    <span class="k">def</span> <span class="nf">get_end</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">):</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">59</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">timezone</span><span class="o">.</span><span class="n">make_aware</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_instances"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_instances">[docs]</a>    <span class="k">def</span> <span class="nf">get_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">instance_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="p">[</span><span class="n">instance_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">server_usages</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">usage_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">instance_list</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_date_range"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_date_range">[docs]</a>    <span class="k">def</span> <span class="nf">get_date_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">):</span>
+            <span class="n">args_start</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">args_end</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_form</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]</span>
+                <span class="n">args_start</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
+                              <span class="n">start</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+                              <span class="n">start</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+                <span class="n">args_end</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
+                            <span class="n">end</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+                            <span class="n">end</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">form</span><span class="o">.</span><span class="n">is_bound</span><span class="p">:</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                               <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Invalid date format: &quot;</span>
+                                 <span class="s2">&quot;Using today as default.&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_start</span><span class="p">(</span><span class="o">*</span><span class="n">args_start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_end</span><span class="p">(</span><span class="o">*</span><span class="n">args_end</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.init_form"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.init_form">[docs]</a>    <span class="k">def</span> <span class="nf">init_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="n">day</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">today</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">year</span><span class="o">=</span><span class="n">today</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">today</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_form"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_form">[docs]</a>    <span class="k">def</span> <span class="nf">get_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;form&#39;</span><span class="p">):</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;usage_start&#39;</span><span class="p">))</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;usage_end&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="ow">and</span> <span class="n">end</span><span class="p">:</span>
+                <span class="c1"># bound form</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateForm</span><span class="p">({</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">end</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># non-bound form</span>
+                <span class="n">init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_form</span><span class="p">()</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">init</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span>
+                                                    <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">end</span><span class="p">})</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;usage_start&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;usage_end&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">form</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_neutron_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">):</span>
+        <span class="n">resource_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;floatingip&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;api&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">tenant_floating_ip_list</span><span class="p">,</span>
+                <span class="s1">&#39;limit_name&#39;</span><span class="p">:</span> <span class="s1">&#39;totalFloatingIpsUsed&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve floating IP addresses.&#39;</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;security_group&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;api&#39;</span><span class="p">:</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">security_group_list</span><span class="p">,</span>
+                <span class="s1">&#39;limit_name&#39;</span><span class="p">:</span> <span class="s1">&#39;totalSecurityGroupsUsed&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve security groups.&#39;</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">resource_map</span><span class="p">[</span><span class="n">resource_name</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">resource</span><span class="p">[</span><span class="s1">&#39;api&#39;</span><span class="p">]</span>
+            <span class="n">current_used</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">current_used</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">resource</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">limits</span><span class="p">[</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;limit_name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">current_used</span>
+
+    <span class="k">def</span> <span class="nf">_set_neutron_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limits</span><span class="p">,</span> <span class="n">neutron_quotas</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">):</span>
+        <span class="n">limit_name_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;floatingip&#39;</span><span class="p">:</span> <span class="s1">&#39;maxTotalFloatingIps&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;security_group&#39;</span><span class="p">:</span> <span class="s1">&#39;maxSecurityGroups&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">neutron_quotas</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">resource_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resource_max</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">neutron_quotas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_name</span><span class="p">),</span>
+                                   <span class="s1">&#39;limit&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">resource_max</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">resource_max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+
+        <span class="n">limits</span><span class="p">[</span><span class="n">limit_name_map</span><span class="p">[</span><span class="n">resource_name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">resource_max</span>
+
+<div class="viewcode-block" id="BaseUsage.get_neutron_limits"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_neutron_limits">[docs]</a>    <span class="k">def</span> <span class="nf">get_neutron_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">neutron_quotas_supported</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_quotas_extension_supported</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">))</span>
+            <span class="n">neutron_sg_used</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">is_extension_supported</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                   <span class="s1">&#39;security-group&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">floating_ip_supported</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_neutron_usage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="p">,</span> <span class="s1">&#39;floatingip&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">neutron_sg_used</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_neutron_usage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="p">,</span> <span class="s1">&#39;security_group&#39;</span><span class="p">)</span>
+            <span class="c1"># Quotas are an optional extension in Neutron. If it isn&#39;t</span>
+            <span class="c1"># enabled, assume the floating IP limit is infinite.</span>
+            <span class="k">if</span> <span class="n">neutron_quotas_supported</span><span class="p">:</span>
+                <span class="n">neutron_quotas</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">tenant_quota_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">neutron_quotas</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># Assume neutron security group and quotas are enabled</span>
+            <span class="c1"># because they are enabled in most Neutron plugins.</span>
+            <span class="n">neutron_sg_used</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">neutron_quotas</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve network quota information.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_neutron_limit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="p">,</span> <span class="n">neutron_quotas</span><span class="p">,</span> <span class="s1">&#39;floatingip&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">neutron_sg_used</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_neutron_limit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="p">,</span> <span class="n">neutron_quotas</span><span class="p">,</span>
+                                    <span class="s1">&#39;security_group&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_cinder_limits"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_cinder_limits">[docs]</a>    <span class="k">def</span> <span class="nf">get_cinder_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get volume limits if cinder is enabled.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;volume&#39;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">tenant_absolute_limits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve volume limit information.&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_limits"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_limits">[docs]</a>    <span class="k">def</span> <span class="nf">get_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">tenant_absolute_limits</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve limit information.&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_neutron_limits</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_cinder_limits</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_usage_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_usage_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_usage_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.summarize"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.summarize">[docs]</a>    <span class="k">def</span> <span class="nf">summarize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">extension_supported</span><span class="p">(</span><span class="s1">&#39;SimpleTenantUsage&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">end</span> <span class="ow">and</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="p">:</span>
+            <span class="c1"># The API can&#39;t handle timezone aware datetime, so convert back</span>
+            <span class="c1"># to naive UTC just for this last step.</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">make_naive</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">make_naive</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">usage_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_usage_list</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                  <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve usage information.&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">end</span> <span class="o">&lt;</span> <span class="n">start</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                           <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Invalid time period. The end date should be &quot;</span>
+                             <span class="s2">&quot;more recent than the start date.&quot;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                           <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Invalid time period. You are requesting &quot;</span>
+                             <span class="s2">&quot;data from the future which may not exist.&quot;</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">project_usage</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">usage_list</span><span class="p">:</span>
+            <span class="n">project_summary</span> <span class="o">=</span> <span class="n">project_usage</span><span class="o">.</span><span class="n">get_summary</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">project_summary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="n">value</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.get_quotas"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.get_quotas">[docs]</a>    <span class="k">def</span> <span class="nf">get_quotas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">quotas</span> <span class="o">=</span> <span class="n">quotas</span><span class="o">.</span><span class="n">tenant_quota_usages</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve quota information.&quot;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="BaseUsage.csv_link"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.BaseUsage.csv_link">[docs]</a>    <span class="k">def</span> <span class="nf">csv_link</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_form</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="s2">&quot;cleaned_data&quot;</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;start&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="s1">&#39;end&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">date</span><span class="p">(),</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span><span class="o">.</span><span class="n">date</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="s2">&quot;?start=</span><span class="si">%s</span><span class="s2">&amp;end=</span><span class="si">%s</span><span class="s2">&amp;format=csv&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span>
+                                                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="GlobalUsage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.GlobalUsage">[docs]</a><span class="k">class</span> <span class="nc">GlobalUsage</span><span class="p">(</span><span class="n">BaseUsage</span><span class="p">):</span>
+    <span class="n">show_terminated</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="GlobalUsage.get_usage_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.GlobalUsage.get_usage_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_usage_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">usage_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ProjectUsage"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.ProjectUsage">[docs]</a><span class="k">class</span> <span class="nc">ProjectUsage</span><span class="p">(</span><span class="n">BaseUsage</span><span class="p">):</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;memory_mb&#39;</span><span class="p">,</span> <span class="s1">&#39;vcpus&#39;</span><span class="p">,</span> <span class="s1">&#39;uptime&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;hours&#39;</span><span class="p">,</span> <span class="s1">&#39;local_gb&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProjectUsage.get_usage_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.usage.base.html#openstack_dashboard.usage.base.ProjectUsage.get_usage_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_usage_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="n">show_terminated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;show_terminated&#39;</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">show_terminated</span><span class="p">)</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">terminated_instances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">usage_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="c1"># Attribute may not exist if there are no instances</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s1">&#39;server_usages&#39;</span><span class="p">):</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">today</span>
+            <span class="k">for</span> <span class="n">server_usage</span> <span class="ow">in</span> <span class="n">usage</span><span class="o">.</span><span class="n">server_usages</span><span class="p">:</span>
+                <span class="c1"># This is a way to phrase uptime in a way that is compatible</span>
+                <span class="c1"># with the &#39;timesince&#39; filter. (Use of local time intentional.)</span>
+                <span class="n">server_uptime</span> <span class="o">=</span> <span class="n">server_usage</span><span class="p">[</span><span class="s1">&#39;uptime&#39;</span><span class="p">]</span>
+                <span class="n">total_uptime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">server_uptime</span><span class="p">)</span>
+                <span class="n">server_usage</span><span class="p">[</span><span class="s1">&#39;uptime_at&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_uptime</span>
+                <span class="k">if</span> <span class="n">server_usage</span><span class="p">[</span><span class="s1">&#39;ended_at&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">show_terminated</span><span class="p">:</span>
+                    <span class="n">terminated_instances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">server_usage</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">instances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">server_usage</span><span class="p">)</span>
+        <span class="n">usage</span><span class="o">.</span><span class="n">server_usages</span> <span class="o">=</span> <span class="n">instances</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">usage</span><span class="p">,)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

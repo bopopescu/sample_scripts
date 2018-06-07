@@ -1,0 +1,10 @@
+#!/home/horizon/horizon/.venv/bin/python
+# EASY-INSTALL-ENTRY-SCRIPT: 'nodeenv==0.13.6','console_scripts','nodeenv'
+__requires__ = 'nodeenv==0.13.6'
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.exit(
+        load_entry_point('nodeenv==0.13.6', 'console_scripts', 'nodeenv')()
+    )

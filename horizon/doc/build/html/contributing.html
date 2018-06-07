@@ -1,0 +1,694 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Contributing Guide &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="index.html" />
+    <link rel="next" title="Horizon’s tests and you" href="testing.html" />
+    <link rel="prev" title="Tutorial: Building a Dashboard using Horizon" href="topics/tutorial.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="contributing-guide">
+<h1>Contributing Guide<a class="headerlink" href="#contributing-guide" title="Permalink to this headline">¶</a></h1>
+<p>First and foremost, thank you for wanting to contribute! It&#8217;s the only way
+open source works!</p>
+<p>Before you dive into writing patches, here are some of the basics:</p>
+<ul class="simple">
+<li>Project page: <a class="reference external" href="http://launchpad.net/horizon">http://launchpad.net/horizon</a></li>
+<li>Bug tracker: <a class="reference external" href="https://bugs.launchpad.net/horizon">https://bugs.launchpad.net/horizon</a></li>
+<li>Source code: <a class="reference external" href="https://github.com/openstack/horizon">https://github.com/openstack/horizon</a></li>
+<li>Code review: <a class="reference external" href="https://review.openstack.org/#q,status:open+project:openstack/horizon,n,z">https://review.openstack.org/#q,status:open+project:openstack/horizon,n,z</a></li>
+<li>Continuous integration:
+* Jenkins: <a class="reference external" href="https://jenkins.openstack.org">https://jenkins.openstack.org</a>
+* Zuul: <a class="reference external" href="http://status.openstack.org/zuul">http://status.openstack.org/zuul</a></li>
+<li>IRC Channel: #openstack-horizon on Freenode.</li>
+</ul>
+<div class="section" id="making-contributions">
+<h2>Making Contributions<a class="headerlink" href="#making-contributions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="getting-started">
+<h3>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h3>
+<p>We&#8217;ll start by assuming you&#8217;ve got a working checkout of the repository (if
+not then please see the <a class="reference internal" href="quickstart.html"><em>Quickstart</em></a>).</p>
+<p>Second, you&#8217;ll need to take care of a couple administrative tasks:</p>
+<ol class="arabic simple">
+<li>Create an account on Launchpad.</li>
+<li>Sign the <a class="reference external" href="http://wiki.openstack.org/CLA">OpenStack Contributor License Agreement</a> and follow the associated
+instructions to verify your signature.</li>
+<li>Join the <a class="reference external" href="https://launchpad.net/~horizon">Horizon Developers</a> team on Launchpad.</li>
+<li>Follow the <a class="reference external" href="http://docs.openstack.org/infra/manual/developers.html#development-workflow">instructions for setting up git-review</a> in your
+development environment.</li>
+</ol>
+<p>Whew! Got all that? Okay! You&#8217;re good to go.</p>
+</div>
+<div class="section" id="ways-to-contribute">
+<h3>Ways To Contribute<a class="headerlink" href="#ways-to-contribute" title="Permalink to this headline">¶</a></h3>
+<p>The easiest way to get started with Horizon&#8217;s code is to pick a bug on
+Launchpad that interests you, and start working on that. Bugs tagged as
+<tt class="docutils literal"><span class="pre">low-hanging-fruit</span></tt> are a good place to start. Alternatively, if there&#8217;s an
+OpenStack API feature you would like to see implemented in Horizon feel free
+to try building it.</p>
+<p>If those are too big, there are lots of great ways to get involved without
+plunging in head-first:</p>
+<ul class="simple">
+<li>Report bugs, triage new tickets, and review old tickets on
+the <a class="reference external" href="https://bugs.launchpad.net/horizon">bug tracker</a>.</li>
+<li>Propose ideas for improvements via <a class="reference external" href="https://blueprints.launchpad.net/horizon">Launchpad Blueprints</a>, via the
+mailing list on the project page, or on IRC.</li>
+<li>Write documentation!</li>
+<li>Write unit tests for untested code!</li>
+<li>Help improve the <a class="reference external" href="https://wiki.openstack.org/wiki/UX#Getting_Started">User Experience Design</a> or contribute to the <a class="reference external" href="https://wiki.openstack.org/wiki/Personas">Persona Working Group</a>.</li>
+</ul>
+</div>
+<div class="section" id="choosing-issues-to-work-on">
+<h3>Choosing Issues To Work On<a class="headerlink" href="#choosing-issues-to-work-on" title="Permalink to this headline">¶</a></h3>
+<p>In general, if you want to write code, there are three cases for issues
+you might want to work on:</p>
+<ol class="arabic simple">
+<li>Confirmed bugs</li>
+<li>Approved blueprints (features)</li>
+<li>New bugs you&#8217;ve discovered</li>
+</ol>
+<p>If you have an idea for a new feature that isn&#8217;t in a blueprint yet, it&#8217;s
+a good idea to write the blueprint first, so you don&#8217;t end up writing a bunch
+of code that may not go in the direction the community wants.</p>
+<p>For bugs, open the bug first, but if you can reproduce the bug reliably and
+identify its cause then it&#8217;s usually safe to start working on it. However,
+getting independent confirmation (and verifying that it&#8217;s not a duplicate)
+is always a good idea if you can be patient.</p>
+</div>
+<div class="section" id="after-you-write-your-patch">
+<h3>After You Write Your Patch<a class="headerlink" href="#after-you-write-your-patch" title="Permalink to this headline">¶</a></h3>
+<p>Once you&#8217;ve made your changes, there are a few things to do:</p>
+<ul class="simple">
+<li>Make sure the unit tests pass: <tt class="docutils literal"><span class="pre">./run_tests.sh</span></tt> for Python, and <tt class="docutils literal"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test</span></tt> for JS.</li>
+<li>Make sure the linting tasks pass: <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--pep8</span></tt> for Python, and <tt class="docutils literal"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">lint</span></tt> for JS.</li>
+<li>Make sure your code is ready for translation: <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--pseudo</span> <span class="pre">de</span></tt> See the Translatability section below for details.</li>
+<li>Make sure your code is up-to-date with the latest master: <tt class="docutils literal"><span class="pre">git</span> <span class="pre">pull</span> <span class="pre">--rebase</span></tt></li>
+<li>Finally, run <tt class="docutils literal"><span class="pre">git</span> <span class="pre">review</span></tt> to upload your changes to Gerrit for review.</li>
+</ul>
+<p>The Horizon core developers will be notified of the new review and will examine
+it in a timely fashion, either offering feedback or approving it to be merged.
+If the review is approved, it is sent to Jenkins to verify the unit tests pass
+and it can be merged cleanly. Once Jenkins approves it, the change will be
+merged to the master repository and it&#8217;s time to celebrate!</p>
+</div>
+</div>
+<div class="section" id="etiquette">
+<h2>Etiquette<a class="headerlink" href="#etiquette" title="Permalink to this headline">¶</a></h2>
+<p>The community&#8217;s guidelines for etiquette are fairly simple:</p>
+<ul class="simple">
+<li>Treat everyone respectfully and professionally.</li>
+<li>If a bug is &#8220;in progress&#8221; in the bug tracker, don&#8217;t start working on it
+without contacting the author. Try on IRC, or via the launchpad email
+contact link. If you don&#8217;t get a response after a reasonable time, then go
+ahead. Checking first avoids duplicate work and makes sure nobody&#8217;s toes
+get stepped on.</li>
+<li>If a blueprint is assigned, even if it hasn&#8217;t been started, be sure you
+contact the assignee before taking it on. These larger issues often have a
+history of discussion or specific implementation details that the assignee
+may be aware of that you are not.</li>
+<li>Please don&#8217;t re-open tickets closed by a core developer. If you disagree with
+the decision on the ticket, the appropriate solution is to take it up on
+IRC or the mailing list.</li>
+<li>Give credit where credit is due; if someone helps you substantially with
+a piece of code, it&#8217;s polite (though not required) to thank them in your
+commit message.</li>
+</ul>
+</div>
+<div class="section" id="translatability">
+<span id="id1"></span><h2>Translatability<a class="headerlink" href="#translatability" title="Permalink to this headline">¶</a></h2>
+<p>Horizon gets translated into multiple languages. The pseudo translation tool
+can be used to verify that code is ready to be translated. The pseudo tool
+replaces a language&#8217;s translation with a complete, fake translation. Then
+you can verify that your code properly displays fake translations to validate
+that your code is ready for translation.</p>
+<div class="section" id="running-the-pseudo-translation-tool">
+<h3>Running the pseudo translation tool<a class="headerlink" href="#running-the-pseudo-translation-tool" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Make sure your English po file is up to date: <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--makemessages</span></tt></li>
+<li>Run the pseudo tool to create pseudo translations. For example, to replace the German translation with a pseudo translation: <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--pseudo</span> <span class="pre">de</span></tt></li>
+<li>Compile the catalog: <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--compilemessages</span></tt></li>
+<li>Run your development server.</li>
+<li>Log in and change to the language you pseudo translated.</li>
+</ol>
+<p>It should look weird. More specifically, the translatable segments are going
+to start and end with a bracket and they are going to have some added
+characters. For example, &#8220;Log In&#8221; will become &#8220;[~Log In~您好яшçあ]&#8221;
+This is useful because you can inspect for the following, and consider if your
+code is working like it should:</p>
+<ul class="simple">
+<li>If you see a string in English it&#8217;s not translatable. Should it be?</li>
+<li>If you see brackets next to each other that might be concatenation. Concatenation
+can make quality translations difficult or impossible. See
+<a class="reference external" href="https://wiki.openstack.org/wiki/I18n/TranslatableStrings#Use_string_formating_variables.2C_never_perform_string_concatenation">https://wiki.openstack.org/wiki/I18n/TranslatableStrings#Use_string_formating_variables.2C_never_perform_string_concatenation</a>
+for additional information.</li>
+<li>If there is unexpected wrapping/truncation there might not be enough
+space for translations.</li>
+<li>If you see a string in the proper translated language, it comes from an
+external source. (That&#8217;s not bad, just sometimes useful to know)</li>
+<li>If you get new crashes, there is probably a bug.</li>
+</ul>
+<p>Don&#8217;t forget to cleanup any pseudo translated po files. Those don&#8217;t get merged!</p>
+</div>
+</div>
+<div class="section" id="code-style">
+<h2>Code Style<a class="headerlink" href="#code-style" title="Permalink to this headline">¶</a></h2>
+<p>As a project, Horizon adheres to code quality standards.</p>
+<div class="section" id="python">
+<h3>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h3>
+<p>We follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> for all our Python code, and use <tt class="docutils literal"><span class="pre">pep8.py</span></tt> (available
+via the shortcut <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--pep8</span></tt>) to validate that our code
+meets proper Python style guidelines.</p>
+</div>
+<div class="section" id="django">
+<h3>Django<a class="headerlink" href="#django" title="Permalink to this headline">¶</a></h3>
+<p>Additionally, we follow <a class="reference external" href="https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/">Django&#8217;s style guide</a> for templates, views, and
+other miscellany.</p>
+</div>
+<div class="section" id="javascript">
+<h3>JavaScript<a class="headerlink" href="#javascript" title="Permalink to this headline">¶</a></h3>
+<p>The following standards are divided into required and recommended sections.
+Our main goal in establishing these best practices is to have code that is
+reliable, readable, and maintainable.</p>
+<div class="section" id="required">
+<h4>Required<a class="headerlink" href="#required" title="Permalink to this headline">¶</a></h4>
+<p><strong>Reliable</strong></p>
+<ul class="simple">
+<li>The code has to work on the stable and latest versions of Firefox, Chrome,
+Safari, and Opera web browsers, and on Microsoft Internet Explorer 9 and
+later.</li>
+<li>If you turned compression off during development via <tt class="docutils literal"><span class="pre">COMPRESS_ENABLED</span> <span class="pre">=</span>
+<span class="pre">False</span></tt> in local_settings.py, re-enable compression and test your code
+before submitting.</li>
+<li>Use <tt class="docutils literal"><span class="pre">===</span></tt> as opposed to <tt class="docutils literal"><span class="pre">==</span></tt> for equality checks. The <tt class="docutils literal"><span class="pre">==</span></tt> will do a
+type cast before comparing, which can lead to unwanted results.</li>
+</ul>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If typecasting is desired, explicit casting is preferred to keep the
+meaning of your code clear.</p>
+</div>
+</div></blockquote>
+<ul>
+<li><p class="first">Keep document reflows to a minimum. DOM manipulation is expensive, and can
+become a performance issue. If you are accessing the DOM, make sure that you
+are doing it in the most optimized way. One example is to build up a document
+fragment and then append the fragment to the DOM in one pass instead of doing
+multiple smaller DOM updates.</p>
+</li>
+<li><p class="first">Use “strict”, enclosing each JavaScript file inside a self-executing
+function. The self-executing function keeps the strict scoped to the file,
+so its variables and methods are not exposed to other JavaScript files in
+the product.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Using strict will throw exceptions for common coding errors, like
+accessing global vars, that normally are not flagged.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>(function(){
+  &#39;use strict&#39;;
+  // code...
+})();
+</pre></div>
+</div>
+</li>
+<li><p class="first">Use <tt class="docutils literal"><span class="pre">forEach</span></tt> | <tt class="docutils literal"><span class="pre">each</span></tt> when looping whenever possible. AngularJS and
+jQuery both provide for each loops that provide both iteration and scope.</p>
+<p>AngularJS:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>angular.forEach(objectToIterateOver, function(value, key) {
+  // loop logic
+});
+</pre></div>
+</div>
+<p>jQuery:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$.each(objectToIterateOver, function(key, value) {
+  // loop logic
+});
+</pre></div>
+</div>
+</li>
+<li><p class="first">Do not put variables or functions in the global namespace. There are several
+reasons why globals are bad, one being that all JavaScript included in an
+application runs in the same scope. The issue with that is if another script
+has the same method or variable names they overwrite each other.</p>
+</li>
+<li><p class="first">Always put <tt class="docutils literal"><span class="pre">var</span></tt> in front of your variables. Not putting <tt class="docutils literal"><span class="pre">var</span></tt> in front
+of a variable puts that variable into the global space, see above.</p>
+</li>
+<li><p class="first">Do not use <tt class="docutils literal"><span class="pre">eval(</span> <span class="pre">)</span></tt>. The eval (expression) evaluates the expression
+passed to it. This can open up your code to security vulnerabilities and
+other issues.</p>
+</li>
+<li><p class="first">Do not use &#8216;<tt class="docutils literal"><span class="pre">with</span></tt> object {code}&#8217;. The <tt class="docutils literal"><span class="pre">with</span></tt> statement is used to access
+properties of an object. The issue with <tt class="docutils literal"><span class="pre">with</span></tt> is that its execution is not
+consistent, so by reading the statement in the code it is not always clear
+how it is being used.</p>
+</li>
+</ul>
+<p><strong>Readable &amp; Maintainable</strong></p>
+<ul>
+<li><p class="first">Give meaningful names to methods and variables.</p>
+</li>
+<li><p class="first">Avoid excessive nesting.</p>
+</li>
+<li><p class="first">Avoid HTML and CSS in JS code. HTML and CSS belong in templates and
+stylesheets respectively. For example:</p>
+<ul>
+<li><p class="first">In our HTML files, we should focus on layout.</p>
+<ol class="arabic simple">
+<li>Reduce the small/random <tt class="docutils literal"><span class="pre">&lt;script&gt;</span></tt> and <tt class="docutils literal"><span class="pre">&lt;style&gt;</span></tt> elements in HTML.</li>
+<li>Avoid in-lining styles into element in HTML. Use attributes and
+classes instead.</li>
+</ol>
+</li>
+<li><p class="first">In our JS files, we should focus on logic rather than attempting to
+manipulate/style elements.</p>
+<ol class="arabic">
+<li><p class="first">Avoid statements such as <tt class="docutils literal"><span class="pre">element.css({property1,property2...})</span></tt> they
+belong in a CSS class.</p>
+</li>
+<li><p class="first">Avoid statements such as <tt class="docutils literal"><span class="pre">$(&quot;&lt;div&gt;&lt;span&gt;abc&lt;/span&gt;&lt;/div&gt;&quot;)</span></tt> they
+belong in a HTML template file. Use <tt class="docutils literal"><span class="pre">show</span></tt> | <tt class="docutils literal"><span class="pre">hide</span></tt> | <tt class="docutils literal"><span class="pre">clone</span></tt>
+elements if dynamic content is required.</p>
+</li>
+<li><p class="first">Avoid using classes for detection purposes only, instead, defer to
+attributes. For example to find a div:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;div class=&quot;something&quot;&gt;&lt;/div&gt;
+  $(&quot;.something&quot;).html(&quot;Don&#39;t find me this way!&quot;);
+</pre></div>
+</div>
+</li>
+</ol>
+<blockquote>
+<div><p>Is better found like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;div data-something&gt;&lt;/div&gt;
+  $(&quot;div[data-something]&quot;).html(&quot;You found me correctly!&quot;);
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</li>
+<li><p class="first">Avoid commented-out code.</p>
+</li>
+<li><p class="first">Avoid dead code.</p>
+</li>
+</ul>
+<p><strong>Performance</strong></p>
+<ul>
+<li><p class="first">Avoid creating instances of the same object repeatedly within the same scope.
+Instead, assign the object to a variable and re-use the existing object. For
+example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$(document).on(&#39;click&#39;, function() { /* do something. */ });
+$(document).on(&#39;mouseover&#39;, function() { /* do something. */ });
+</pre></div>
+</div>
+<p>A better approach:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>var $document = $(document);
+$document.on(&#39;click&#39;, function() { /* do something. */ });
+$document.on(&#39;mouseover&#39;, function() { /* do something. */ });
+</pre></div>
+</div>
+<p>In the first approach a jQuery object for <tt class="docutils literal"><span class="pre">document</span></tt> is created each time.
+The second approach creates only one jQuery object and reuses it. Each object
+needs to be created, uses memory, and needs to be garbage collected.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="recommended">
+<h4>Recommended<a class="headerlink" href="#recommended" title="Permalink to this headline">¶</a></h4>
+<p><strong>Readable &amp; Maintainable</strong></p>
+<ul>
+<li><p class="first">Put a comment at the top of every file explaining what the purpose of this
+file is when the naming is not obvious. This guideline also applies to
+methods and variables.</p>
+</li>
+<li><p class="first">Source-code formatting – (or “beautification”) is recommended but should be
+used with caution. Keep in mind that if you reformat an entire file that was
+not previously formatted the same way, it will mess up the diff during the
+code review. It is best to use a formatter when you are working on a new file
+by yourself, or with others who are using the same formatter. You can also
+choose to format a selected portion of a file only. Instructions for setting
+up ESLint for Eclipse, Sublime Text, Notepad++ and WebStorm/PyCharm are
+<a class="reference external" href="https://wiki.openstack.org/wiki/Horizon/Javascript/EditorConfig">provided</a>.</p>
+</li>
+<li><p class="first">Use 2 spaces for code indentation.</p>
+</li>
+<li><p class="first">Use <tt class="docutils literal"><span class="pre">{</span> <span class="pre">}</span></tt> for <tt class="docutils literal"><span class="pre">if</span></tt>, <tt class="docutils literal"><span class="pre">for</span></tt>, <tt class="docutils literal"><span class="pre">while</span></tt> statements, and don&#8217;t combine them
+on one line.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>// Do this          //Not this          // Not this
+if(x) {             if(x)               if(x) y =x;
+  y=x;                y=x;
+}
+</pre></div>
+</div>
+</li>
+<li><p class="first">Use ESLint in your development environment.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="angularjs">
+<h3>AngularJS<a class="headerlink" href="#angularjs" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This section is intended as a quick intro to contributing with AngularJS. For
+more detailed information, check the <a class="reference internal" href="topics/angularjs.html"><em>AngularJS Topic Guide</em></a>.</p>
+</div>
+<div class="section" id="john-papa-style-guide">
+<h4>&#8220;John Papa Style Guide&#8221;<a class="headerlink" href="#john-papa-style-guide" title="Permalink to this headline">¶</a></h4>
+<p>The John Papa Style Guide is the primary point of reference for Angular
+code style. This style guide has been endorsed by the AngularJS
+team:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&quot;The most current and detailed Angular Style Guide is the
+community-driven effort led by John Papa and Todd Motto.&quot;
+
+- http://angularjs.blogspot.com/2014/02/an-angularjs-style-guide-and-best.html
+</pre></div>
+</div>
+<p>The style guide is found at the below location:</p>
+<p><a class="reference external" href="https://github.com/johnpapa/angular-styleguide">https://github.com/johnpapa/angular-styleguide</a></p>
+<p>When reviewing / writing, please refer to the sections of this guide.
+If an issue is encountered, note it with a comment and provide a link back
+to the specific issue. For example, code should use named functions. A
+review noting this should provide the following link in the comments:</p>
+<p><a class="reference external" href="https://github.com/johnpapa/angular-styleguide#style-y024">https://github.com/johnpapa/angular-styleguide#style-y024</a></p>
+<p>In addition to John Papa, the following guidelines are divided into
+required and recommended sections.</p>
+</div>
+<div class="section" id="id2">
+<h4>Required<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<ul>
+<li><p class="first">Scope is not the model (model is your JavaScript Objects). The scope
+references the model. Use isolate scopes wherever possible.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/angular/angular.js/wiki/Understanding-Scopes">https://github.com/angular/angular.js/wiki/Understanding-Scopes</a></li>
+<li>Read-only in templates.</li>
+<li>Write-only in controllers.</li>
+</ul>
+</li>
+<li><p class="first">Since Django already uses <tt class="docutils literal"><span class="pre">{{</span> <span class="pre">}}</span></tt>, use <tt class="docutils literal"><span class="pre">{$</span> <span class="pre">$}</span></tt> or <tt class="docutils literal"><span class="pre">{%</span> <span class="pre">verbatim</span> <span class="pre">%}</span></tt>
+instead.</p>
+</li>
+<li><p class="first">For localization in Angular files, use the Angular service
+horizon.framework.util.i18n.gettext. Ensure that the injected dependency
+is named <tt class="docutils literal"><span class="pre">gettext</span></tt>. For regular Javascript files, use either <tt class="docutils literal"><span class="pre">gettext</span></tt> or
+<tt class="docutils literal"><span class="pre">ngettext</span></tt>. Only those two methods are recognized by our tools and will be
+included in the .po file after running <tt class="docutils literal"><span class="pre">./run_tests</span> <span class="pre">--makemessages</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>// Angular
+angular.module(&#39;myModule&#39;)
+  .factory(&#39;myFactory&#39;, myFactory);
+
+myFactory.$inject = [&#39;horizon.framework.util.i18n.gettext&#39;];
+function myFactory(gettext) {
+  gettext(&#39;translatable text&#39;);
+}
+
+// Javascript
+gettext(apple);
+ngettext(&#39;apple&#39;, &#39;apples&#39;, count);
+
+// Not valid
+var _ = gettext;
+_(&#39;translatable text&#39;);
+
+$window.gettext(&#39;translatable text&#39;);
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="eslint">
+<h3>ESLint<a class="headerlink" href="#eslint" title="Permalink to this headline">¶</a></h3>
+<p>ESLint is a great tool to be used during your code editing to improve
+JavaScript quality by checking your code against a configurable list of checks.
+Therefore, JavaScript developers should configure their editors to use ESLint
+to warn them of any such errors so they can be addressed. Since ESLint has a
+ton of configuration options to choose from, links are provided below to the
+options Horizon wants enforced along with the instructions for setting up
+ESLint for Eclipse, Sublime Text, Notepad++ and WebStorm/PyCharm.</p>
+<p>Instructions for setting up ESLint: <a class="reference external" href="https://wiki.openstack.org/wiki/Horizon/Javascript/EditorConfig">ESLint setup instructions</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">ESLint is part of the automated unit tests performed by Jenkins. The
+automated test use the default configurations, which are less strict than
+the configurations we recommended to run in your local development
+environment.</p>
+</div>
+</div>
+<div class="section" id="css">
+<h3>CSS<a class="headerlink" href="#css" title="Permalink to this headline">¶</a></h3>
+<p>Style guidelines for CSS are currently quite minimal. Do your best to make the
+code readable and well-organized. Two spaces are preferred for indentation
+so as to match both the JavaScript and HTML files.</p>
+</div>
+<div class="section" id="javascript-and-css-libraries">
+<h3>JavaScript and CSS libraries<a class="headerlink" href="#javascript-and-css-libraries" title="Permalink to this headline">¶</a></h3>
+<p>We do not bundle third-party code in Horizon&#8217;s source tree. Instead, we package
+the required files as XStatic Python packages and add them as dependencies to
+Horizon. In particular, when you need to add a new third-party JavaScript or
+CSS library to Horizon, follow those steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Check if the library is already packaged as Xstatic on PyPi, by searching
+for the library name. If it already is, go to step 5. If it is, but not in
+the right version, contact the original packager.</li>
+<li>Package the library as an Xstatic package by following the instructions in
+Xstatic <a class="reference external" href="http://xstatic.rtfd.org/en/latest/packaging.html">documentation</a>.</li>
+<li><a class="reference external" href="http://docs.openstack.org/infra/manual/creators.html">Create a new repository on StackForge</a>. Use &#8220;xstatic-core&#8221; and
+&#8220;xstatic-ptl&#8221; groups for the ACLs. Make sure to include the
+<tt class="docutils literal"><span class="pre">publish-to-pypi</span></tt> job.</li>
+<li><a class="reference external" href="http://docs.openstack.org/infra/manual/creators.html#give-openstack-permission-to-publish-releases">Setup PyPi</a> to allow OpenStack to publish your package.</li>
+<li><a class="reference external" href="http://docs.openstack.org/infra/manual/drivers.html#tagging-a-release">Tag your release</a>. That will cause it to be automatically packaged and
+released to PyPi.</li>
+<li>Add the package to <a class="reference external" href="https://github.com/openstack/requirements/blob/master/global-requirements.txt">global-requirements</a>. Make sure to mention the license.</li>
+<li>Add the package to Horizon&#8217;s <tt class="docutils literal"><span class="pre">requirements.txt</span></tt> file, to its
+<tt class="docutils literal"><span class="pre">settings.py</span></tt>, and to the <tt class="docutils literal"><span class="pre">_scripts.html</span></tt> or <tt class="docutils literal"><span class="pre">_stylesheets.html</span></tt>
+templates. Make sure to keep the order alphabetic.</li>
+</ol>
+</div></blockquote>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>Note that once a package is released, you can not &#8220;un-release&#8221; it. You
+should never attempt to modify, delete or rename a released package without
+a lot of careful planning and feedback from all projects that use it.</p>
+<p class="last">For the purpose of fixing packaging mistakes, XStatic has the build number
+mechanism. Simply fix the error, increment the build number and release the
+newer package.</p>
+</div>
+</div>
+<div class="section" id="html">
+<h3>HTML<a class="headerlink" href="#html" title="Permalink to this headline">¶</a></h3>
+<p>Again, readability is paramount; however be conscientious of how the browser
+will handle whitespace when rendering the output. Two spaces is the preferred
+indentation style to match all front-end code.</p>
+</div>
+<div class="section" id="id3">
+<h3>Documentation<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Horizon&#8217;s documentation is written in reStructuredText (reST) and uses Sphinx
+for additional parsing and functionality, and should follow standard practices
+for writing reST. This includes:</p>
+<ul class="simple">
+<li>Flow paragraphs such that lines wrap at 80 characters or less.</li>
+<li>Use proper grammar, spelling, capitalization and punctuation at all times.</li>
+<li>Make use of Sphinx&#8217;s autodoc feature to document modules, classes
+and functions. This keeps the docs close to the source.</li>
+<li>Where possible, use Sphinx&#8217;s cross-reference syntax (e.g.
+<tt class="docutils literal"><span class="pre">:class:`~horizon.foo.Bar`</span></tt>) when referring to other Horizon components.
+The better-linked our docs are, the easier they are to use.</li>
+</ul>
+<p>Be sure to generate the documentation before submitting a patch for review.
+Unexpected warnings often appear when building the documentation, and slight
+reST syntax errors frequently cause links or cross-references not to work
+correctly.</p>
+</div>
+<div class="section" id="conventions">
+<h3>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h3>
+<p>Simply by convention, we have a few rules about naming:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The term &#8220;project&#8221; is used in place of Keystone&#8217;s &#8220;tenant&#8221; terminology
+in all user-facing text. The term &#8220;tenant&#8221; is still used in API code to
+make things more obvious for developers.</li>
+<li>The term &#8220;dashboard&#8221; refers to a top-level dashboard class, and &#8220;panel&#8221; to
+the sub-items within a dashboard. Referring to a panel as a dashboard is
+both confusing and incorrect.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Contributing Guide</a><ul>
+<li><a class="reference internal" href="#making-contributions">Making Contributions</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#ways-to-contribute">Ways To Contribute</a></li>
+<li><a class="reference internal" href="#choosing-issues-to-work-on">Choosing Issues To Work On</a></li>
+<li><a class="reference internal" href="#after-you-write-your-patch">After You Write Your Patch</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#etiquette">Etiquette</a></li>
+<li><a class="reference internal" href="#translatability">Translatability</a><ul>
+<li><a class="reference internal" href="#running-the-pseudo-translation-tool">Running the pseudo translation tool</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#code-style">Code Style</a><ul>
+<li><a class="reference internal" href="#python">Python</a></li>
+<li><a class="reference internal" href="#django">Django</a></li>
+<li><a class="reference internal" href="#javascript">JavaScript</a><ul>
+<li><a class="reference internal" href="#required">Required</a></li>
+<li><a class="reference internal" href="#recommended">Recommended</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#angularjs">AngularJS</a><ul>
+<li><a class="reference internal" href="#john-papa-style-guide">&#8220;John Papa Style Guide&#8221;</a></li>
+<li><a class="reference internal" href="#id2">Required</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#eslint">ESLint</a></li>
+<li><a class="reference internal" href="#css">CSS</a></li>
+<li><a class="reference internal" href="#javascript-and-css-libraries">JavaScript and CSS libraries</a></li>
+<li><a class="reference internal" href="#html">HTML</a></li>
+<li><a class="reference internal" href="#id3">Documentation</a></li>
+<li><a class="reference internal" href="#conventions">Conventions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="topics/tutorial.html"
+                                  title="previous chapter">Tutorial: Building a Dashboard using Horizon</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="testing.html"
+                                  title="next chapter">Horizon&#8217;s tests and you</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/contributing.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testing.html" title="Horizon’s tests and you"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="topics/tutorial.html" title="Tutorial: Building a Dashboard using Horizon"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.access_and_security.tabs &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.access_and_security.tabs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1"># Copyright 2012 OpenStack Foundation</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+
+<span class="kn">from</span> <span class="nn">neutronclient.common</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">neutron_exc</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">keystone</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">network</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">nova</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.access_and_security.</span>\
+    <span class="nn">api_access.tables</span> <span class="kn">import</span> <span class="n">EndpointsTable</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.access_and_security.</span>\
+    <span class="nn">floating_ips.tables</span> <span class="kn">import</span> <span class="n">FloatingIPsTable</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.access_and_security.</span>\
+    <span class="nn">keypairs.tables</span> <span class="kn">import</span> <span class="n">KeypairsTable</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.access_and_security.</span>\
+    <span class="nn">security_groups.tables</span> <span class="kn">import</span> <span class="n">SecurityGroupsTable</span>
+
+
+<div class="viewcode-block" id="SecurityGroupsTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.SecurityGroupsTab">[docs]</a><span class="k">class</span> <span class="nc">SecurityGroupsTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TableTab</span><span class="p">):</span>
+    <span class="n">table_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">SecurityGroupsTable</span><span class="p">,)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Security Groups&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;security_groups_tab&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_detail_table.html&quot;</span>
+    <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.compute&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="SecurityGroupsTab.get_security_groups_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.SecurityGroupsTab.get_security_groups_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_security_groups_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">security_groups</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">security_group_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">neutron_exc</span><span class="o">.</span><span class="n">ConnectionFailed</span><span class="p">:</span>
+            <span class="n">security_groups</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">security_groups</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve security groups.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">security_groups</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="KeypairsTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.KeypairsTab">[docs]</a><span class="k">class</span> <span class="nc">KeypairsTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TableTab</span><span class="p">):</span>
+    <span class="n">table_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">KeypairsTable</span><span class="p">,)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Key Pairs&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;keypairs_tab&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_detail_table.html&quot;</span>
+    <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.compute&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="KeypairsTab.get_keypairs_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.KeypairsTab.get_keypairs_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_keypairs_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keypairs</span> <span class="o">=</span> <span class="n">nova</span><span class="o">.</span><span class="n">keypair_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">keypairs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve key pair list.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">keypairs</span>
+
+</div></div>
+<div class="viewcode-block" id="FloatingIPsTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.FloatingIPsTab">[docs]</a><span class="k">class</span> <span class="nc">FloatingIPsTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TableTab</span><span class="p">):</span>
+    <span class="n">table_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">FloatingIPsTable</span><span class="p">,)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Floating IPs&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;floating_ips_tab&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_detail_table.html&quot;</span>
+    <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.compute&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="FloatingIPsTab.get_floating_ips_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.FloatingIPsTab.get_floating_ips_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_floating_ips_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">floating_ips</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">tenant_floating_ip_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">neutron_exc</span><span class="o">.</span><span class="n">ConnectionFailed</span><span class="p">:</span>
+            <span class="n">floating_ips</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">floating_ips</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve floating IP addresses.&#39;</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">floating_ip_pools</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">floating_ip_pools_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">neutron_exc</span><span class="o">.</span><span class="n">ConnectionFailed</span><span class="p">:</span>
+            <span class="n">floating_ip_pools</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">floating_ip_pools</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve floating IP pools.&#39;</span><span class="p">))</span>
+        <span class="n">pool_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">floating_ip_pools</span><span class="p">])</span>
+
+        <span class="n">instances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instances</span><span class="p">,</span> <span class="n">has_more</span> <span class="o">=</span> <span class="n">nova</span><span class="o">.</span><span class="n">server_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve instance list.&#39;</span><span class="p">))</span>
+
+        <span class="n">instances_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">ip</span> <span class="ow">in</span> <span class="n">floating_ips</span><span class="p">:</span>
+            <span class="n">ip</span><span class="o">.</span><span class="n">instance_name</span> <span class="o">=</span> <span class="n">instances_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ip</span><span class="o">.</span><span class="n">instance_id</span><span class="p">)</span>
+            <span class="n">ip</span><span class="o">.</span><span class="n">pool_name</span> <span class="o">=</span> <span class="n">pool_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ip</span><span class="o">.</span><span class="n">pool</span><span class="p">,</span> <span class="n">ip</span><span class="o">.</span><span class="n">pool</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">floating_ips</span>
+</div>
+<div class="viewcode-block" id="FloatingIPsTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.FloatingIPsTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">network</span><span class="o">.</span><span class="n">floating_ip_supported</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="APIAccessTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.APIAccessTab">[docs]</a><span class="k">class</span> <span class="nc">APIAccessTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TableTab</span><span class="p">):</span>
+    <span class="n">table_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">EndpointsTable</span><span class="p">,)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;API Access&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;api_access_tab&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;horizon/common/_detail_table.html&quot;</span>
+
+<div class="viewcode-block" id="APIAccessTab.get_endpoints_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.APIAccessTab.get_endpoints_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_endpoints_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">services</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">service</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">service_catalog</span><span class="p">):</span>
+            <span class="n">service</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">keystone</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">services_region</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">services</span>
+
+</div></div>
+<div class="viewcode-block" id="AccessAndSecurityTabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.access_and_security.tabs.html#openstack_dashboard.dashboards.project.access_and_security.tabs.AccessAndSecurityTabs">[docs]</a><span class="k">class</span> <span class="nc">AccessAndSecurityTabs</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;access_security_tabs&quot;</span>
+    <span class="n">tabs</span> <span class="o">=</span> <span class="p">(</span><span class="n">SecurityGroupsTab</span><span class="p">,</span> <span class="n">KeypairsTab</span><span class="p">,</span> <span class="n">FloatingIPsTab</span><span class="p">,</span> <span class="n">APIAccessTab</span><span class="p">)</span>
+    <span class="n">sticky</span> <span class="o">=</span> <span class="bp">True</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

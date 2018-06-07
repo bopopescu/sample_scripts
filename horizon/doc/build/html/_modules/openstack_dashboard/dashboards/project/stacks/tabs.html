@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.stacks.tabs &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.stacks.tabs</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">policy</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.stacks</span> \
+    <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">project_api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.stacks</span> <span class="kn">import</span> <span class="n">mappings</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.stacks</span> \
+    <span class="kn">import</span> <span class="n">tables</span> <span class="k">as</span> <span class="n">project_tables</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StackTopologyTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackTopologyTab">[docs]</a><span class="k">class</span> <span class="nc">StackTopologyTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">Tab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Topology&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;topology&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/stacks/_detail_topology.html&quot;</span>
+    <span class="n">preload</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="StackTopologyTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackTopologyTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+            <span class="p">((</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:DescribeStacks&quot;</span><span class="p">),</span>
+             <span class="p">(</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:ListStackResources&quot;</span><span class="p">),),</span>
+            <span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackTopologyTab.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackTopologyTab.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;stack_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;d3_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">project_api</span><span class="o">.</span><span class="n">d3_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">stack_id</span><span class="o">=</span><span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="StackOverviewTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackOverviewTab">[docs]</a><span class="k">class</span> <span class="nc">StackOverviewTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">Tab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Overview&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;overview&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/stacks/_detail_overview.html&quot;</span>
+
+<div class="viewcode-block" id="StackOverviewTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackOverviewTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+            <span class="p">((</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:DescribeStacks&quot;</span><span class="p">),),</span>
+            <span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackOverviewTab.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackOverviewTab.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;stack&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="ResourceOverviewTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.ResourceOverviewTab">[docs]</a><span class="k">class</span> <span class="nc">ResourceOverviewTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">Tab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Overview&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;resource_overview&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/stacks/_resource_overview.html&quot;</span>
+
+<div class="viewcode-block" id="ResourceOverviewTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.ResourceOverviewTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+            <span class="p">((</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:DescribeStackResource&quot;</span><span class="p">),),</span>
+            <span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ResourceOverviewTab.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.ResourceOverviewTab.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;resource&#39;</span><span class="p">]</span>
+        <span class="n">resource_url</span> <span class="o">=</span> <span class="n">mappings</span><span class="o">.</span><span class="n">resource_to_url</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="p">,</span>
+            <span class="s2">&quot;resource_url&quot;</span><span class="p">:</span> <span class="n">resource_url</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="StackEventsTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackEventsTab">[docs]</a><span class="k">class</span> <span class="nc">StackEventsTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">Tab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Events&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;events&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/stacks/_detail_events.html&quot;</span>
+    <span class="n">preload</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="StackEventsTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackEventsTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+            <span class="p">((</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:DescribeStackEvents&quot;</span><span class="p">),),</span>
+            <span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackEventsTab.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackEventsTab.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stack_identifier</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">stack_name</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">events_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">stack_identifier</span><span class="p">)</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;got events </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">events</span><span class="p">)</span>
+            <span class="c1"># The stack id is needed to generate the resource URL.</span>
+            <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">stack_id</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to get events for stack &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">stack</span><span class="o">.</span><span class="n">stack_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;stack&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="p">,</span>
+                <span class="s2">&quot;table&quot;</span><span class="p">:</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">EventsTable</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">events</span><span class="p">),</span> <span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="StackResourcesTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackResourcesTab">[docs]</a><span class="k">class</span> <span class="nc">StackResourcesTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">Tab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Resources&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;resources&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/stacks/_detail_resources.html&quot;</span>
+    <span class="n">preload</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="StackResourcesTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackResourcesTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+            <span class="p">((</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:ListStackResources&quot;</span><span class="p">),),</span>
+            <span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackResourcesTab.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackResourcesTab.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stack&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stack_identifier</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">stack_name</span><span class="p">,</span> <span class="n">stack</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">heat</span><span class="o">.</span><span class="n">resources_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">stack_identifier</span><span class="p">)</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;got resources </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">resources</span><span class="p">)</span>
+            <span class="c1"># The stack id is needed to generate the resource URL.</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">stack_id</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to get resources for stack &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">stack</span><span class="o">.</span><span class="n">stack_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;stack&quot;</span><span class="p">:</span> <span class="n">stack</span><span class="p">,</span>
+                <span class="s2">&quot;table&quot;</span><span class="p">:</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">ResourcesTable</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">resources</span><span class="p">,</span> <span class="n">stack</span><span class="o">=</span><span class="n">stack</span><span class="p">),</span> <span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="StackTemplateTab"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackTemplateTab">[docs]</a><span class="k">class</span> <span class="nc">StackTemplateTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">Tab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Template&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;stack_template&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/stacks/_stack_template.html&quot;</span>
+
+<div class="viewcode-block" id="StackTemplateTab.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackTemplateTab.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span>
+            <span class="p">((</span><span class="s2">&quot;orchestration&quot;</span><span class="p">,</span> <span class="s2">&quot;cloudformation:DescribeStacks&quot;</span><span class="p">),),</span>
+            <span class="n">request</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="StackTemplateTab.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackTemplateTab.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;stack_template&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stack_template&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="StackDetailTabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.StackDetailTabs">[docs]</a><span class="k">class</span> <span class="nc">StackDetailTabs</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;stack_details&quot;</span>
+    <span class="n">tabs</span> <span class="o">=</span> <span class="p">(</span><span class="n">StackTopologyTab</span><span class="p">,</span> <span class="n">StackOverviewTab</span><span class="p">,</span> <span class="n">StackResourcesTab</span><span class="p">,</span>
+            <span class="n">StackEventsTab</span><span class="p">,</span> <span class="n">StackTemplateTab</span><span class="p">)</span>
+    <span class="n">sticky</span> <span class="o">=</span> <span class="bp">True</span>
+
+</div>
+<div class="viewcode-block" id="ResourceDetailTabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.stacks.tabs.html#openstack_dashboard.dashboards.project.stacks.tabs.ResourceDetailTabs">[docs]</a><span class="k">class</span> <span class="nc">ResourceDetailTabs</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;resource_details&quot;</span>
+    <span class="n">tabs</span> <span class="o">=</span> <span class="p">(</span><span class="n">ResourceOverviewTab</span><span class="p">,)</span>
+    <span class="n">sticky</span> <span class="o">=</span> <span class="bp">True</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

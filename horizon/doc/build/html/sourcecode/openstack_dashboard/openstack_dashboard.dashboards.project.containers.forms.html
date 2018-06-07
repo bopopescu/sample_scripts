@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.containers.forms Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.access_and_security.views Module" href="openstack_dashboard.dashboards.project.access_and_security.views.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.containers.panel Module" href="openstack_dashboard.dashboards.project.containers.panel.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-containers-forms-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.containers.forms</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-containers-forms-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.containers.forms.</tt><tt class="descname">CopyObject</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#CopyObject"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('new_container_name', &lt;django.forms.fields.ChoiceField object at 0x7ff3b74bcfd0&gt;), ('path', &lt;django.forms.fields.CharField object at 0x7ff3b746c0d0&gt;), ('new_object_name', &lt;django.forms.fields.CharField object at 0x7ff3b746c1d0&gt;), ('orig_container_name', &lt;django.forms.fields.CharField object at 0x7ff3b746c310&gt;), ('orig_object_name', &lt;django.forms.fields.CharField object at 0x7ff3b746c390&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('new_container_name', &lt;django.forms.fields.ChoiceField object at 0x7ff3b74bcfd0&gt;), ('path', &lt;django.forms.fields.CharField object at 0x7ff3b746c0d0&gt;), ('new_object_name', &lt;django.forms.fields.CharField object at 0x7ff3b746c1d0&gt;), ('orig_container_name', &lt;django.forms.fields.CharField object at 0x7ff3b746c310&gt;), ('orig_object_name', &lt;django.forms.fields.CharField object at 0x7ff3b746c390&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#CopyObject.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.containers.forms.</tt><tt class="descname">CreateContainer</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#CreateContainer"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ACCESS_CHOICES</tt><em class="property"> = (('private', &lt;django.utils.functional.__proxy__ object at 0x7ff3b74bc2d0&gt;), ('public', &lt;django.utils.functional.__proxy__ object at 0x7ff3b74bc310&gt;))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('parent', &lt;django.forms.fields.CharField object at 0x7ff3b74bc350&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bc450&gt;), ('access', &lt;django.forms.fields.ChoiceField object at 0x7ff3b74bc550&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('parent', &lt;django.forms.fields.CharField object at 0x7ff3b74bc350&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bc450&gt;), ('access', &lt;django.forms.fields.ChoiceField object at 0x7ff3b74bc550&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#CreateContainer.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.containers.forms.</tt><tt class="descname">CreatePseudoFolder</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#CreatePseudoFolder"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('path', &lt;django.forms.fields.CharField object at 0x7ff3b74bcc10&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bcd10&gt;), ('container_name', &lt;django.forms.fields.CharField object at 0x7ff3b74bce10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('path', &lt;django.forms.fields.CharField object at 0x7ff3b74bcc10&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bcd10&gt;), ('container_name', &lt;django.forms.fields.CharField object at 0x7ff3b74bce10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#CreatePseudoFolder.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.containers.forms.</tt><tt class="descname">UpdateObject</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#UpdateObject"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.containers.forms.UploadObject</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('path', &lt;django.forms.fields.CharField object at 0x7ff3b74bc690&gt;), ('object_file', &lt;django.forms.fields.FileField object at 0x7ff3b74bc790&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bc8d0&gt;), ('container_name', &lt;django.forms.fields.CharField object at 0x7ff3b74bca10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('path', &lt;django.forms.fields.CharField object at 0x7ff3b74bc690&gt;), ('object_file', &lt;django.forms.fields.FileField object at 0x7ff3b74bc790&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bc8d0&gt;), ('container_name', &lt;django.forms.fields.CharField object at 0x7ff3b74bca10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#UpdateObject.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.containers.forms.</tt><tt class="descname">UploadObject</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#UploadObject"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../ref/forms.html#horizon.forms.base.SelfHandlingForm" title="horizon.forms.base.SelfHandlingForm"><tt class="xref py py-class docutils literal"><span class="pre">horizon.forms.base.SelfHandlingForm</span></tt></a></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('path', &lt;django.forms.fields.CharField object at 0x7ff3b74bc690&gt;), ('object_file', &lt;django.forms.fields.FileField object at 0x7ff3b74bc790&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bc8d0&gt;), ('container_name', &lt;django.forms.fields.CharField object at 0x7ff3b74bca10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#UploadObject.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('path', &lt;django.forms.fields.CharField object at 0x7ff3b74bc690&gt;), ('object_file', &lt;django.forms.fields.FileField object at 0x7ff3b74bc790&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b74bc8d0&gt;), ('container_name', &lt;django.forms.fields.CharField object at 0x7ff3b74bca10&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/containers/forms.html#UploadObject.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.containers.panel.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.containers.panel</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.access_and_security.views.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.access_and_security.views</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.forms.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.access_and_security.views.html" title="The openstack_dashboard.dashboards.project.access_and_security.views Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.containers.panel.html" title="The openstack_dashboard.dashboards.project.containers.panel Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

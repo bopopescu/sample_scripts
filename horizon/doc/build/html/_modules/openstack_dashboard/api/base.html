@@ -1,0 +1,477 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.base &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.base</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Sequence</span>  <span class="c1"># noqa</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;APIResourceWrapper&#39;</span><span class="p">,</span> <span class="s1">&#39;APIDictWrapper&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;get_service_from_catalog&#39;</span><span class="p">,</span> <span class="s1">&#39;url_for&#39;</span><span class="p">,)</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">APIVersionManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Object to store and manage API versioning data and utility methods.&quot;&quot;&quot;</span>
+
+    <span class="n">SETTINGS_KEY</span> <span class="o">=</span> <span class="s2">&quot;OPENSTACK_API_VERSIONS&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_type</span><span class="p">,</span> <span class="n">preferred_version</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_type</span> <span class="o">=</span> <span class="n">service_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preferred</span> <span class="o">=</span> <span class="n">preferred_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># As a convenience, we can drop in a placeholder for APIs that we</span>
+        <span class="c1"># have not yet needed to version. This is useful, for example, when</span>
+        <span class="c1"># panels such as the admin metadata_defs wants to check the active</span>
+        <span class="c1"># version even though it&#39;s not explicitly defined. Previously</span>
+        <span class="c1"># this caused a KeyError.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preferred</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supported</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">preferred</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">preferred</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_active_version</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span>
+
+    <span class="k">def</span> <span class="nf">load_supported_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supported</span><span class="p">[</span><span class="n">version</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">get_active_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">]</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SETTINGS_KEY</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># TODO(gabriel): support API version discovery here; we&#39;ll leave</span>
+            <span class="c1"># the setting in as a way of overriding the latest available</span>
+            <span class="c1"># version.</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preferred</span>
+        <span class="c1"># Since we do a key lookup in the supported dict the type matters,</span>
+        <span class="c1"># let&#39;s ensure people know if they use a string when the key isn&#39;t.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;The version &quot;</span><span class="si">%s</span><span class="s1">&quot; specified for the </span><span class="si">%s</span><span class="s1"> service should be &#39;</span>
+                   <span class="s1">&#39;either an integer or a float, not a string.&#39;</span> <span class="o">%</span>
+                   <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_type</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="c1"># Provide a helpful error message if the specified version isn&#39;t in the</span>
+        <span class="c1"># supported list.</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported</span><span class="p">:</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supported</span><span class="p">))</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> is not a supported API version for the </span><span class="si">%s</span><span class="s1"> service, &#39;</span>
+                   <span class="s1">&#39; choices are: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_type</span><span class="p">,</span> <span class="n">choices</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ConfigurationError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">clear_active_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="bp">None</span>
+
+
+<div class="viewcode-block" id="APIResourceWrapper"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.APIResourceWrapper">[docs]</a><span class="k">class</span> <span class="nc">APIResourceWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple wrapper for api objects.</span>
+
+<span class="sd">    Define _attrs on the child class and pass in the</span>
+<span class="sd">    api object as the only argument to the constructor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_attrs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_apiresource</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># Make sure _apiresource is there even in __init__.</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span> <span class="o">=</span> <span class="n">apiresource</span>
+
+    <span class="k">def</span> <span class="nf">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="c1"># __getattr__ won&#39;t find properties</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                             <span class="nb">dict</span><span class="p">((</span><span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">))</span>
+                                  <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span>
+                                  <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="APIResourceWrapper.to_dict"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.APIResourceWrapper.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attrs</span><span class="p">:</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apiresource</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+</div></div>
+<div class="viewcode-block" id="APIDictWrapper"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.APIDictWrapper">[docs]</a><span class="k">class</span> <span class="nc">APIDictWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple wrapper for api dictionaries</span>
+
+<span class="sd">    Some api calls return dictionaries.  This class provides identical</span>
+<span class="sd">    behavior as APIResourceWrapper, except that it will also behave as a</span>
+<span class="sd">    dictionary, in addition to attribute accesses.</span>
+
+<span class="sd">    Attribute access is the preferred method of access, to be</span>
+<span class="sd">    consistent with api resource objects from novaclient.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_apidict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Make sure _apidict is there even in __init__.</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apidict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apidict</span> <span class="o">=</span> <span class="n">apidict</span>
+
+    <span class="k">def</span> <span class="nf">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apidict</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apidict</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># caller is expecting a KeyError</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="APIDictWrapper.get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.APIDictWrapper.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">default</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apidict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="APIDictWrapper.to_dict"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.APIDictWrapper.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apidict</span>
+
+</div></div>
+<span class="k">class</span> <span class="nc">Quota</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for individual limits in a quota.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Quota: (</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">QuotaSet</span><span class="p">(</span><span class="n">Sequence</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for client QuotaSet objects which turns the individual quotas</span>
+<span class="sd">    into Quota objects for easier handling/iteration.</span>
+
+<span class="sd">    `QuotaSet` objects support a mix of `list` and `dict` methods; you can use</span>
+<span class="sd">    the bracket notation (`qs[&quot;my_quota&quot;] = 0`) to add new quota values, and</span>
+<span class="sd">    use the `get` method to retrieve a specific quota, but otherwise it</span>
+<span class="sd">    behaves much like a list or tuple, particularly in supporting iteration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">apiresource</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">apiresource</span><span class="p">,</span> <span class="s1">&#39;_info&#39;</span><span class="p">):</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="n">apiresource</span><span class="o">.</span><span class="n">_info</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="n">apiresource</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">v</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">Quota</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Merge another QuotaSet into this one. Existing quotas are</span>
+<span class="sd">        not overridden.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">QuotaSet</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Can only add QuotaSet to QuotaSet, &quot;</span> \
+                  <span class="s2">&quot;but received </span><span class="si">%s</span><span class="s2"> instead&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">other</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="p">[</span><span class="n">quota</span> <span class="k">for</span> <span class="n">quota</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="k">if</span> <span class="n">quota</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="k">else</span> <span class="n">Quota</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_service_from_catalog"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.get_service_from_catalog">[docs]</a><span class="k">def</span> <span class="nf">get_service_from_catalog</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">service_type</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">catalog</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">service</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">service_type</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">service</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+</div>
+<span class="k">def</span> <span class="nf">get_version_from_service</span><span class="p">(</span><span class="n">service</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">and</span> <span class="n">service</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endpoints&#39;</span><span class="p">):</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;endpoints&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;interface&#39;</span> <span class="ow">in</span> <span class="n">endpoint</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">3</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">2.0</span>
+    <span class="k">return</span> <span class="mf">2.0</span>
+
+
+<span class="c1"># Mapping of V2 Catalog Endpoint_type to V3 Catalog Interfaces</span>
+<span class="n">ENDPOINT_TYPE_TO_INTERFACE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;publicURL&#39;</span><span class="p">:</span> <span class="s1">&#39;public&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;internalURL&#39;</span><span class="p">:</span> <span class="s1">&#39;internal&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;adminURL&#39;</span><span class="p">:</span> <span class="s1">&#39;admin&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">get_url_for_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">endpoint_type</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">service</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">identity_version</span> <span class="o">=</span> <span class="n">get_version_from_service</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+    <span class="n">service_endpoints</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endpoints&#39;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">available_endpoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">endpoint</span> <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">service_endpoints</span>
+                           <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="n">_get_endpoint_region</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)]</span>
+    <span class="sd">&quot;&quot;&quot;if we are dealing with the identity service and there is no endpoint</span>
+<span class="sd">    in the current region, it is okay to use the first endpoint for any</span>
+<span class="sd">    identity service endpoints and we can assume that it is global</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">available_endpoints</span><span class="p">:</span>
+        <span class="n">available_endpoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">endpoint</span> <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">service_endpoints</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">available_endpoints</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">identity_version</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">endpoint_type</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">interface</span> <span class="o">=</span> \
+                    <span class="n">ENDPOINT_TYPE_TO_INTERFACE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">endpoint_type</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;interface&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">interface</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;it could be that the current endpoint just doesn&#39;t match the</span>
+<span class="sd">            type, continue trying the next one</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="bp">None</span>
+
+
+<div class="viewcode-block" id="url_for"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.base.html#openstack_dashboard.api.base.url_for">[docs]</a><span class="k">def</span> <span class="nf">url_for</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">service_type</span><span class="p">,</span> <span class="n">endpoint_type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">endpoint_type</span> <span class="o">=</span> <span class="n">endpoint_type</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                             <span class="s1">&#39;OPENSTACK_ENDPOINT_TYPE&#39;</span><span class="p">,</span>
+                                             <span class="s1">&#39;publicURL&#39;</span><span class="p">)</span>
+    <span class="n">fallback_endpoint_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;SECONDARY_ENDPOINT_TYPE&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+    <span class="n">catalog</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">service_catalog</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="n">get_service_from_catalog</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">service_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">region</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">services_region</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">get_url_for_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span>
+                                  <span class="n">region</span><span class="p">,</span>
+                                  <span class="n">endpoint_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span> <span class="ow">and</span> <span class="n">fallback_endpoint_type</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">get_url_for_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span>
+                                      <span class="n">region</span><span class="p">,</span>
+                                      <span class="n">fallback_endpoint_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">url</span>
+    <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceCatalogException</span><span class="p">(</span><span class="n">service_type</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">service_type</span><span class="p">):</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="n">get_service_from_catalog</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">service_catalog</span><span class="p">,</span>
+                                       <span class="n">service_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">:</span>
+        <span class="n">region</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">services_region</span>
+        <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">service</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;endpoints&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">service</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># ignore region for identity</span>
+            <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;identity&#39;</span> <span class="ow">or</span> \
+               <span class="n">_get_endpoint_region</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span> <span class="o">==</span> <span class="n">region</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span>
+
+
+<span class="k">def</span> <span class="nf">_get_endpoint_region</span><span class="p">(</span><span class="n">endpoint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Common function for getting the region from endpoint.</span>
+
+<span class="sd">    In Keystone V3, region has been deprecated in favor of</span>
+<span class="sd">    region_id.</span>
+
+<span class="sd">    This method provides a way to get region that works for</span>
+<span class="sd">    both Keystone V2 and V3.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region_id&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,467 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.containers.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.containers.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Views for managing Swift containers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">django</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django.utils.functional</span> <span class="kn">import</span> <span class="n">cached_property</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">browsers</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">swift</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.containers</span> \
+    <span class="kn">import</span> <span class="n">browsers</span> <span class="k">as</span> <span class="n">project_browsers</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.containers</span> \
+    <span class="kn">import</span> <span class="n">forms</span> <span class="k">as</span> <span class="n">project_forms</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.containers</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<div class="viewcode-block" id="ContainerView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView">[docs]</a><span class="k">class</span> <span class="nc">ContainerView</span><span class="p">(</span><span class="n">browsers</span><span class="o">.</span><span class="n">ResourceBrowserView</span><span class="p">):</span>
+    <span class="n">browser_class</span> <span class="o">=</span> <span class="n">project_browsers</span><span class="o">.</span><span class="n">ContainerBrowser</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/containers/index.html&quot;</span>
+
+<div class="viewcode-block" id="ContainerView.get_containers_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.get_containers_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_containers_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">containers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">containers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_containers</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve container list.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">containers</span>
+</div>
+    <span class="nd">@cached_property</span>
+<div class="viewcode-block" id="ContainerView.objects"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.objects">[docs]</a>    <span class="k">def</span> <span class="nf">objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of objects given the subfolder&#39;s path.</span>
+
+<span class="sd">        The path is from the kwargs of the request.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">objects</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="n">subfolder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">]</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">container_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">navigation_selection</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="n">subfolder</span><span class="p">:</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="n">subfolder</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">objects</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_objects</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                    <span class="n">container_name</span><span class="p">,</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="n">marker</span><span class="p">,</span>
+                    <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="bp">None</span>
+                <span class="n">objects</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve object list.&#39;</span><span class="p">)</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">objects</span>
+</div>
+<div class="viewcode-block" id="ContainerView.is_subdir"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.is_subdir">[docs]</a>    <span class="k">def</span> <span class="nf">is_subdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="s2">&quot;application/pseudo-folder&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;content_type&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">==</span> <span class="n">content_type</span>
+</div>
+<div class="viewcode-block" id="ContainerView.is_placeholder"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.is_placeholder">[docs]</a>    <span class="k">def</span> <span class="nf">is_placeholder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">object_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">FOLDER_DELIMITER</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ContainerView.get_objects_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.get_objects_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_objects_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of objects within the current folder.&quot;&quot;&quot;</span>
+        <span class="n">filtered_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subdir</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="ow">and</span>
+                                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_placeholder</span><span class="p">(</span><span class="n">item</span><span class="p">))]</span>
+        <span class="k">return</span> <span class="n">filtered_objects</span>
+</div>
+<div class="viewcode-block" id="ContainerView.get_subfolders_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.get_subfolders_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_subfolders_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of subfolders within the current folder.&quot;&quot;&quot;</span>
+        <span class="n">filtered_objects</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">objects</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_subdir</span><span class="p">(</span><span class="n">item</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">filtered_objects</span>
+</div>
+<div class="viewcode-block" id="ContainerView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ContainerView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;subfolders&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subfolder_path&quot;</span><span class="p">]:</span>
+            <span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">slash</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subfolder_path&quot;</span><span class="p">]</span> \
+                                          <span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">folder</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">/&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">slash</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
+                <span class="n">context</span><span class="p">[</span><span class="s1">&#39;subfolders&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
+                <span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">slash</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreateView">[docs]</a><span class="k">class</span> <span class="nc">CreateView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">CreateContainer</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/create.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Container&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateView.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreateView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">container</span><span class="p">,</span> <span class="n">slash</span><span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span>
+                <span class="n">swift</span><span class="o">.</span><span class="n">FOLDER_DELIMITER</span><span class="p">)</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">container</span><span class="p">),</span>
+                    <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">remainder</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">container</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">container</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="CreateView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreateView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreateView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;parent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="CreatePseudoFolderView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreatePseudoFolderView">[docs]</a><span class="k">class</span> <span class="nc">CreatePseudoFolderView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">CreatePseudoFolder</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/create_pseudo_folder.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Pseudo-folder&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreatePseudoFolderView.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreatePseudoFolderView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span>
+                       <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">container_name</span><span class="p">),</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)))</span>
+</div>
+<div class="viewcode-block" id="CreatePseudoFolderView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreatePseudoFolderView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;container_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">]}</span>
+</div>
+<div class="viewcode-block" id="CreatePseudoFolderView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CreatePseudoFolderView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreatePseudoFolderView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span> \
+            <span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="UploadView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UploadView">[docs]</a><span class="k">class</span> <span class="nc">UploadView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">UploadObject</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/upload.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Upload Objects&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UploadView.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UploadView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">])</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="UploadView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UploadView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;container_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">]}</span>
+</div>
+<div class="viewcode-block" id="UploadView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UploadView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UploadView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="object_download"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.object_download">[docs]</a><span class="k">def</span> <span class="nf">object_download</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">object_path</span><span class="p">,</span>
+                                         <span class="n">resp_chunk_size</span><span class="o">=</span><span class="n">swift</span><span class="o">.</span><span class="n">CHUNK_SIZE</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:containers:index&quot;</span><span class="p">)</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                          <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve object.&quot;</span><span class="p">),</span>
+                          <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+    <span class="c1"># Add the original file extension back on if it wasn&#39;t preserved in the</span>
+    <span class="c1"># name given to the object.</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">object_path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="n">swift</span><span class="o">.</span><span class="n">FOLDER_DELIMITER</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">orig_name</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">orig_name</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+    <span class="c1"># NOTE(tsufiev): StreamingHttpResponse class had been introduced in</span>
+    <span class="c1"># Django 1.5 specifically for the purpose streaming and/or transferring</span>
+    <span class="c1"># large files, it&#39;s less fragile than standard HttpResponse and should be</span>
+    <span class="c1"># used when available.</span>
+    <span class="k">if</span> <span class="n">django</span><span class="o">.</span><span class="n">VERSION</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">StreamingHttpResponse</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">safe_name</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;attachment; filename=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">safe_name</span>
+    <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;application/octet-stream&#39;</span>
+    <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">bytes</span>
+    <span class="k">return</span> <span class="n">response</span>
+
+</div>
+<div class="viewcode-block" id="CopyView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CopyView">[docs]</a><span class="k">class</span> <span class="nc">CopyView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">CopyObject</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/copy.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Copy Object&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CopyView.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CopyView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s1">&#39;new_container_name&#39;</span><span class="p">])</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CopyView.get_form_kwargs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CopyView.get_form_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CopyView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">containers</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_containers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:containers:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to list containers.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;containers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">containers</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CopyView.get_copy_name"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CopyView.get_copy_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_copy_name</span><span class="p">(</span><span class="n">object_name</span><span class="p">):</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.copy</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CopyView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CopyView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subfolder_path&quot;</span><span class="p">]</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;object_name&quot;</span><span class="p">]</span>
+        <span class="n">orig</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;new_container_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;orig_container_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;orig_object_name&quot;</span><span class="p">:</span> <span class="n">orig</span><span class="p">,</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+                <span class="s2">&quot;new_object_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_copy_name</span><span class="p">(</span><span class="n">object_name</span><span class="p">)}</span>
+</div>
+<div class="viewcode-block" id="CopyView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.CopyView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CopyView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;object_name&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="ContainerDetailView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerDetailView">[docs]</a><span class="k">class</span> <span class="nc">ContainerDetailView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormMixin</span><span class="p">,</span> <span class="n">generic</span><span class="o">.</span><span class="n">TemplateView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/container_detail.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Container Details&quot;</span><span class="p">)</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="ContainerDetailView.get_object"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerDetailView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_container</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="n">with_data</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:containers:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve details.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ContainerDetailView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ContainerDetailView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ContainerDetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;container&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="ObjectDetailView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ObjectDetailView">[docs]</a><span class="k">class</span> <span class="nc">ObjectDetailView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormMixin</span><span class="p">,</span> <span class="n">generic</span><span class="o">.</span><span class="n">TemplateView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/object_detail.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Object Details&quot;</span><span class="p">)</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="ObjectDetailView.get_object"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ObjectDetailView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_object</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;object_path&quot;</span><span class="p">],</span>
+                <span class="n">with_data</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:containers:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve details.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ObjectDetailView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.ObjectDetailView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ObjectDetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateObjectView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UpdateObjectView">[docs]</a><span class="k">class</span> <span class="nc">UpdateObjectView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">UpdateObject</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/update.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update Object&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateObjectView.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UpdateObjectView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">])</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="UpdateObjectView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UpdateObjectView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;container_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subfolder_path&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;object_name&quot;</span><span class="p">]}</span>
+</div>
+<div class="viewcode-block" id="UpdateObjectView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.views.html#openstack_dashboard.dashboards.project.containers.views.UpdateObjectView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateObjectView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;container_name&quot;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;subfolder_path&quot;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;object_name&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

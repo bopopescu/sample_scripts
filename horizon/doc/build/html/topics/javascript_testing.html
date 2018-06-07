@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>JavaScript Testing &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="The run_tests.sh Script" href="../ref/run_tests.html" />
+    <link rel="prev" title="AngularJS Topic Guide" href="angularjs.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="javascript-testing">
+<h1>JavaScript Testing<a class="headerlink" href="#javascript-testing" title="Permalink to this headline">¶</a></h1>
+<dl class="docutils">
+<dt>There are multiple components in our JavaScript testing framework:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://jasmine.github.io/2.3/introduction.html">Jasmine</a> is our testing framework, so this defines the syntax and file
+structure we use to test our JavaScript.</li>
+<li><a class="reference external" href="https://karma-runner.github.io/">Karma</a> is our test runner. Amongst other things, this lets us run the
+tests against multiple browsers and generate test coverage reports.
+Alternatively, tests can be run inside the browser with the Jasmine spec
+runner.</li>
+<li><a class="reference external" href="http://phantomjs.org/">PhantomJS</a> provides a headless WebKit (the browser engine). This gives us
+native support for many web features without relying on specific browsers
+being installed.</li>
+<li><a class="reference external" href="http://eslint.org/">ESLint</a> is a pluggable code linting utilty. This will catch small errors
+and inconsistencies in your JS, which may lead to bigger issues later on.
+See <a class="reference internal" href="angularjs.html#js-code-style"><em>Code Style</em></a> for more detail.</li>
+</ul>
+</dd>
+</dl>
+<p>Jasmine uses specs (<tt class="docutils literal"><span class="pre">.spec.js</span></tt>) which are kept with the JavaScript files
+that they are testing. See the <a class="reference internal" href="angularjs.html#js-file-structure"><em>File Structure</em></a> section or the <a class="reference internal" href="#examples">Examples</a>
+below for more detail on this.</p>
+<div class="section" id="running-tests">
+<h2>Running Tests<a class="headerlink" href="#running-tests" title="Permalink to this headline">¶</a></h2>
+<p>Tests can be run in two ways:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Open &lt;dev_server_ip:port&gt;/jasmine in a browser. The development server can be
+run with <tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--runserver</span></tt> from the horizon root directory.</li>
+<li><tt class="docutils literal"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test</span></tt> from the horizon root directory. This runs Karma,
+so it will run all the tests against PhantomJS and generate coverage
+reports.</li>
+</ol>
+</div></blockquote>
+<p>The code linting job can be run with <tt class="docutils literal"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">lint</span></tt>.</p>
+<div class="section" id="coverage-reports">
+<h3>Coverage Reports<a class="headerlink" href="#coverage-reports" title="Permalink to this headline">¶</a></h3>
+<p>Our Karma setup includes a plugin to generate test coverage reports. When
+developing, be sure to check the coverage reports on the master branch and
+compare your development branch; this will help identify missing tests.</p>
+<p>To generate coverage reports, run <tt class="docutils literal"><span class="pre">npm</span> <span class="pre">run</span> <span class="pre">test</span></tt>. The coverage reports can be
+found at <tt class="docutils literal"><span class="pre">horizon/.coverage-karma/</span></tt> (framework tests) and
+<tt class="docutils literal"><span class="pre">openstack_dashboard/.coverage-karma/</span></tt> (dashboard tests). Load
+<tt class="docutils literal"><span class="pre">&lt;browser&gt;/index.html</span></tt> in a browser to view the reports.</p>
+</div>
+</div>
+<div class="section" id="writing-tests">
+<h2>Writing Tests<a class="headerlink" href="#writing-tests" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Jasmine uses suites and specs:</dt>
+<dd><ul class="first last simple">
+<li>Suites begin with a call to <tt class="docutils literal"><span class="pre">describe</span></tt>, which takes two parameters; a
+string and a function. The string is a name or title for the spec suite,
+whilst the function is a block that implements the suite.</li>
+<li>Specs begin with a call to <tt class="docutils literal"><span class="pre">it</span></tt>, which also takes a string and a function
+as parameters. The string is a name or title, whilst the function is a
+block with one or more expectations (<tt class="docutils literal"><span class="pre">expect</span></tt>) that test the state of
+the code. An expectation in Jasmine is an assertion that is either true or
+false; every expectation in a spec must be true for the spec to pass.</li>
+</ul>
+</dd>
+</dl>
+<p><tt class="docutils literal"><span class="pre">.spec.js</span></tt> files can be handled manually or automatically. To use the
+automatic file discovery add:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">AUTO_DISCOVER_STATIC_FILES</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>to your enabled file. JS code for testing should use the extensions
+<tt class="docutils literal"><span class="pre">.mock.js</span></tt> and <tt class="docutils literal"><span class="pre">.spec.js</span></tt>.</p>
+<p>You can read more about the functionality in the
+<a class="reference internal" href="settings.html#auto-discover-static-files"><em>AUTO_DISCOVER_STATIC_FILES</em></a> section of the settings documentation.</p>
+<p>To manually add specs, add the following array and relevant file paths to your
+enabled file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>ADD_JS_SPEC_FILES = [
+  ...
+  &#39;path_to/my_angular_code.spec.js&#39;,
+  ...
+]
+</pre></div>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The code below is just for example purposes, and may not be current in
+horizon. Ellipses (...) are used to represent code that has been
+removed for the sake of brevity.</p>
+</div>
+<div class="section" id="example-1-a-reusable-component-in-the-horizon-directory">
+<h3>Example 1 - A reusable component in the <strong>horizon</strong> directory<a class="headerlink" href="#example-1-a-reusable-component-in-the-horizon-directory" title="Permalink to this headline">¶</a></h3>
+<p>File tree:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>horizon/static/framework/widgets/modal
+├── modal.controller.js
+├── modal.module.js
+├── modal.service.js
+└── modal.spec.js
+</pre></div>
+</div>
+<p>Lines added to <tt class="docutils literal"><span class="pre">horizon/test/jasmine/jasmine_tests.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>class ServicesTests(test.JasmineTests):
+  sources = [
+    ...
+    &#39;framework/widgets/modal/modal.module.js&#39;,
+    &#39;framework/widgets/modal/modal.controller.js&#39;,
+    &#39;framework/widgets/modal/modal.service.js&#39;,
+    ...
+  ]
+
+  specs = [
+    ...
+    &#39;framework/widgets/modal/modal.spec.js&#39;,
+    ...
+  ]
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">modal.spec.js</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>...
+
+(function() {
+  &quot;use strict&quot;;
+
+  describe(&#39;horizon.framework.widgets.modal module&#39;, function() {
+
+    beforeEach(module(&#39;horizon.framework.widgets.modal&#39;));
+
+    describe(&#39;simpleModalCtrl&#39;, function() {
+      var scope;
+      var modalInstance;
+      var context;
+      var ctrl;
+
+      beforeEach(inject(function($controller) {
+        scope = {};
+        modalInstance = {
+          close: function() {},
+          dismiss: function() {}
+        };
+        context = { what: &#39;is it&#39; };
+        ctrl = $controller(&#39;simpleModalCtrl&#39;, {
+               $scope: scope,
+               $modalInstance: modalInstance,
+               context: context
+        });
+      }));
+
+      it(&#39;establishes a controller&#39;, function() {
+        expect(ctrl).toBeDefined();
+      });
+
+      it(&#39;sets context on the scope&#39;, function() {
+        expect(scope.context).toBeDefined();
+        expect(scope.context).toEqual({ what: &#39;is it&#39; });
+      });
+
+      it(&#39;sets action functions&#39;, function() {
+        expect(scope.submit).toBeDefined();
+        expect(scope.cancel).toBeDefined();
+      });
+
+      it(&#39;makes submit close the modal instance&#39;, function() {
+        expect(scope.submit).toBeDefined();
+        spyOn(modalInstance, &#39;close&#39;);
+        scope.submit();
+        expect(modalInstance.close.calls.count()).toBe(1);
+      });
+
+      it(&#39;makes cancel close the modal instance&#39;, function() {
+        expect(scope.cancel).toBeDefined();
+        spyOn(modalInstance, &#39;dismiss&#39;);
+        scope.cancel();
+        expect(modalInstance.dismiss).toHaveBeenCalledWith(&#39;cancel&#39;);
+      });
+    });
+
+    ...
+
+  });
+})();
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-2-panel-specific-code-in-the-openstack-dashboard-directory">
+<h3>Example 2 - Panel-specific code in the <strong>openstack_dashboard</strong> directory<a class="headerlink" href="#example-2-panel-specific-code-in-the-openstack-dashboard-directory" title="Permalink to this headline">¶</a></h3>
+<p>File tree:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>openstack_dashboard/static/dashboard/launch-instance/network/
+├── network.help.html
+├── network.html
+├── network.js
+├── network.scss
+└── network.spec.js
+</pre></div>
+</div>
+<p>Lines added to <tt class="docutils literal"><span class="pre">openstack_dashboard/enabled/_10_project.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>LAUNCH_INST = &#39;dashboard/launch-instance/&#39;
+
+ADD_JS_FILES = [
+  ...
+  LAUNCH_INST + &#39;network/network.js&#39;,
+  ...
+]
+
+ADD_JS_SPEC_FILES = [
+  ...
+  LAUNCH_INST + &#39;network/network.spec.js&#39;,
+  ...
+]
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">network.spec.js</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>...
+
+(function(){
+  &#39;use strict&#39;;
+
+  describe(&#39;Launch Instance Network Step&#39;, function() {
+
+    describe(&#39;LaunchInstanceNetworkCtrl&#39;, function() {
+      var scope;
+      var ctrl;
+
+      beforeEach(module(&#39;horizon.dashboard.project.workflow.launch-instance&#39;));
+
+      beforeEach(inject(function($controller) {
+        scope = {
+          model: {
+            newInstanceSpec: {networks: [&#39;net-a&#39;]},
+            networks: [&#39;net-a&#39;, &#39;net-b&#39;]
+          }
+        };
+        ctrl = $controller(&#39;LaunchInstanceNetworkCtrl&#39;, {$scope:scope});
+      }));
+
+      it(&#39;has correct network statuses&#39;, function() {
+        expect(ctrl.networkStatuses).toBeDefined();
+        expect(ctrl.networkStatuses.ACTIVE).toBeDefined();
+        expect(ctrl.networkStatuses.DOWN).toBeDefined();
+        expect(Object.keys(ctrl.networkStatuses).length).toBe(2);
+      });
+
+      it(&#39;has correct network admin states&#39;, function() {
+        expect(ctrl.networkAdminStates).toBeDefined();
+        expect(ctrl.networkAdminStates.UP).toBeDefined();
+        expect(ctrl.networkAdminStates.DOWN).toBeDefined();
+        expect(Object.keys(ctrl.networkStatuses).length).toBe(2);
+      });
+
+      it(&#39;defines a multiple-allocation table&#39;, function() {
+        expect(ctrl.tableLimits).toBeDefined();
+        expect(ctrl.tableLimits.maxAllocation).toBe(-1);
+      });
+
+      it(&#39;contains its own labels&#39;, function() {
+        expect(ctrl.label).toBeDefined();
+        expect(Object.keys(ctrl.label).length).toBeGreaterThan(0);
+      });
+
+      it(&#39;contains help text for the table&#39;, function() {
+        expect(ctrl.tableHelpText).toBeDefined();
+        expect(ctrl.tableHelpText.allocHelpText).toBeDefined();
+        expect(ctrl.tableHelpText.availHelpText).toBeDefined();
+      });
+
+      it(&#39;uses scope to set table data&#39;, function() {
+        expect(ctrl.tableDataMulti).toBeDefined();
+        expect(ctrl.tableDataMulti.available).toEqual([&#39;net-a&#39;, &#39;net-b&#39;]);
+        expect(ctrl.tableDataMulti.allocated).toEqual([&#39;net-a&#39;]);
+        expect(ctrl.tableDataMulti.displayedAllocated).toEqual([]);
+        expect(ctrl.tableDataMulti.displayedAvailable).toEqual([]);
+      });
+    });
+
+    ...
+
+  });
+})();
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">JavaScript Testing</a><ul>
+<li><a class="reference internal" href="#running-tests">Running Tests</a><ul>
+<li><a class="reference internal" href="#coverage-reports">Coverage Reports</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#writing-tests">Writing Tests</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#example-1-a-reusable-component-in-the-horizon-directory">Example 1 - A reusable component in the <strong>horizon</strong> directory</a></li>
+<li><a class="reference internal" href="#example-2-panel-specific-code-in-the-openstack-dashboard-directory">Example 2 - Panel-specific code in the <strong>openstack_dashboard</strong> directory</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="angularjs.html"
+                                  title="previous chapter">AngularJS Topic Guide</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../ref/run_tests.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> Script</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/javascript_testing.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ref/run_tests.html" title="The run_tests.sh Script"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="angularjs.html" title="AngularJS Topic Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

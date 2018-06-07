@@ -1,0 +1,497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.loadbalancers.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.loadbalancers.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#    Copyright 2013, Big Switch Networks, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.loadbalancers</span> \
+    <span class="kn">import</span> <span class="n">forms</span> <span class="k">as</span> <span class="n">project_forms</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.loadbalancers</span> \
+    <span class="kn">import</span> <span class="n">tables</span> <span class="k">as</span> <span class="n">project_tables</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.loadbalancers</span> \
+    <span class="kn">import</span> <span class="n">tabs</span> <span class="k">as</span> <span class="n">project_tabs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.loadbalancers</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.loadbalancers</span> \
+    <span class="kn">import</span> <span class="n">workflows</span> <span class="k">as</span> <span class="n">project_workflows</span>
+
+
+<div class="viewcode-block" id="IndexView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.IndexView">[docs]</a><span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabbedTableView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="p">(</span><span class="n">project_tabs</span><span class="o">.</span><span class="n">LoadBalancerTabs</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/details_tabs.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Load Balancer&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddPoolView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddPoolView">[docs]</a><span class="k">class</span> <span class="nc">AddPoolView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">AddPool</span>
+
+</div>
+<div class="viewcode-block" id="AddVipView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddVipView">[docs]</a><span class="k">class</span> <span class="nc">AddVipView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">AddVip</span>
+
+<div class="viewcode-block" id="AddVipView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddVipView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddVipView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">])</span>
+            <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;subnet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">subnet_get</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="o">.</span><span class="n">subnet_id</span><span class="p">)</span><span class="o">.</span><span class="n">cidr</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;subnet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve pool subnet. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="AddMemberView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddMemberView">[docs]</a><span class="k">class</span> <span class="nc">AddMemberView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">AddMember</span>
+
+</div>
+<div class="viewcode-block" id="AddMonitorView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddMonitorView">[docs]</a><span class="k">class</span> <span class="nc">AddMonitorView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">AddMonitor</span>
+
+</div>
+<div class="viewcode-block" id="PoolDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.PoolDetailsView">[docs]</a><span class="k">class</span> <span class="nc">PoolDetailsView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">project_tabs</span><span class="o">.</span><span class="n">PoolDetailsTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/details_tabs.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Pool Details&quot;</span><span class="p">)</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="PoolDetailsView.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.PoolDetailsView.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">pid</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve pool details.&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">monitor</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">health_monitors</span><span class="p">:</span>
+                <span class="n">display_name</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_monitor_display_name</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">monitor</span><span class="p">,</span> <span class="s1">&#39;display_name&#39;</span><span class="p">,</span> <span class="n">display_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pool</span>
+</div>
+<div class="viewcode-block" id="PoolDetailsView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.PoolDetailsView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PoolDetailsView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">PoolsTable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_redirect_url</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">render_row_actions</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="PoolDetailsView.get_tabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.PoolDetailsView.get_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="PoolDetailsView.get_redirect_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.PoolDetailsView.get_redirect_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_redirect_url</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="VipDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.VipDetailsView">[docs]</a><span class="k">class</span> <span class="nc">VipDetailsView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">project_tabs</span><span class="o">.</span><span class="n">VipDetailsTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/details_tabs.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;VIP Details&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="MemberDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MemberDetailsView">[docs]</a><span class="k">class</span> <span class="nc">MemberDetailsView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">project_tabs</span><span class="o">.</span><span class="n">MemberDetailsTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/details_tabs.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Member Details&quot;</span><span class="p">)</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="MemberDetailsView.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MemberDetailsView.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;member_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">member_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">mid</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve member details.&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="MemberDetailsView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MemberDetailsView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">MemberDetailsView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;member&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">member</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">MembersTable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_redirect_url</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">render_row_actions</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="MemberDetailsView.get_tabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MemberDetailsView.get_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group_class</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member</span><span class="o">=</span><span class="n">member</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MemberDetailsView.get_redirect_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MemberDetailsView.get_redirect_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_redirect_url</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="MonitorDetailsView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MonitorDetailsView">[docs]</a><span class="k">class</span> <span class="nc">MonitorDetailsView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">project_tabs</span><span class="o">.</span><span class="n">MonitorDetailsTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/loadbalancers/details_tabs.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Monitor Details&quot;</span><span class="p">)</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="MonitorDetailsView.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MonitorDetailsView.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_health_monitor_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">mid</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve monitor details.&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="MonitorDetailsView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MonitorDetailsView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">MonitorDetailsView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">monitor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;monitor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">monitor</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">MonitorsTable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_redirect_url</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">render_row_actions</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="MonitorDetailsView.get_tabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MonitorDetailsView.get_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">monitor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group_class</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="n">monitor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MonitorDetailsView.get_redirect_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.MonitorDetailsView.get_redirect_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_redirect_url</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdatePoolView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdatePoolView">[docs]</a><span class="k">class</span> <span class="nc">UpdatePoolView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">UpdatePool</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_pool_form&quot;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Pool&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/loadbalancers/updatepool.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;pool&#39;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:updatepool&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Pool&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdatePoolView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdatePoolView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdatePoolView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;pool_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">pool_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve pool details. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdatePoolView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdatePoolView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;lb_method&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;lb_method&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateVipView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateVipView">[docs]</a><span class="k">class</span> <span class="nc">UpdateVipView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">UpdateVip</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_vip_form&quot;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit VIP&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/loadbalancers/updatevip.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;vip&#39;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:updatevip&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit VIP&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateVipView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateVipView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateVipView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;vip_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">vip_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">vip_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve VIP details. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateVipView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateVipView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">vip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="n">persistence</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">vip</span><span class="p">,</span> <span class="s1">&#39;session_persistence&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">persistence</span><span class="p">:</span>
+            <span class="n">stype</span> <span class="o">=</span> <span class="n">persistence</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">stype</span> <span class="o">==</span> <span class="s1">&#39;APP_COOKIE&#39;</span><span class="p">:</span>
+                <span class="n">cookie</span> <span class="o">=</span> <span class="n">persistence</span><span class="p">[</span><span class="s1">&#39;cookie_name&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cookie</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stype</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">cookie</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;vip_id&#39;</span><span class="p">:</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;session_persistence&#39;</span><span class="p">:</span> <span class="n">stype</span><span class="p">,</span>
+                <span class="s1">&#39;cookie_name&#39;</span><span class="p">:</span> <span class="n">cookie</span><span class="p">,</span>
+                <span class="s1">&#39;connection_limit&#39;</span><span class="p">:</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;connection_limit&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateMemberView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateMemberView">[docs]</a><span class="k">class</span> <span class="nc">UpdateMemberView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">UpdateMember</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_pool_form&quot;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Member&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/loadbalancers/updatemember.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;member&#39;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:updatemember&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Member&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateMemberView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateMemberView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateMemberView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;member_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;member_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;member_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">member_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;member_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">member_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve member details. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateMemberView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateMemberView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;member_id&#39;</span><span class="p">:</span> <span class="n">member</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">member</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="n">member</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">member</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateMonitorView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateMonitorView">[docs]</a><span class="k">class</span> <span class="nc">UpdateMonitorView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">UpdateMonitor</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;update_monitor_form&quot;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Monitor&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;project/loadbalancers/updatemonitor.html&quot;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s1">&#39;monitor&#39;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save Changes&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:loadbalancers:updatemonitor&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:loadbalancers:index&quot;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Monitor&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateMonitorView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateMonitorView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateMonitorView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;monitor_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">monitor_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_health_monitor_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">monitor_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve health monitor details. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateMonitorView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.UpdateMonitorView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">monitor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;delay&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;delay&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;max_retries&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;max_retries&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="AddPMAssociationView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddPMAssociationView">[docs]</a><span class="k">class</span> <span class="nc">AddPMAssociationView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">AddPMAssociation</span>
+
+<div class="viewcode-block" id="AddPMAssociationView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.AddPMAssociationView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddPMAssociationView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">])</span>
+            <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_monitors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">health_monitors</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve pool. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="DeletePMAssociationView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.DeletePMAssociationView">[docs]</a><span class="k">class</span> <span class="nc">DeletePMAssociationView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">DeletePMAssociation</span>
+
+<div class="viewcode-block" id="DeletePMAssociationView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.loadbalancers.views.html#openstack_dashboard.dashboards.project.loadbalancers.views.DeletePMAssociationView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DeletePMAssociationView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">lbaas</span><span class="o">.</span><span class="n">pool_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">])</span>
+            <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;pool_monitors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">health_monitors</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve pool. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">initial</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

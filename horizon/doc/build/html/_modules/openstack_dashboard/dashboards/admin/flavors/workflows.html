@@ -1,0 +1,447 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.admin.flavors.workflows &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.admin.flavors.workflows</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+
+
+<div class="viewcode-block" id="CreateFlavorInfoAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.CreateFlavorInfoAction">[docs]</a><span class="k">class</span> <span class="nc">CreateFlavorInfoAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">_flavor_id_regex</span> <span class="o">=</span> <span class="p">(</span><span class="s1">r&#39;^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-&#39;</span>
+                        <span class="s1">r&#39;[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[0-9]+|auto$&#39;</span><span class="p">)</span>
+    <span class="n">_flavor_id_help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor ID should be UUID4 or integer. &quot;</span>
+                             <span class="s2">&quot;Leave this field blank or use &#39;auto&#39; to set &quot;</span>
+                             <span class="s2">&quot;a random UUID4.&quot;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">RegexField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">regex</span><span class="o">=</span><span class="s1">r&#39;^[\w\.\- ]+$&#39;</span><span class="p">,</span>
+        <span class="n">error_messages</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;invalid&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Name may only contain letters, numbers, &#39;</span>
+                                     <span class="s1">&#39;underscores, periods and hyphens.&#39;</span><span class="p">)})</span>
+    <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">RegexField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;ID&quot;</span><span class="p">),</span>
+                                 <span class="n">regex</span><span class="o">=</span><span class="n">_flavor_id_regex</span><span class="p">,</span>
+                                 <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                 <span class="n">initial</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_flavor_id_help_text</span><span class="p">)</span>
+    <span class="n">vcpus</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;VCPUs&quot;</span><span class="p">),</span>
+                               <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">memory_mb</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;RAM (MB)&quot;</span><span class="p">),</span>
+                                   <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">disk_gb</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Root Disk (GB)&quot;</span><span class="p">),</span>
+                                 <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">eph_gb</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Ephemeral Disk (GB)&quot;</span><span class="p">),</span>
+                                <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">swap_mb</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Swap Disk (MB)&quot;</span><span class="p">),</span>
+                                 <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                 <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                 <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor Information&quot;</span><span class="p">)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavors define the sizes for RAM, disk, number of &quot;</span>
+                      <span class="s2">&quot;cores, and other resources and can be selected when &quot;</span>
+                      <span class="s2">&quot;users deploy instances.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateFlavorInfoAction.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.CreateFlavorInfoAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreateFlavorInfoAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flavor_id&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get flavor list&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">check_message</span><span class="p">([</span><span class="s2">&quot;Connection&quot;</span><span class="p">,</span> <span class="s2">&quot;refused&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">if</span> <span class="n">flavors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">flavor</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The name &quot;</span><span class="si">%s</span><span class="s1">&quot; is already used by another flavor.&#39;</span><span class="p">)</span>
+                        <span class="o">%</span> <span class="n">name</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">flavor_id</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The ID &quot;</span><span class="si">%s</span><span class="s1">&quot; is already used by another flavor.&#39;</span><span class="p">)</span>
+                        <span class="o">%</span> <span class="n">flavor_id</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateFlavorInfo"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.CreateFlavorInfo">[docs]</a><span class="k">class</span> <span class="nc">CreateFlavorInfo</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">CreateFlavorInfoAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;flavor_id&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;vcpus&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;memory_mb&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;disk_gb&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;eph_gb&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;swap_mb&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="UpdateFlavorAccessAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavorAccessAction">[docs]</a><span class="k">class</span> <span class="nc">UpdateFlavorAccessAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">MembershipAction</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UpdateFlavorAccessAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                       <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+                                                       <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve flavor access list. &#39;</span>
+                    <span class="s1">&#39;Please try again later.&#39;</span><span class="p">)</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">default_role_field_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_role_field_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">default_role_field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">default_role_field_name</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="s1">&#39;member&#39;</span>
+
+        <span class="n">field_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_member_field_name</span><span class="p">(</span><span class="s1">&#39;member&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">MultipleChoiceField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c1"># Get list of available projects.</span>
+        <span class="n">all_projects</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">all_projects</span><span class="p">,</span> <span class="n">has_more</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">)</span>
+        <span class="n">projects_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">project</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                         <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">all_projects</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">projects_list</span>
+
+        <span class="c1"># If we have a POST from the CreateFlavor workflow, the flavor id</span>
+        <span class="c1"># isn&#39;t an existing flavor. For the UpdateFlavor case, we don&#39;t care</span>
+        <span class="c1"># about the access list for the current flavor anymore as we&#39;re about</span>
+        <span class="c1"># to replace it.</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Get list of flavor projects if the flavor is not public.</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flavor_id&#39;</span><span class="p">)</span>
+        <span class="n">flavor_access</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">flavor_id</span><span class="p">:</span>
+                <span class="n">flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">flavor</span><span class="o">.</span><span class="n">is_public</span><span class="p">:</span>
+                    <span class="n">flavor_access</span> <span class="o">=</span> <span class="p">[</span><span class="n">project</span><span class="o">.</span><span class="n">tenant_id</span> <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span>
+                                     <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_access_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                                 <span class="n">flavor_id</span><span class="p">)]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">flavor_access</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor Access&quot;</span><span class="p">)</span>
+        <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;update_flavor_access&quot;</span>
+
+</div>
+<div class="viewcode-block" id="UpdateFlavorAccess"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavorAccess">[docs]</a><span class="k">class</span> <span class="nc">UpdateFlavorAccess</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">UpdateMembersStep</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">UpdateFlavorAccessAction</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select the projects where the flavors will be used. If no &quot;</span>
+                  <span class="s2">&quot;projects are selected, then the flavor will be available &quot;</span>
+                  <span class="s2">&quot;in all projects.&quot;</span><span class="p">)</span>
+    <span class="n">available_list_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;All Projects&quot;</span><span class="p">)</span>
+    <span class="n">members_list_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Selected Projects&quot;</span><span class="p">)</span>
+    <span class="n">no_available_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No projects found.&quot;</span><span class="p">)</span>
+    <span class="n">no_members_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No projects selected. &quot;</span>
+                        <span class="s2">&quot;All projects can use the flavor.&quot;</span><span class="p">)</span>
+    <span class="n">show_roles</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">depends_on</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;flavor_id&quot;</span><span class="p">,)</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;flavor_access&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="UpdateFlavorAccess.contribute"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavorAccess.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">member_field_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_member_field_name</span><span class="p">(</span><span class="s1">&#39;member&#39;</span><span class="p">)</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;flavor_access&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">member_field_name</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateFlavor"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.CreateFlavor">[docs]</a><span class="k">class</span> <span class="nc">CreateFlavor</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;create_flavor&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Flavor&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Flavor&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Created new flavor &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create flavor &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:flavors:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">CreateFlavorInfo</span><span class="p">,</span>
+                     <span class="n">UpdateFlavorAccess</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateFlavor.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.CreateFlavor.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="CreateFlavor.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.CreateFlavor.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flavor_id&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;auto&#39;</span>
+        <span class="n">swap</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;swap_mb&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="n">ephemeral</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eph_gb&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="n">flavor_access</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;flavor_access&#39;</span><span class="p">]</span>
+        <span class="n">is_public</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">flavor_access</span>
+
+        <span class="c1"># Create the flavor</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">object</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                 <span class="n">name</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                                 <span class="n">memory</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;memory_mb&#39;</span><span class="p">],</span>
+                                                 <span class="n">vcpu</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;vcpus&#39;</span><span class="p">],</span>
+                                                 <span class="n">disk</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;disk_gb&#39;</span><span class="p">],</span>
+                                                 <span class="n">ephemeral</span><span class="o">=</span><span class="n">ephemeral</span><span class="p">,</span>
+                                                 <span class="n">swap</span><span class="o">=</span><span class="n">swap</span><span class="p">,</span>
+                                                 <span class="n">flavorid</span><span class="o">=</span><span class="n">flavor_id</span><span class="p">,</span>
+                                                 <span class="n">is_public</span><span class="o">=</span><span class="n">is_public</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create flavor.&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="c1"># Update flavor access if the new flavor is not public</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">flavor_access</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">add_tenant_to_flavor</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span>
+                    <span class="n">request</span><span class="p">,</span>
+                    <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to set flavor access for project </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">project</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateFlavorInfoAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavorInfoAction">[docs]</a><span class="k">class</span> <span class="nc">UpdateFlavorInfoAction</span><span class="p">(</span><span class="n">CreateFlavorInfoAction</span><span class="p">):</span>
+    <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor Information&quot;</span><span class="p">)</span>
+        <span class="n">slug</span> <span class="o">=</span> <span class="s1">&#39;update_info&#39;</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit the flavor details. Flavors define the sizes for &quot;</span>
+                      <span class="s2">&quot;RAM, disk, number of cores, and other resources. &quot;</span>
+                      <span class="s2">&quot;Flavors are selected when users deploy instances.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateFlavorInfoAction.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavorInfoAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flavor_id&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get flavor list&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">check_message</span><span class="p">([</span><span class="s2">&quot;Connection&quot;</span><span class="p">,</span> <span class="s2">&quot;refused&quot;</span><span class="p">],</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="c1"># Check if there is no flavor with the same name</span>
+        <span class="k">if</span> <span class="n">flavors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">flavor</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span> <span class="o">!=</span> <span class="n">flavor_id</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span><span class="s1">&#39;The name &quot;</span><span class="si">%s</span><span class="s1">&quot; is already used by another &#39;</span>
+                          <span class="s1">&#39;flavor.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateFlavorInfo"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavorInfo">[docs]</a><span class="k">class</span> <span class="nc">UpdateFlavorInfo</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">UpdateFlavorInfoAction</span>
+    <span class="n">depends_on</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;flavor_id&quot;</span><span class="p">,)</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;vcpus&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;memory_mb&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;disk_gb&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;eph_gb&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;swap_mb&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="UpdateFlavor"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavor">[docs]</a><span class="k">class</span> <span class="nc">UpdateFlavor</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;update_flavor&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Flavor&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Save&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Modified flavor &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to modify flavor &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:flavors:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">UpdateFlavorInfo</span><span class="p">,</span>
+                     <span class="n">UpdateFlavorAccess</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateFlavor.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavor.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="UpdateFlavor.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.flavors.workflows.html#openstack_dashboard.dashboards.admin.flavors.workflows.UpdateFlavor.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">flavor_projects</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;flavor_access&quot;</span><span class="p">]</span>
+        <span class="n">is_public</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">flavor_projects</span>
+
+        <span class="c1"># Update flavor information</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;flavor_id&#39;</span><span class="p">]</span>
+            <span class="c1"># Grab any existing extra specs, because flavor edit is currently</span>
+            <span class="c1"># implemented as a delete followed by a create.</span>
+            <span class="n">extras_dict</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get_extras</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                     <span class="n">flavor_id</span><span class="p">,</span>
+                                                     <span class="n">raw</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="c1"># Mark the existing flavor as deleted.</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">)</span>
+            <span class="c1"># Then create a new flavor with the same name but a new ID.</span>
+            <span class="c1"># This is in the same try/except block as the delete call</span>
+            <span class="c1"># because if the delete fails the API will error out because</span>
+            <span class="c1"># active flavors can&#39;t have the same name.</span>
+            <span class="n">flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;memory_mb&#39;</span><span class="p">],</span>
+                                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;vcpus&#39;</span><span class="p">],</span>
+                                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;disk_gb&#39;</span><span class="p">],</span>
+                                            <span class="n">ephemeral</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;eph_gb&#39;</span><span class="p">],</span>
+                                            <span class="n">swap</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;swap_mb&#39;</span><span class="p">],</span>
+                                            <span class="n">is_public</span><span class="o">=</span><span class="n">is_public</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">extras_dict</span><span class="p">):</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_extra_set</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">extras_dict</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="c1"># Add flavor access if the flavor is not public.</span>
+        <span class="k">for</span> <span class="n">project</span> <span class="ow">in</span> <span class="n">flavor_projects</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">add_tenant_to_flavor</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Modified flavor information, &#39;</span>
+                                             <span class="s1">&#39;but unable to modify flavor &#39;</span>
+                                             <span class="s1">&#39;access.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">True</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Workflows Topic Guide &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="DataTables Topic Guide" href="tables.html" />
+    <link rel="prev" title="Horizon Plugin Registry" href="../plugins.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="workflows-topic-guide">
+<h1>Workflows Topic Guide<a class="headerlink" href="#workflows-topic-guide" title="Permalink to this headline">¶</a></h1>
+<p>One of the most challenging aspects of building a compelling user experience
+is crafting complex multi-part workflows. Horizon&#8217;s <tt class="docutils literal"><span class="pre">workflows</span></tt> module
+aims to bring that capability within everyday reach.</p>
+<blockquote>
+<div><div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For detailed API information refer to the <a class="reference internal" href="../ref/workflows.html"><em>Workflows Reference
+Guide</em></a>.</p>
+</div>
+</div></blockquote>
+<div class="section" id="workflows">
+<h2>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h2>
+<p>Workflows are complex forms with tabs, each workflow must consist of classes
+extending the <a class="reference internal" href="../ref/workflows.html#horizon.workflows.Workflow" title="horizon.workflows.Workflow"><tt class="xref py py-class docutils literal"><span class="pre">Workflow</span></tt></a>,
+<a class="reference internal" href="../ref/workflows.html#horizon.workflows.Step" title="horizon.workflows.Step"><tt class="xref py py-class docutils literal"><span class="pre">Step</span></tt></a> and <a class="reference internal" href="../ref/workflows.html#horizon.workflows.Action" title="horizon.workflows.Action"><tt class="xref py py-class docutils literal"><span class="pre">Action</span></tt></a></p>
+<div class="section" id="complex-example-of-a-workflow">
+<h3>Complex example of a workflow<a class="headerlink" href="#complex-example-of-a-workflow" title="Permalink to this headline">¶</a></h3>
+<p>The following is a complex example of how data is exchanged between
+urls, views, workflows and templates:</p>
+<ol class="arabic">
+<li><p class="first">In <tt class="docutils literal"><span class="pre">urls.py</span></tt>, we have the named parameter. E.g. <tt class="docutils literal"><span class="pre">resource_class_id</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">RESOURCE_CLASS</span> <span class="o">=</span> <span class="s1">r&#39;^(?P&lt;resource_class_id&gt;[^/]+)/</span><span class="si">%s</span><span class="s1">$&#39;</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span>
+<span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="n">url</span><span class="p">(</span><span class="n">RESOURCE_CLASS</span> <span class="o">%</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span> <span class="n">UpdateView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;update&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">In <tt class="docutils literal"><span class="pre">views.py</span></tt>, we pass data to the template and to the action(form)
+(action can also pass data to the <tt class="docutils literal"><span class="pre">get_context_data</span></tt> method and to the
+template).</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UpdateView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">UpdateResourceClass</span>
+
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Data from URL are always in self.kwargs, here we pass the data</span>
+        <span class="c1"># to the template.</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;resource_class_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;resource_class_id&#39;</span><span class="p">]</span>
+        <span class="c1"># Data contributed by Workflow&#39;s Steps are in the</span>
+        <span class="c1"># context[&#39;workflow&#39;].context list. We can use that in the</span>
+        <span class="c1"># template too.</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+    <span class="k">def</span> <span class="nf">_get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Data from URL are always in self.kwargs, we can use them here</span>
+        <span class="c1"># to load our object of interest.</span>
+        <span class="n">resource_class_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;resource_class_id&#39;</span><span class="p">]</span>
+        <span class="c1"># Code omitted, this method should return some object obtained</span>
+        <span class="c1"># from API.</span>
+
+    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">resource_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_object</span><span class="p">()</span>
+        <span class="c1"># This data will be available in the Action&#39;s methods and</span>
+        <span class="c1"># Workflow&#39;s handle method.</span>
+        <span class="c1"># But only if the steps will depend on them.</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;resource_class_id&#39;</span><span class="p">:</span> <span class="n">resource_class</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">resource_class</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s1">&#39;service_type&#39;</span><span class="p">:</span> <span class="n">resource_class</span><span class="o">.</span><span class="n">service_type</span><span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">In <tt class="docutils literal"><span class="pre">workflows.py</span></tt> we process the data, it is just more complex django
+form.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ResourcesAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="c1"># The name field will be automatically available in all action&#39;s</span>
+    <span class="c1"># methods.</span>
+    <span class="c1"># If we want this field to be used in the another Step or Workflow,</span>
+    <span class="c1"># it has to be contributed by this step, then depend on in another</span>
+    <span class="c1"># step.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Testing Name&quot;</span><span class="p">),</span>
+                           <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                           <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+        <span class="c1"># If we want to use some data from the URL, the Action&#39;s step</span>
+        <span class="c1"># has to depend on them. It&#39;s then available in</span>
+        <span class="c1"># self.initial[&#39;resource_class_id&#39;] or data[&#39;resource_class_id&#39;].</span>
+        <span class="c1"># In other words, resource_class_id has to be passed by view&#39;s</span>
+        <span class="c1"># get_initial and listed in step&#39;s depends_on list.</span>
+
+        <span class="c1"># We can also use here the data from the other steps. If we want</span>
+        <span class="c1"># the data from the other step, the step needs to contribute the</span>
+        <span class="c1"># data and the steps needs to be ordered properly.</span>
+
+<span class="k">class</span> <span class="nc">UpdateResources</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="c1"># This passes data from Workflow context to action methods</span>
+    <span class="c1"># (handle, clean). Workflow context consists of URL data and data</span>
+    <span class="c1"># contributed by other steps.</span>
+    <span class="n">depends_on</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;resource_class_id&quot;</span><span class="p">,)</span>
+
+    <span class="c1"># By contributing, the data on these indexes will become available to</span>
+    <span class="c1"># Workflow and to other Steps (if they will depend on them). Notice,</span>
+    <span class="c1"># that the resources_object_ids key has to be manually added in</span>
+    <span class="c1"># contribute method first.</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;resources_object_ids&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="c1"># We can obtain the http request from workflow.</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">request</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c1"># Only fields defined in Action are automatically</span>
+            <span class="c1"># available for contribution. If we want to contribute</span>
+            <span class="c1"># something else, We need to override the contribute method</span>
+            <span class="c1"># and manually add it to the dictionary.</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;resources_object_ids&quot;</span><span class="p">]</span> <span class="o">=</span>\
+                <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;resources_object_ids&quot;</span><span class="p">)</span>
+
+        <span class="c1"># We have to merge new context with the passed data or let</span>
+        <span class="c1"># the superclass do this.</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+<span class="k">class</span> <span class="nc">UpdateResourceClass</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">UpdateResources</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+        <span class="c1"># This method is called as last (after all Action&#39;s handle</span>
+        <span class="c1"># methods). All data that are listed in step&#39;s &#39;contributes=&#39;</span>
+        <span class="c1"># and &#39;depends_on=&#39; are available here.</span>
+        <span class="c1"># It can be easier to have the saving logic only here if steps</span>
+        <span class="c1"># are heavily connected or complex.</span>
+
+        <span class="c1"># data[&quot;resources_object_ids&quot;], data[&quot;name&quot;] and</span>
+        <span class="c1"># data[&quot;resources_class_id&quot;] are available here.</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Workflows Topic Guide</a><ul>
+<li><a class="reference internal" href="#workflows">Workflows</a><ul>
+<li><a class="reference internal" href="#complex-example-of-a-workflow">Complex example of a workflow</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../plugins.html"
+                                  title="previous chapter">Horizon Plugin Registry</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tables.html"
+                                  title="next chapter">DataTables Topic Guide</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/workflows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tables.html" title="DataTables Topic Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../plugins.html" title="Horizon Plugin Registry"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

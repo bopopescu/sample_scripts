@@ -1,0 +1,23 @@
+{% extends 'horizon/common/_modal_form.html' %}
+{% load i18n %}
+{% load url from future %}
+
+{% block modal-body-right %}
+    <h3>{% trans 'Description:' %}</h3>
+    <p>{% trans 'Mark an image with Murano specific metadata to be added to the selected image.' %}</p>
+    <p>
+        <strong>{% trans 'Image' %}:</strong>
+        {% blocktrans %}Select an image registered in Glance Image
+            Services.{% endblocktrans %}
+    </p>
+    <p>
+        <strong>{% trans 'Image Title' %}:</strong>
+        {% blocktrans %}Create a title for an image.{% endblocktrans %}
+    </p>
+    <p>
+        <strong>{% trans 'Image Type' %}:</strong>
+        {% blocktrans %}Select an image type supported by
+            Murano.{% endblocktrans %}
+    </p>
+
+{% endblock %}

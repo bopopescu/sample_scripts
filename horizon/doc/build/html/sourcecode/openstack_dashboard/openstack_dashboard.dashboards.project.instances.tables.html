@@ -1,0 +1,1484 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.instances.tables Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.instances.utils Module" href="openstack_dashboard.dashboards.project.instances.utils.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.instances.audit_tables Module" href="openstack_dashboard.dashboards.project.instances.audit_tables.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-instances-tables-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.instances.tables</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-instances-tables-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">AssociateIP</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#AssociateIP"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#AssociateIP.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'network:associate_floating_ip'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b979a320&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b979a2a8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'link', 'name': 'associate', 'url': 'horizon:project:access_and_security:floating_ips:associate', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe48d0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#AssociateIP.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'link'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'associate'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'network:associate_floating_ip'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:access_and_security:floating_ips:associate'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe48d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">AttachInterface</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#AttachInterface"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#AttachInterface.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute_extension:attach_interfaces'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b979aed8&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b979ae60&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'attach_interface', 'url': 'horizon:project:instances:attach_interface', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-confirm', 'ajax-modal'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4e90&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-confirm', 'ajax-modal')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#AttachInterface.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'attach_interface'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute_extension:attach_interfaces'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:attach_interface'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4e90&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">ConfirmResize</tt><big>(</big><em>single_func=None</em>, <em>multiple_func=None</em>, <em>handle_func=None</em>, <em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ConfirmResize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.Action</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ConfirmResize.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'name': 'confirm', 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4c90&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'single': &lt;function single at 0x7ff3b97a8ed8&gt;, 'classes': ('btn-confirm', 'btn-action-required'), 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'policy_rules': (('compute', 'compute:confirm_resize'),), 'allowed': &lt;function allowed at 0x7ff3b97a8e60&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__doc__': 'Represents an action which can be taken on this table\'s data.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A descriptive name used for display purposes. Defaults to the\n        value of ``name`` with the first letter of each word capitalized.\n\n    .. attribute:: verbose_name_plural\n\n        Used like ``verbose_name`` in cases where ``handles_multiple`` is\n        ``True``. Defaults to ``verbose_name`` with the letter &quot;s&quot; appended.\n\n    .. attribute:: method\n\n        The HTTP method for this action. Defaults to ``POST``. Other methods\n        may or may not succeed currently.\n\n    .. attribute:: requires_input\n\n        Boolean value indicating whether or not this action can be taken\n        without any additional input (e.g. an object id). Defaults to ``True``.\n\n    .. attribute:: preempt\n\n        Boolean value indicating whether this action should be evaluated in\n        the period after the table is instantiated but before the data has\n        been loaded.\n\n        This can allow actions which don\'t need access to the full table data\n        to bypass any API calls and processing which would otherwise be\n        required to load the table.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Default to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n\n    .. attribute:: policy_rules\n\n        list of scope and rule tuples to do policy checks on, the\n        composition of which is (scope, rule)\n\n            scope: service type managing the policy for action\n            rule: string representing the action to be checked\n\n            for a policy that requires a single rule check:\n                policy_rules should look like\n                    &quot;((&quot;compute&quot;, &quot;compute:create_instance&quot;),)&quot;\n            for a policy that requires multiple rule checks:\n                rules should look like\n                    &quot;((&quot;identity&quot;, &quot;identity:list_users&quot;),\n                      (&quot;identity&quot;, &quot;identity:list_roles&quot;))&quot;\n\n    At least one of the following methods must be defined:\n\n    .. method:: single(self, data_table, request, object_id)\n\n        Handler for a single-object action.\n\n    .. method:: multiple(self, data_table, request, object_ids)\n\n        Handler for multi-object actions.\n\n    .. method:: handle(self, data_table, request, object_ids)\n\n        If a single function can work for both single-object and\n        multi-object cases then simply providing a ``handle`` function\n        will internally route both ``single`` and ``multiple`` requests\n        to ``handle`` with the calls from ``single`` being transformed\n        into a list containing only the single object id.\n    ', '__init__': &lt;function __init__ at 0x7ff3bec1ec08&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-confirm', 'btn-action-required')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'confirm'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:confirm_resize'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">single</tt><big>(</big><em>table</em>, <em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ConfirmResize.single"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4c90&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">ConsoleLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ConsoleLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ConsoleLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute_extension:consoles'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b97a8b90&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8b18&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'console', 'url': 'horizon:project:instances:detail', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-console',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4f10&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-console',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ConsoleLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'console'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute_extension:consoles'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:detail'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4f10&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">CreateSnapshot</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#CreateSnapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#CreateSnapshot.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:snapshot'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8aa0&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'camera', 'name': 'snapshot', 'url': 'horizon:project:images:snapshots:create', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4b50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'camera'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'snapshot'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:snapshot'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:images:snapshots:create'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4b50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">DecryptInstancePassword</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#DecryptInstancePassword"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#DecryptInstancePassword.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_link_url': &lt;function get_link_url at 0x7ff3b979a230&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b979a1b8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'decryptpassword', 'url': 'horizon:project:instances:decryptpassword', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-decrypt', 'ajax-modal'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4910&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-decrypt', 'ajax-modal')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#DecryptInstancePassword.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'decryptpassword'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:decryptpassword'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4910&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">DetachInterface</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#DetachInterface"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#DetachInterface.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_link_url': &lt;function get_link_url at 0x7ff3b979e050&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b979af50&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'detach_interface', 'url': 'horizon:project:instances:detach_interface', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-confirm', 'ajax-modal'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4090&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-confirm', 'ajax-modal')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#DetachInterface.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'detach_interface'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:detach_interface'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4090&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">EditInstance</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#EditInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#EditInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:update'),), '_get_link_url': &lt;function _get_link_url at 0x7ff3b97a88c0&gt;, 'get_link_url': &lt;function get_link_url at 0x7ff3b97a8848&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8938&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'edit', 'url': 'horizon:project:instances:update', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe40d0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>project</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#EditInstance.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pencil'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'edit'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:update'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:update'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe40d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">EditInstanceSecurityGroups</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#EditInstanceSecurityGroups"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.instances.tables.EditInstance</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#EditInstanceSecurityGroups.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:update'),), '_get_link_url': &lt;function _get_link_url at 0x7ff3b97a88c0&gt;, 'get_link_url': &lt;function get_link_url at 0x7ff3b97a89b0&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8a28&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'edit_secgroups', 'url': 'horizon:project:instances:update', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4290&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>project</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#EditInstanceSecurityGroups.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'edit_secgroups'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4290&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">InstancesFilterAction</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#InstancesFilterAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.FilterAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'is_api_filter': &lt;function is_api_filter at 0x7ff3bea066e0&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'filter_type': 'server', 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06488&gt;, 'filter': &lt;function filter at 0x7ff3bea06668&gt;, 'name': 'filter', 'filter_choices': (('name', &lt;django.utils.functional.__proxy__ object at 0x7ff3b9651bd0&gt;, True), ('status', &lt;django.utils.functional.__proxy__ object at 0x7ff3b9651250&gt;, True), ('image', &lt;django.utils.functional.__proxy__ object at 0x7ff3b9651350&gt;, True), ('flavor', &lt;django.utils.functional.__proxy__ object at 0x7ff3b96949d0&gt;, True)), 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea06500&gt;, '__doc__': 'A base class representing a filter action for a table.\n\n    .. attribute:: name\n\n        The short name or &quot;slug&quot; representing this action. Defaults to\n        ``&quot;filter&quot;``.\n\n    .. attribute:: verbose_name\n\n        A descriptive name used for display purposes. Defaults to the\n        value of ``name`` with the first letter of each word capitalized.\n\n    .. attribute:: param_name\n\n        A string representing the name of the request parameter used for the\n        search term. Default: ``&quot;q&quot;``.\n\n    .. attribute:: filter_type\n\n        A string representing the type of this filter. If this is set to\n        ``&quot;server&quot;`` then ``filter_choices`` must also be provided.\n        Default: ``&quot;query&quot;``.\n\n    .. attribute:: filter_choices\n\n        Required for server type filters. A tuple of tuples representing the\n        filter options. Tuple composition should evaluate to (string, string,\n        boolean), representing the filter parameter, display value, and whether\n        or not it should be applied to the API request as an API query\n        attribute. API type filters do not need to be accounted for in the\n        filter method since the API will do the filtering. However, server\n        type filters in general will need to be performed in the filter method.\n        By default this attribute is not provided.\n\n    .. attribute:: needs_preloading\n\n        If True, the filter function will be called for the initial\n        GET request with an empty ``filter_string``, regardless of the\n        value of ``method``.\n    ', 'data_type_filter': &lt;function data_type_filter at 0x7ff3bea065f0&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'assign_type_string': &lt;function assign_type_string at 0x7ff3bea06578&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">filter_choices</tt><em class="property"> = (('name', &lt;django.utils.functional.__proxy__ object at 0x7ff3b9651bd0&gt;, True), ('status', &lt;django.utils.functional.__proxy__ object at 0x7ff3b9651250&gt;, True), ('image', &lt;django.utils.functional.__proxy__ object at 0x7ff3b9651350&gt;, True), ('flavor', &lt;django.utils.functional.__proxy__ object at 0x7ff3b96949d0&gt;, True))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">filter_type</tt><em class="property"> = 'server'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">InstancesTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#InstancesTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#InstancesTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">launch_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.instances.tables.LaunchLink'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'instances'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.instances.tables.StartInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.ConfirmResize'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.RevertResize'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.CreateSnapshot'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.SimpleAssociateIP'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.AssociateIP'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.SimpleDisassociateIP'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.AttachInterface'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.DetachInterface'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.EditInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.DecryptInstancePassword'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.EditInstanceSecurityGroups'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.ConsoleLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.LogLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.TogglePause'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.ToggleSuspend'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.ToggleShelve'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.ResizeLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.LockInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.UnlockInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.SoftRebootInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.RebootInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.StopInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.RebuildInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.TerminateInstance'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateRow</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">status_columns</tt><em class="property"> = ['status', 'task']</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.instances.tables.LaunchLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.TerminateInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.InstancesFilterAction'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions_menu</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.instances.tables.StartInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.StopInstance'&gt;, &lt;class 'openstack_dashboard.dashboards.project.instances.tables.SoftRebootInstance'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9667110&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">InstancesTable.</tt><tt class="descname">STATUS_CHOICES</tt><em class="property"> = (('active', True), ('shutoff', True), ('suspended', True), ('paused', True), ('error', False), ('rescue', True), ('shelved', True), ('shelved_offloaded', True))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">InstancesTable.</tt><tt class="descname">TASK_STATUS_CHOICES</tt><em class="property"> = ((None, True), ('none', True))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">InstancesTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('associate', &lt;AssociateIP: associate&gt;), ('associate-simple', &lt;SimpleAssociateIP: associate-simple&gt;), ('attach_interface', &lt;AttachInterface: attach_interface&gt;), ('confirm', &lt;ConfirmResize: confirm&gt;), ('console', &lt;ConsoleLink: console&gt;), ('decryptpassword', &lt;DecryptInstancePassword: decryptpassword&gt;), ('detach_interface', &lt;DetachInterface: detach_interface&gt;), ('disassociate', &lt;SimpleDisassociateIP: disassociate&gt;), ('edit', &lt;EditInstance: edit&gt;), ('edit_secgroups', &lt;EditInstanceSecurityGroups: edit_secgroups&gt;), ('filter', &lt;InstancesFilterAction: filter&gt;), ('launch', &lt;LaunchLink: launch&gt;), ('lock', &lt;LockInstance: lock&gt;), ('log', &lt;LogLink: log&gt;), ('pause', &lt;TogglePause: pause&gt;), ('reboot', &lt;RebootInstance: reboot&gt;), ('rebuild', &lt;RebuildInstance: rebuild&gt;), ('resize', &lt;ResizeLink: resize&gt;), ('revert', &lt;RevertResize: revert&gt;), ('shelve', &lt;ToggleShelve: shelve&gt;), ('snapshot', &lt;CreateSnapshot: snapshot&gt;), ('soft_reboot', &lt;SoftRebootInstance: soft_reboot&gt;), ('start', &lt;StartInstance: start&gt;), ('stop', &lt;StopInstance: stop&gt;), ('suspend', &lt;ToggleSuspend: suspend&gt;), ('terminate', &lt;TerminateInstance: terminate&gt;), ('unlock', &lt;UnlockInstance: unlock&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">InstancesTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('name', &lt;Column: name&gt;), ('image_name', &lt;Column: image_name&gt;), ('ip', &lt;Column: ip&gt;), ('size', &lt;Column: size&gt;), ('keypair', &lt;Column: keypair&gt;), ('status', &lt;Column: status&gt;), ('az', &lt;Column: az&gt;), ('task', &lt;Column: task&gt;), ('state', &lt;Column: state&gt;), ('created', &lt;Column: created&gt;)])</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">LaunchLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LaunchLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ajax</tt><em class="property"> = True</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LaunchLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:create'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': True, 'allowed': &lt;function allowed at 0x7ff3b97a8668&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3b97a85f0&gt;, 'icon': 'cloud-upload', 'name': 'launch', 'url': 'horizon:project:instances:launch', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'single': &lt;function single at 0x7ff3b97a86e0&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal', 'btn-launch'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bd572b50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal', 'btn-launch')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'cloud-upload'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'launch'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:create'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">single</tt><big>(</big><em>table</em>, <em>request</em>, <em>object_id=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LaunchLink.single"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:launch'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bd572b50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">LaunchLinkNG</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LaunchLinkNG"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.instances.tables.LaunchLink</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ajax</tt><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:create'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b97a87d0&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8668&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, '__init__': &lt;function __init__ at 0x7ff3b97a85f0&gt;, 'icon': 'cloud-upload', 'name': 'launch-ng', 'url': 'horizon:project:instances:index', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'single': &lt;function single at 0x7ff3b97a86e0&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-launch',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3b97a8758&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bd572b50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-launch',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_default_attrs</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LaunchLinkNG.get_default_attrs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LaunchLinkNG.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'launch-ng'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">LockInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LockInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LockInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LockInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LockInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LockInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute_extension:admin_actions:lock'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b979ab90&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'lock', 'action_present': &lt;staticmethod object at 0x7ff3b977b398&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b3d0&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b979ac08&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'lock'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute_extension:admin_actions:lock'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">LogLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LogLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LogLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute_extension:console_output'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b97a8c80&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8c08&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'log', 'url': 'horizon:project:instances:detail', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-log',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4790&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-log',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#LogLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'log'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute_extension:console_output'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:detail'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4790&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">RebootInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebootInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebootInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebootInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebootInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebootInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute:reboot'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b975fcf8&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3ba798a90&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'reboot', 'action_present': &lt;staticmethod object at 0x7ff3b977b0c0&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b088&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, 'classes': ('btn-danger', 'btn-reboot'), '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b975fd70&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-danger', 'btn-reboot')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba798a90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'reboot'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:reboot'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">RebuildInstance</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebuildInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebuildInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:rebuild'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b979a140&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b979a0c8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'rebuild', 'url': 'horizon:project:instances:rebuild', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('btn-rebuild', 'ajax-modal'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4950&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-rebuild', 'ajax-modal')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RebuildInstance.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'rebuild'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:rebuild'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:rebuild'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4950&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">ResizeLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ResizeLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ResizeLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('compute', 'compute:resize'),), '_get_link_url': &lt;function _get_link_url at 0x7ff3b97a8d70&gt;, 'get_link_url': &lt;function get_link_url at 0x7ff3b97a8cf8&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b97a8de8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'resize', 'url': 'horizon:project:instances:resize', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal', 'btn-resize'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4f50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal', 'btn-resize')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>project</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ResizeLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'resize'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:resize'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:instances:resize'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4f50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">RevertResize</tt><big>(</big><em>single_func=None</em>, <em>multiple_func=None</em>, <em>handle_func=None</em>, <em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RevertResize"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.Action</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RevertResize.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'name': 'revert', 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4bd0&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'single': &lt;function single at 0x7ff3b979a050&gt;, 'classes': ('btn-revert', 'btn-action-required'), 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'policy_rules': (('compute', 'compute:revert_resize'),), 'allowed': &lt;function allowed at 0x7ff3b97a8f50&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__doc__': 'Represents an action which can be taken on this table\'s data.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A descriptive name used for display purposes. Defaults to the\n        value of ``name`` with the first letter of each word capitalized.\n\n    .. attribute:: verbose_name_plural\n\n        Used like ``verbose_name`` in cases where ``handles_multiple`` is\n        ``True``. Defaults to ``verbose_name`` with the letter &quot;s&quot; appended.\n\n    .. attribute:: method\n\n        The HTTP method for this action. Defaults to ``POST``. Other methods\n        may or may not succeed currently.\n\n    .. attribute:: requires_input\n\n        Boolean value indicating whether or not this action can be taken\n        without any additional input (e.g. an object id). Defaults to ``True``.\n\n    .. attribute:: preempt\n\n        Boolean value indicating whether this action should be evaluated in\n        the period after the table is instantiated but before the data has\n        been loaded.\n\n        This can allow actions which don\'t need access to the full table data\n        to bypass any API calls and processing which would otherwise be\n        required to load the table.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Default to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n\n    .. attribute:: policy_rules\n\n        list of scope and rule tuples to do policy checks on, the\n        composition of which is (scope, rule)\n\n            scope: service type managing the policy for action\n            rule: string representing the action to be checked\n\n            for a policy that requires a single rule check:\n                policy_rules should look like\n                    &quot;((&quot;compute&quot;, &quot;compute:create_instance&quot;),)&quot;\n            for a policy that requires multiple rule checks:\n                rules should look like\n                    &quot;((&quot;identity&quot;, &quot;identity:list_users&quot;),\n                      (&quot;identity&quot;, &quot;identity:list_roles&quot;))&quot;\n\n    At least one of the following methods must be defined:\n\n    .. method:: single(self, data_table, request, object_id)\n\n        Handler for a single-object action.\n\n    .. method:: multiple(self, data_table, request, object_ids)\n\n        Handler for multi-object actions.\n\n    .. method:: handle(self, data_table, request, object_ids)\n\n        If a single function can work for both single-object and\n        multi-object cases then simply providing a ``handle`` function\n        will internally route both ``single`` and ``multiple`` requests\n        to ``handle`` with the calls from ``single`` being transformed\n        into a list containing only the single object id.\n    ', '__init__': &lt;function __init__ at 0x7ff3bec1ec08&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-revert', 'btn-action-required')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'revert'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:revert_resize'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">single</tt><big>(</big><em>table</em>, <em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#RevertResize.single"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4bd0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">SimpleAssociateIP</tt><big>(</big><em>single_func=None</em>, <em>multiple_func=None</em>, <em>handle_func=None</em>, <em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SimpleAssociateIP"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.Action</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SimpleAssociateIP.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'name': 'associate-simple', 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4510&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'single': &lt;function single at 0x7ff3b979a410&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'policy_rules': (('compute', 'network:associate_floating_ip'),), 'allowed': &lt;function allowed at 0x7ff3b979a398&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'icon': 'link', 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__doc__': 'Represents an action which can be taken on this table\'s data.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A descriptive name used for display purposes. Defaults to the\n        value of ``name`` with the first letter of each word capitalized.\n\n    .. attribute:: verbose_name_plural\n\n        Used like ``verbose_name`` in cases where ``handles_multiple`` is\n        ``True``. Defaults to ``verbose_name`` with the letter &quot;s&quot; appended.\n\n    .. attribute:: method\n\n        The HTTP method for this action. Defaults to ``POST``. Other methods\n        may or may not succeed currently.\n\n    .. attribute:: requires_input\n\n        Boolean value indicating whether or not this action can be taken\n        without any additional input (e.g. an object id). Defaults to ``True``.\n\n    .. attribute:: preempt\n\n        Boolean value indicating whether this action should be evaluated in\n        the period after the table is instantiated but before the data has\n        been loaded.\n\n        This can allow actions which don\'t need access to the full table data\n        to bypass any API calls and processing which would otherwise be\n        required to load the table.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Default to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n\n    .. attribute:: policy_rules\n\n        list of scope and rule tuples to do policy checks on, the\n        composition of which is (scope, rule)\n\n            scope: service type managing the policy for action\n            rule: string representing the action to be checked\n\n            for a policy that requires a single rule check:\n                policy_rules should look like\n                    &quot;((&quot;compute&quot;, &quot;compute:create_instance&quot;),)&quot;\n            for a policy that requires multiple rule checks:\n                rules should look like\n                    &quot;((&quot;identity&quot;, &quot;identity:list_users&quot;),\n                      (&quot;identity&quot;, &quot;identity:list_roles&quot;))&quot;\n\n    At least one of the following methods must be defined:\n\n    .. method:: single(self, data_table, request, object_id)\n\n        Handler for a single-object action.\n\n    .. method:: multiple(self, data_table, request, object_ids)\n\n        Handler for multi-object actions.\n\n    .. method:: handle(self, data_table, request, object_ids)\n\n        If a single function can work for both single-object and\n        multi-object cases then simply providing a ``handle`` function\n        will internally route both ``single`` and ``multiple`` requests\n        to ``handle`` with the calls from ``single`` being transformed\n        into a list containing only the single object id.\n    ', '__init__': &lt;function __init__ at 0x7ff3bec1ec08&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'link'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'associate-simple'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'network:associate_floating_ip'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">single</tt><big>(</big><em>table</em>, <em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SimpleAssociateIP.single"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4510&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">SimpleDisassociateIP</tt><big>(</big><em>single_func=None</em>, <em>multiple_func=None</em>, <em>handle_func=None</em>, <em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SimpleDisassociateIP"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.Action</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SimpleDisassociateIP.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'name': 'disassociate', 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4590&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'single': &lt;function single at 0x7ff3b979a500&gt;, 'classes': ('btn-danger', 'btn-disassociate'), 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'policy_rules': (('compute', 'network:disassociate_floating_ip'),), 'allowed': &lt;function allowed at 0x7ff3b979a488&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__doc__': 'Represents an action which can be taken on this table\'s data.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A descriptive name used for display purposes. Defaults to the\n        value of ``name`` with the first letter of each word capitalized.\n\n    .. attribute:: verbose_name_plural\n\n        Used like ``verbose_name`` in cases where ``handles_multiple`` is\n        ``True``. Defaults to ``verbose_name`` with the letter &quot;s&quot; appended.\n\n    .. attribute:: method\n\n        The HTTP method for this action. Defaults to ``POST``. Other methods\n        may or may not succeed currently.\n\n    .. attribute:: requires_input\n\n        Boolean value indicating whether or not this action can be taken\n        without any additional input (e.g. an object id). Defaults to ``True``.\n\n    .. attribute:: preempt\n\n        Boolean value indicating whether this action should be evaluated in\n        the period after the table is instantiated but before the data has\n        been loaded.\n\n        This can allow actions which don\'t need access to the full table data\n        to bypass any API calls and processing which would otherwise be\n        required to load the table.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Default to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n\n    .. attribute:: policy_rules\n\n        list of scope and rule tuples to do policy checks on, the\n        composition of which is (scope, rule)\n\n            scope: service type managing the policy for action\n            rule: string representing the action to be checked\n\n            for a policy that requires a single rule check:\n                policy_rules should look like\n                    &quot;((&quot;compute&quot;, &quot;compute:create_instance&quot;),)&quot;\n            for a policy that requires multiple rule checks:\n                rules should look like\n                    &quot;((&quot;identity&quot;, &quot;identity:list_users&quot;),\n                      (&quot;identity&quot;, &quot;identity:list_roles&quot;))&quot;\n\n    At least one of the following methods must be defined:\n\n    .. method:: single(self, data_table, request, object_id)\n\n        Handler for a single-object action.\n\n    .. method:: multiple(self, data_table, request, object_ids)\n\n        Handler for multi-object actions.\n\n    .. method:: handle(self, data_table, request, object_ids)\n\n        If a single function can work for both single-object and\n        multi-object cases then simply providing a ``handle`` function\n        will internally route both ``single`` and ``multiple`` requests\n        to ``handle`` with the calls from ``single`` being transformed\n        into a list containing only the single object id.\n    ', '__init__': &lt;function __init__ at 0x7ff3bec1ec08&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-danger', 'btn-disassociate')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'disassociate'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'network:disassociate_floating_ip'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">single</tt><big>(</big><em>table</em>, <em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SimpleDisassociateIP.single"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4590&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">SoftRebootInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SoftRebootInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.instances.tables.RebootInstance</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SoftRebootInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SoftRebootInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#SoftRebootInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute:reboot'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3b975fcf8&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3ba798a90&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'soft_reboot', 'action_present': &lt;staticmethod object at 0x7ff3b977b0f8&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b130&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, 'classes': ('btn-danger', 'btn-reboot'), '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b975fed8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'soft_reboot'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">StartInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StartInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StartInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StartInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StartInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StartInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute:start'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b979a7d0&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'start', 'action_present': &lt;staticmethod object at 0x7ff3b977b2b8&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b2f0&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, 'classes': ('btn-confirm',), '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b979a848&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-confirm',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'start'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:start'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">StopInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StopInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StopInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StopInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StopInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#StopInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute:stop'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b979a9b0&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4890&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'stop', 'action_present': &lt;staticmethod object at 0x7ff3b977b328&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b360&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, 'classes': ('btn-danger',), '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b979aa28&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-danger',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9fe4890&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'stop'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:stop'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">TerminateInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TerminateInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TerminateInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TerminateInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TerminateInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TerminateInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Allow terminate action if instance not currently being deleted.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute:delete'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b975fb18&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3ba798350&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'icon': 'remove', 'name': 'terminate', 'action_present': &lt;staticmethod object at 0x7ff3b94f3788&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b94f3ef8&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, 'classes': ('btn-danger',), '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b975fb90&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-danger',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3ba798350&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'remove'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'terminate'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute:delete'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">TogglePause</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TogglePause"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TogglePause.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TogglePause.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TogglePause.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#TogglePause.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b97a8140&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'icon': 'pause', 'name': 'pause', 'action_present': &lt;staticmethod object at 0x7ff3b977b168&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b1a0&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b97a81b8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pause'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'pause'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">ToggleShelve</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleShelve"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleShelve.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleShelve.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleShelve.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleShelve.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b97a8500&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'icon': 'shelve', 'name': 'shelve', 'action_present': &lt;staticmethod object at 0x7ff3b977b248&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b280&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b97a8578&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'shelve'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'shelve'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">ToggleSuspend</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleSuspend"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleSuspend.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleSuspend.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleSuspend.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#ToggleSuspend.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b97a8320&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'suspend', 'action_present': &lt;staticmethod object at 0x7ff3b977b1d8&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b210&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, 'classes': ('btn-suspend',), '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b97a8398&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('btn-suspend',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'suspend'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">UnlockInstance</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UnlockInstance"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.BatchAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">action</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UnlockInstance.action"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UnlockInstance.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UnlockInstance.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UnlockInstance.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.instances.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('compute', 'compute_extension:admin_actions:unlock'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3b979ad70&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea069b0&gt;, 'name': 'unlock', 'action_present': &lt;staticmethod object at 0x7ff3b977b408&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b977b440&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3b979ade8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action which takes batch action on one or more\n    objects. This action should not require user input on a\n    per-object basis.\n\n    .. attribute:: name\n\n       An internal name for this action.\n\n    .. method:: action_present\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n       String or tuple/list. The display forms of the name.\n       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,\n       &quot;Rotate&quot;, etc.) If tuple or list - then setting\n       self.current_present_action = n will set the current active item\n       from the list(action_present[n])\n\n       You can pass a complete action name including \'data_type\' by specifying\n       \'%(data_type)s\' substitution in action_present (&quot;Delete %(data_type)s&quot;).\n       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.\n       &lt;data_type&gt; is determined based on the number of items.\n       By passing a complete action name you allow translators to control\n       the order of words as they want.\n\n       NOTE: action_present attribute is bad for translations and should be\n       avoided. Please use the action_present method instead.\n       This form is kept for legacy.\n\n    .. method:: action_past\n\n       Method accepting an integer/long parameter and returning the display\n       forms of the name properly pluralised (depending on the integer) and\n       translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,\n       &quot;Rotated&quot;, etc.) If tuple or list - then\n       setting self.current_past_action = n will set the current active item\n       from the list(action_past[n])\n\n       NOTE: action_past attribute is bad for translations and should be\n       avoided. Please use the action_past method instead.\n       This form is kept for legacy.\n\n    .. attribute:: data_type_singular\n\n       Optional display name (if the data_type method is not defined) for the\n       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)\n\n    .. attribute:: data_type_plural\n\n       Optional plural word (if the data_type method is not defined) for the\n       type of data being acted on. Defaults to appending \'s\'. Relying on the\n       default is bad for translations and should not be done, so it\'s absence\n       will raise a DeprecationWarning. It is currently kept as optional for\n       legacy code.\n\n       NOTE: data_type_singular and data_type_plural attributes are bad for\n       translations and should be avoided. Please use the action_present and\n       action_past methods. This form is kept for legacy.\n\n    .. attribute:: success_url\n\n       Optional location to redirect after completion of the delete\n       action. Defaults to the current page.\n\n    .. attribute:: help_text\n\n       Optional message for providing an appropriate help text for\n       the horizon user.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'unlock'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('compute', 'compute_extension:admin_actions:unlock'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">UpdateRow</tt><big>(</big><em>table</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UpdateRow"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.Row</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ajax</tt><em class="property"> = True</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>instance_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#UpdateRow.get_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">get_instance_error</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#get_instance_error"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">get_ips</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#get_ips"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">get_keyname</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#get_keyname"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">get_power_state</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#get_power_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">get_size</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#get_size"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">instance_fault_to_friendly_message</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#instance_fault_to_friendly_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.instances.tables.</tt><tt class="descname">is_deleting</tt><big>(</big><em>instance</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/instances/tables.html#is_deleting"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.instances.audit_tables.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.instances.audit_tables</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.instances.utils.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.instances.utils</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.tables.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.instances.utils.html" title="The openstack_dashboard.dashboards.project.instances.utils Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.instances.audit_tables.html" title="The openstack_dashboard.dashboards.project.instances.audit_tables Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

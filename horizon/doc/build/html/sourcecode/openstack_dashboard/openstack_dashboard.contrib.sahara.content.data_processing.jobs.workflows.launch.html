@@ -1,0 +1,782 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.contrib.sahara.content.data_processing.data_image_registry.views Module" href="openstack_dashboard.contrib.sahara.content.data_processing.data_image_registry.views.html" />
+    <link rel="prev" title="The openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows Module" href="openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-contrib-sahara-content-data-processing-jobs-workflows-launch-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-contrib-sahara-content-data-processing-jobs-workflows-launch-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">ChosePluginVersion</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#ChosePluginVersion"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.SelectHadoopPlugin'&gt;,)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacc0090&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6fd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6f90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'lunch_job'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacc0050&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:data_processing.cluster_templates:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">ClusterGeneralConfig</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#ClusterGeneralConfig"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">NewClusterConfigAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#ClusterGeneralConfig.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('hidden_configure_field',)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobConfig</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfig"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">JobConfigAction</span></tt></p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">clean_configs</tt><big>(</big><em>configs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfig.clean_configs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfig.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'project/data_processing.jobs/config_template.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobConfigAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfigAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">EDP_ADAPT_FOR_OOZIE</tt><em class="property"> = 'edp.java.adapt_for_oozie'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">EDP_ADAPT_SPARK_SWIFT</tt><em class="property"> = 'edp.spark.adapt_for_swift'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">EDP_HBASE_COMMON_LIB</tt><em class="property"> = 'edp.hbase_common_lib'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">EDP_MAPPER</tt><em class="property"> = 'edp.streaming.mapper'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">EDP_PREFIX</tt><em class="property"> = 'edp.'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">EDP_REDUCER</tt><em class="property"> = 'edp.streaming.reducer'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">JAVA_OPTS</tt><em class="property"> = 'edp.java.java_opts'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">MAIN_CLASS</tt><em class="property"> = 'edp.java.main_class'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('property_name', &lt;django.forms.fields.ChoiceField object at 0x7ff3bacb7890&gt;), ('job_configs', &lt;django.forms.fields.CharField object at 0x7ff3bacb7950&gt;), ('job_params', &lt;django.forms.fields.CharField object at 0x7ff3bacb79d0&gt;), ('job_args_array', &lt;django.forms.fields.CharField object at 0x7ff3bacb7a50&gt;), ('job_type', &lt;django.forms.fields.CharField object at 0x7ff3bacb7ad0&gt;), ('main_class', &lt;django.forms.fields.CharField object at 0x7ff3bacb7b50&gt;), ('java_opts', &lt;django.forms.fields.CharField object at 0x7ff3bacb7c10&gt;), ('streaming_mapper', &lt;django.forms.fields.CharField object at 0x7ff3bacb7cd0&gt;), ('streaming_reducer', &lt;django.forms.fields.CharField object at 0x7ff3bacb7dd0&gt;), ('hbase_common_lib', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb7f10&gt;), ('adapt_oozie', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb6090&gt;), ('adapt_spark_swift', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb6210&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfigAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean_edp_configs</tt><big>(</big><em>configs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfigAction.clean_edp_configs"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('property_name', &lt;django.forms.fields.ChoiceField object at 0x7ff3bacb7890&gt;), ('job_configs', &lt;django.forms.fields.CharField object at 0x7ff3bacb7950&gt;), ('job_params', &lt;django.forms.fields.CharField object at 0x7ff3bacb79d0&gt;), ('job_args_array', &lt;django.forms.fields.CharField object at 0x7ff3bacb7a50&gt;), ('job_type', &lt;django.forms.fields.CharField object at 0x7ff3bacb7ad0&gt;), ('main_class', &lt;django.forms.fields.CharField object at 0x7ff3bacb7b50&gt;), ('java_opts', &lt;django.forms.fields.CharField object at 0x7ff3bacb7c10&gt;), ('streaming_mapper', &lt;django.forms.fields.CharField object at 0x7ff3bacb7cd0&gt;), ('streaming_reducer', &lt;django.forms.fields.CharField object at 0x7ff3bacb7dd0&gt;), ('hbase_common_lib', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb7f10&gt;), ('adapt_oozie', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb6090&gt;), ('adapt_spark_swift', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb6210&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/data_processing.jobs/_launch_job_configure_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6310&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_property_name_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobConfigAction.populate_property_name_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6550&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'jobconfigaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobExecutionExistingGeneralConfig</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionExistingGeneralConfig"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">JobExecutionExistingGeneralConfigAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionExistingGeneralConfig.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobExecutionExistingGeneralConfigAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionExistingGeneralConfigAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobExecutionGeneralConfigAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('job_input', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7190&gt;), ('job_output', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7350&gt;), ('cluster', &lt;django.forms.fields.ChoiceField object at 0x7ff3bacb7650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('job_input', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7190&gt;), ('job_output', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7350&gt;), ('cluster', &lt;django.forms.fields.ChoiceField object at 0x7ff3bacb7650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/data_processing.jobs/_launch_job_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb7690&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_cluster_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionExistingGeneralConfigAction.populate_cluster_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb7850&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'jobexecutionexistinggeneralconfigaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobExecutionGeneralConfig</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfig"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">JobExecutionGeneralConfigAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfig.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobExecutionGeneralConfigAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfigAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('job_input', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7190&gt;), ('job_output', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7350&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('job_input', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7190&gt;), ('job_output', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bacb7350&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data_source_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfigAction.get_data_source_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/data_processing.jobs/_launch_job_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb7410&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_job_choices</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfigAction.populate_job_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_job_input_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfigAction.populate_job_input_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">populate_job_output_choices</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionGeneralConfigAction.populate_job_output_choices"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb7590&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'jobexecutiongeneralconfigaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobExecutionInterfaceConfig</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionInterfaceConfig"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">JobExecutionInterfaceConfigAction</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionInterfaceConfig.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">JobExecutionInterfaceConfigAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionInterfaceConfigAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#JobExecutionInterfaceConfigAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6950&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6b10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'jobexecutioninterfaceconfigaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">LaunchJob</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#LaunchJob"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobExecutionExistingGeneralConfig'&gt;, &lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobConfig'&gt;, &lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobExecutionInterfaceConfig'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6c10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6b90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#LaunchJob.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6b50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'launch_job'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6bd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:data_processing.job_executions:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">LaunchJobNewCluster</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#LaunchJobNewCluster"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.ClusterGeneralConfig'&gt;, &lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobExecutionGeneralConfig'&gt;, &lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobConfig'&gt;, &lt;class 'openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.JobExecutionInterfaceConfig'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacc0250&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacc01d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#LaunchJobNewCluster.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacc0150&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'launch_job'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacc0210&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:project:data_processing.jobs:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">NewClusterConfigAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#NewClusterConfigAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.contrib.sahara.content.data_processing.clusters.workflows.create.GeneralConfigAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('hidden_configure_field', &lt;django.forms.fields.CharField object at 0x7ff3bc29a9d0&gt;), ('hidden_to_delete_field', &lt;django.forms.fields.CharField object at 0x7ff3bc29a890&gt;), ('cluster_name', &lt;django.forms.fields.CharField object at 0x7ff3bc29ad50&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3bc29a8d0&gt;), ('cluster_template', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bc29af10&gt;), ('cluster_count', &lt;django.forms.fields.IntegerField object at 0x7ff3bc29add0&gt;), ('image', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bc29a290&gt;), ('keypair', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bc29af50&gt;), ('persist_cluster', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb6610&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('hidden_configure_field', &lt;django.forms.fields.CharField object at 0x7ff3bc29a9d0&gt;), ('hidden_to_delete_field', &lt;django.forms.fields.CharField object at 0x7ff3bc29a890&gt;), ('cluster_name', &lt;django.forms.fields.CharField object at 0x7ff3bc29ad50&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3bc29a8d0&gt;), ('cluster_template', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bc29af10&gt;), ('cluster_count', &lt;django.forms.fields.IntegerField object at 0x7ff3bc29add0&gt;), ('image', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bc29a290&gt;), ('keypair', &lt;horizon.forms.fields.DynamicChoiceField object at 0x7ff3bc29af50&gt;), ('persist_cluster', &lt;django.forms.fields.BooleanField object at 0x7ff3bacb6610&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/data_processing.clusters/_configure_general_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb66d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6910&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'newclusterconfigaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">SelectHadoopPlugin</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#SelectHadoopPlugin"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">SelectHadoopPluginAction</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.</tt><tt class="descname">SelectHadoopPluginAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/contrib/sahara/content/data_processing/jobs/workflows/launch.html#SelectHadoopPluginAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.contrib.sahara.content.data_processing.cluster_templates.workflows.create.SelectPluginAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('hidden_create_field', &lt;django.forms.fields.CharField object at 0x7ff3bd26ae90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('hidden_create_field', &lt;django.forms.fields.CharField object at 0x7ff3bd26ae90&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = 'project/data_processing.clusters/_create_general_help.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6cd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacb6f50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'selecthadooppluginaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.contrib.sahara.content.data_processing.data_image_registry.views.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.contrib.sahara.content.data_processing.data_image_registry.views</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.launch.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.contrib.sahara.content.data_processing.data_image_registry.views.html" title="The openstack_dashboard.contrib.sahara.content.data_processing.data_image_registry.views Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows.html" title="The openstack_dashboard.contrib.sahara.content.data_processing.jobs.workflows Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

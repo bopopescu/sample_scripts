@@ -1,0 +1,486 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Customizing Horizon &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Horizon Basics" href="../intro.html" />
+    <link rel="prev" title="Settings and Configuration" href="settings.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="customizing-horizon">
+<h1>Customizing Horizon<a class="headerlink" href="#customizing-horizon" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="themes">
+<h2>Themes<a class="headerlink" href="#themes" title="Permalink to this headline">¶</a></h2>
+<p>As of the Kilo release, styling for the OpenStack Dashboard can be altered
+through the use of a theme. A theme is a directory containing a
+<tt class="docutils literal"><span class="pre">_variables.scss</span></tt> file to override the color codes used throughout the SCSS
+and a <tt class="docutils literal"><span class="pre">_styles.scss</span></tt> file with additional styles to load after dashboard
+styles have loaded.</p>
+<p>To use a custom theme, set <tt class="docutils literal"><span class="pre">CUSTOM_THEME_PATH</span></tt> in <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> to
+the directory location for the theme (e.g., <tt class="docutils literal"><span class="pre">&quot;themes/material&quot;</span></tt>). The
+path can either be relative to the <tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt> directory or an
+absolute path to an accessible location on the file system. The default
+<tt class="docutils literal"><span class="pre">CUSTOM_THEME_PATH</span></tt> is <tt class="docutils literal"><span class="pre">themes/default</span></tt>.</p>
+<p>Both the Dashboard custom variables and Bootstrap variables can be overridden.
+For a full list of the Dashboard SCSS variables that can be changed, see the
+variables file at <tt class="docutils literal"><span class="pre">openstack_dashboard/static/dashboard/scss/_variables.scss</span></tt>.</p>
+<div class="section" id="organizing-your-theme-directory">
+<h3>Organizing Your Theme Directory<a class="headerlink" href="#organizing-your-theme-directory" title="Permalink to this headline">¶</a></h3>
+<p>A custom theme directory can be organized differently, depending on the
+level of customization that is desired, as it can include static files
+as well as Django templates.  It can include special subdirectories that will
+be used differently: <tt class="docutils literal"><span class="pre">static</span></tt>, <tt class="docutils literal"><span class="pre">templates</span></tt> and <tt class="docutils literal"><span class="pre">img</span></tt>.</p>
+</div>
+<div class="section" id="the-static-folder">
+<h3>The Static Folder<a class="headerlink" href="#the-static-folder" title="Permalink to this headline">¶</a></h3>
+<p>If the theme folder contains a sub-folder called <tt class="docutils literal"><span class="pre">static</span></tt>, then that sub
+folder will be used as the <strong>static root of the theme</strong>.  I.e., Horizon will
+look in that sub-folder for the _variables.scss and _styles.scss files.
+The contents of this folder will also be served up at <tt class="docutils literal"><span class="pre">/static/custom</span></tt>.</p>
+</div>
+<div class="section" id="the-templates-folder">
+<h3>The Templates Folder<a class="headerlink" href="#the-templates-folder" title="Permalink to this headline">¶</a></h3>
+<p>If the theme folder contains a sub-folder <tt class="docutils literal"><span class="pre">templates</span></tt>, then the path
+to that sub-folder will be prepended to the <tt class="docutils literal"><span class="pre">TEMPLATE_DIRS</span></tt> tuple to
+allow for theme specific template customizations.</p>
+</div>
+<div class="section" id="using-the-templates-folder">
+<h3>Using the Templates Folder<a class="headerlink" href="#using-the-templates-folder" title="Permalink to this headline">¶</a></h3>
+<p>Any Django template that is used in Horizon can be overridden through a theme.
+This allows highly customized user experiences to exist within the scope of
+different themes.  Any template that is overridden must adhere to the same
+directory structure that the extending template expects.</p>
+<p>For example, if you wish to customize the sidebar, Horizon expects the template
+to live at <tt class="docutils literal"><span class="pre">horizon/_sidebar.html</span></tt>.  You would need to duplicate that
+directory structure under your templates directory, such that your override
+would live at <tt class="docutils literal"><span class="pre">{CUSTOM_THEME_PATH}/templates/horizon/_sidebar.html</span></tt>.</p>
+</div>
+<div class="section" id="the-img-folder">
+<h3>The Img Folder<a class="headerlink" href="#the-img-folder" title="Permalink to this headline">¶</a></h3>
+<p>If the static root of the theme folder contains an <tt class="docutils literal"><span class="pre">img</span></tt> directory,
+then all images contained within <tt class="docutils literal"><span class="pre">dashboard/img</span></tt> can be overridden by
+providing a file with the same name.</p>
+<p>For a complete list of the images that can be overridden this way, see:
+<tt class="docutils literal"><span class="pre">openstack_dashboard/static/dashboard/img</span></tt></p>
+</div>
+<div class="section" id="customizing-the-logo">
+<h3>Customizing the Logo<a class="headerlink" href="#customizing-the-logo" title="Permalink to this headline">¶</a></h3>
+<p>If you wish to customize the logo that is used on the splash screen or in the
+top navigation bar, then you simply need to create an <tt class="docutils literal"><span class="pre">img</span></tt> directory under
+your theme&#8217;s static root directory and place your custom <tt class="docutils literal"><span class="pre">logo.png</span></tt> or
+<tt class="docutils literal"><span class="pre">logo-splash.png</span></tt> within it.</p>
+<p>If you wish to override the <tt class="docutils literal"><span class="pre">logo.png</span></tt> using the previous method, and if the
+image used is larger than the height of the top navbar, then the image will be
+constrained to fit within the height of nav.  You can customize the height of
+the top navigation by customizing the SCSS variable: <tt class="docutils literal"><span class="pre">$navbar-height</span></tt>.
+If the image&#8217;s height is smaller than the navbar height, then the image
+will retain its original resolution and size, and simply be centered
+vertically in the available space.</p>
+<p>Prior to the Kilo release the images files inside of Horizon needed to be
+replaced by your images files or the Horizon stylesheets needed to be altered
+to point to the location of your image.</p>
+</div>
+</div>
+<div class="section" id="changing-the-site-title">
+<h2>Changing the Site Title<a class="headerlink" href="#changing-the-site-title" title="Permalink to this headline">¶</a></h2>
+<p>The OpenStack Dashboard Site Title branding (i.e. &#8220;<strong>OpenStack</strong> Dashboard&#8221;)
+can be overwritten by adding the attribute <tt class="docutils literal"><span class="pre">SITE_BRANDING</span></tt>
+to <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> with the value being the desired name.</p>
+<p>The file <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> can be found at the Horizon directory path of
+<tt class="docutils literal"><span class="pre">openstack_dashboard/local/local_settings.py</span></tt>.</p>
+</div>
+<div class="section" id="changing-the-brand-link">
+<h2>Changing the Brand Link<a class="headerlink" href="#changing-the-brand-link" title="Permalink to this headline">¶</a></h2>
+<p>The logo also acts as a hyperlink. The default behavior is to redirect to
+<tt class="docutils literal"><span class="pre">horizon:user_home</span></tt>. By adding the attribute <tt class="docutils literal"><span class="pre">SITE_BRANDING_LINK</span></tt> with
+the desired url target e.g., <tt class="docutils literal"><span class="pre">http://sample-company.com</span></tt> in
+<tt class="docutils literal"><span class="pre">local_settings.py</span></tt>, the target of the hyperlink can be changed.</p>
+</div>
+<div class="section" id="modifying-existing-dashboards-and-panels">
+<h2>Modifying Existing Dashboards and Panels<a class="headerlink" href="#modifying-existing-dashboards-and-panels" title="Permalink to this headline">¶</a></h2>
+<p>If you wish to alter dashboards or panels which are not part of your codebase,
+you can specify a custom python module which will be loaded after the entire
+Horizon site has been initialized, but prior to the URLconf construction.
+This allows for common site-customization requirements such as:</p>
+<ul class="simple">
+<li>Registering or unregistering panels from an existing dashboard.</li>
+<li>Changing the names of dashboards and panels.</li>
+<li>Re-ordering panels within a dashboard or panel group.</li>
+</ul>
+<p>Default Horizon panels are loaded based upon files within the openstack_dashboard/enabled/
+folder.  These files are loaded based upon the filename order, with space left for more
+files to be added.  There are some example files available within this folder, with the
+.example suffix added.  Developers and deployers should strive to use this method of
+customization as much as possible, and support for this is given preference over more
+exotic methods such as monkey patching and overrides files.</p>
+</div>
+<div class="section" id="horizon-customization-module-overrides">
+<h2>Horizon customization module (overrides)<a class="headerlink" href="#horizon-customization-module-overrides" title="Permalink to this headline">¶</a></h2>
+<p>Horizon has a global overrides mechanism available to perform customizations that are not
+yet customizable via configuration settings.  This file can perform monkey patching and
+other forms of customization which are not possible via the enabled folder&#8217;s customization
+method.</p>
+<p>This method of customization is meant to be available for deployers of Horizon, and use of
+this should be avoided by Horizon plugins at all cost.  Plugins needing this level of
+monkey patching and flexibility should instead look for changing their __init__.py file
+and performing customizations through other means.</p>
+<p>To specify the python module containing your modifications, add the key
+<tt class="docutils literal"><span class="pre">customization_module</span></tt> to your <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt> dictionary in
+<tt class="docutils literal"><span class="pre">local_settings.py</span></tt>. The value should be a string containing the path to your
+module in dotted python path notation. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">HORIZON_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;customization_module&quot;</span><span class="p">:</span> <span class="s2">&quot;my_project.overrides&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can do essentially anything you like in the customization module. For
+example, you could change the name of a panel:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">import</span> <span class="nn">horizon</span>
+
+<span class="c1"># Rename &quot;User Settings&quot; to &quot;User Options&quot;</span>
+<span class="n">settings</span> <span class="o">=</span> <span class="n">horizon</span><span class="o">.</span><span class="n">get_dashboard</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">)</span>
+<span class="n">user_panel</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_panel</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+<span class="n">user_panel</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;User Options&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or get the instances panel:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">projects_dashboard</span> <span class="o">=</span> <span class="n">horizon</span><span class="o">.</span><span class="n">get_dashboard</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">)</span>
+<span class="n">instances_panel</span> <span class="o">=</span> <span class="n">projects_dashboard</span><span class="o">.</span><span class="n">get_panel</span><span class="p">(</span><span class="s2">&quot;instances&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And limit access to users with the Keystone Admin role:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">permissions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">instances_panel</span><span class="p">,</span> <span class="s1">&#39;permissions&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+<span class="n">permissions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;openstack.roles.admin&#39;</span><span class="p">)</span>
+<span class="n">instances_panel</span><span class="o">.</span><span class="n">permissions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">permissions</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or just remove it entirely:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">projects_dashboard</span><span class="o">.</span><span class="n">unregister</span><span class="p">(</span><span class="n">instances_panel</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You cannot unregister a <tt class="docutils literal"><span class="pre">default_panel</span></tt>. If you wish to remove a
+<tt class="docutils literal"><span class="pre">default_panel</span></tt>, you need to make a different panel in the dashboard as a
+<tt class="docutils literal"><span class="pre">default_panel</span></tt> and then unregister the former. For example, if you wished
+to remove the <tt class="docutils literal"><span class="pre">overview_panel</span></tt> from the <tt class="docutils literal"><span class="pre">Project</span></tt> dashboard, you could do
+the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">horizon</span><span class="o">.</span><span class="n">get_dashboard</span><span class="p">(</span><span class="s1">&#39;project&#39;</span><span class="p">)</span>
+<span class="n">project</span><span class="o">.</span><span class="n">default_panel</span> <span class="o">=</span> <span class="s2">&quot;instances&quot;</span>
+<span class="n">overview</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">get_panel</span><span class="p">(</span><span class="s1">&#39;overview&#39;</span><span class="p">)</span>
+<span class="n">project</span><span class="o">.</span><span class="n">unregister</span><span class="p">(</span><span class="n">overview</span><span class="o">.</span><span class="n">__class__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also override existing methods with your own versions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Disable Floating IPs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.access_and_security</span> <span class="kn">import</span> <span class="n">tabs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> <span class="kn">import</span> <span class="n">tables</span>
+
+<span class="n">NO</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">x</span><span class="p">:</span> <span class="bp">False</span>
+
+<span class="n">tabs</span><span class="o">.</span><span class="n">FloatingIPsTab</span><span class="o">.</span><span class="n">allowed</span> <span class="o">=</span> <span class="n">NO</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">AssociateIP</span><span class="o">.</span><span class="n">allowed</span> <span class="o">=</span> <span class="n">NO</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">SimpleAssociateIP</span><span class="o">.</span><span class="n">allowed</span> <span class="o">=</span> <span class="n">NO</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">SimpleDisassociateIP</span><span class="o">.</span><span class="n">allowed</span> <span class="o">=</span> <span class="n">NO</span>
+</pre></div>
+</div>
+<p>You could also customize what columns are displayed in an existing
+table, by redefining the <tt class="docutils literal"><span class="pre">columns</span></tt> attribute of its <tt class="docutils literal"><span class="pre">Meta</span></tt>
+class. This can be achieved in 3 steps:</p>
+<ol class="arabic simple">
+<li>Extend the table that you wish to modify</li>
+<li>Redefine the <tt class="docutils literal"><span class="pre">columns</span></tt> attribute under the <tt class="docutils literal"><span class="pre">Meta</span></tt> class for this
+new table</li>
+<li>Modify the <tt class="docutils literal"><span class="pre">table_class</span></tt> attribute for the related view so that it
+points to the new table</li>
+</ol>
+<p>For example, if you wished to remove the Admin State column from the
+<tt class="xref py py-class docutils literal"><span class="pre">NetworksTable</span></tt>,
+you could do the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.networks</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.networks</span> <span class="kn">import</span> <span class="n">views</span>
+
+<span class="k">class</span> <span class="nc">MyNetworksTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">NetworksTable</span><span class="p">):</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">NetworksTable</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;subnets&#39;</span><span class="p">,</span> <span class="s1">&#39;shared&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">)</span>
+
+<span class="n">views</span><span class="o">.</span><span class="n">IndexView</span><span class="o">.</span><span class="n">table_class</span> <span class="o">=</span> <span class="n">MyNetworksTable</span>
+</pre></div>
+</div>
+<p>If you want to add a column you can override the parent table in a
+similar way, add the new column definition and then use the <tt class="docutils literal"><span class="pre">Meta</span></tt>
+<tt class="docutils literal"><span class="pre">columns</span></tt> attribute to control the column order as needed.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><tt class="docutils literal"><span class="pre">my_project.overrides</span></tt> needs to be importable by the python process running
+Horizon.
+If your module is not installed as a system-wide python package,
+you can either make it installable (e.g., with a setup.py)
+or you can adjust the python path used by your WSGI server to include its location.</p>
+<p>Probably the easiest way is to add a <tt class="docutils literal"><span class="pre">python-path</span></tt> argument to
+the <tt class="docutils literal"><span class="pre">WSGIDaemonProcess</span></tt> line in Apache&#8217;s Horizon config.</p>
+<p>Assuming your <tt class="docutils literal"><span class="pre">my_project</span></tt> module lives in <tt class="docutils literal"><span class="pre">/opt/python/my_project</span></tt>,
+you&#8217;d make it look like the following:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span></span>WSGIDaemonProcess [... existing options ...] python-path=/opt/python
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="button-icons">
+<h2>Button Icons<a class="headerlink" href="#button-icons" title="Permalink to this headline">¶</a></h2>
+<p>Horizon uses font icons (glyphicons) from Twitter Bootstrap to add icons to buttons.
+Please see <a class="reference external" href="http://bootstrapdocs.com/v3.1.1/docs/components/#glyphicons">http://bootstrapdocs.com/v3.1.1/docs/components/#glyphicons</a> for instructions
+how to use icons in the code.</p>
+<p>To add icon to Table Action, use icon property. Example:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class CreateSnapshot(tables.LinkAction):</dt>
+<dd>name = &#8220;snapshot&#8221;
+verbose_name = _(&#8220;Create Snapshot&#8221;)
+icon = &#8220;camera&#8221;</dd>
+</dl>
+</div></blockquote>
+<p>Additionally, the site-wide default button classes can be configured by
+setting <tt class="docutils literal"><span class="pre">ACTION_CSS_CLASSES</span></tt> to a tuple of the classes you wish to appear
+on all action buttons in your <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> file.</p>
+</div>
+<div class="section" id="custom-stylesheets">
+<h2>Custom Stylesheets<a class="headerlink" href="#custom-stylesheets" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to define custom stylesheets for your dashboards. Horizon&#8217;s base
+template <tt class="docutils literal"><span class="pre">openstack_dashboard/templates/base.html</span></tt> defines multiple blocks that
+can be overridden.</p>
+<p>To define custom css files that apply only to a specific dashboard, create
+a base template in your dashboard&#8217;s templates folder, which extends Horizon&#8217;s
+base template e.g. <tt class="docutils literal"><span class="pre">openstack_dashboard/dashboards/my_custom_dashboard/</span>
+<span class="pre">templates/my_custom_dashboard/base.html</span></tt>.</p>
+<p>In this template, redefine <tt class="docutils literal"><span class="pre">block</span> <span class="pre">css</span></tt>. (Don&#8217;t forget to include
+<tt class="docutils literal"><span class="pre">_stylesheets.html</span></tt> which includes all Horizon&#8217;s default stylesheets.):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% extends &#39;base.html&#39; %}
+
+{% block css %}
+  {% include &quot;_stylesheets.html&quot; %}
+
+  {% load compress %}
+  {% compress css %}
+  &lt;link href=&#39;{{ STATIC_URL }}my_custom_dashboard/scss/my_custom_dashboard.scss&#39; type=&#39;text/scss&#39; media=&#39;screen&#39; rel=&#39;stylesheet&#39; /&gt;
+  {% endcompress %}
+{% endblock %}
+</pre></div>
+</div>
+<p>The custom stylesheets then reside in the dashboard&#8217;s own <tt class="docutils literal"><span class="pre">static</span></tt> folder
+<tt class="docutils literal"><span class="pre">openstack_dashboard/dashboards/my_custom_dashboard/static/</span>
+<span class="pre">my_custom_dashboard/scss/my_custom_dashboard.scss</span></tt>.</p>
+<p>All dashboard&#8217;s templates have to inherit from dashboard&#8217;s base.html:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% extends &#39;my_custom_dashboard/base.html&#39; %}
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-javascript">
+<h2>Custom Javascript<a class="headerlink" href="#custom-javascript" title="Permalink to this headline">¶</a></h2>
+<p>Similarly to adding custom styling (see above), it is possible to include
+custom javascript files.</p>
+<p>All Horizon&#8217;s javascript files are listed in the <tt class="docutils literal"><span class="pre">openstack_dashboard/</span>
+<span class="pre">templates/horizon/_scripts.html</span></tt> partial template, which is included in
+Horizon&#8217;s base template in <tt class="docutils literal"><span class="pre">block</span> <span class="pre">js</span></tt>.</p>
+<p>To add custom javascript files, create an <tt class="docutils literal"><span class="pre">_scripts.html</span></tt> partial template in
+your dashboard <tt class="docutils literal"><span class="pre">openstack_dashboard/dashboards/my_custom_dashboard/</span>
+<span class="pre">templates/my_custom_dashboard/_scripts.html</span></tt> which extends
+<tt class="docutils literal"><span class="pre">horizon/_scripts.html</span></tt>. In this template override the
+<tt class="docutils literal"><span class="pre">block</span> <span class="pre">custom_js_files</span></tt> including your custom javascript files:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% extends &#39;horizon/_scripts.html&#39; %}
+
+{% block custom_js_files %}
+    &lt;script src=&#39;{{ STATIC_URL }}my_custom_dashboard/js/my_custom_js.js&#39; type=&#39;text/javascript&#39; charset=&#39;utf-8&#39;&gt;&lt;/script&gt;
+{% endblock %}
+</pre></div>
+</div>
+<p>In your dashboard&#8217;s own base template <tt class="docutils literal"><span class="pre">openstack_dashboard/dashboards/</span>
+<span class="pre">my_custom_dashboard/templates/my_custom_dashboard/base.html</span></tt> override
+<tt class="docutils literal"><span class="pre">block</span> <span class="pre">js</span></tt> with inclusion of dashboard&#8217;s own <tt class="docutils literal"><span class="pre">_scripts.html</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% block js %}
+    {% include &quot;my_custom_dashboard/_scripts.html&quot; %}
+{% endblock %}
+</pre></div>
+</div>
+<p>The result is a single compressed js file consisting both Horizon and
+dashboard&#8217;s custom scripts.</p>
+<p>Additionally, some marketing and analytics scripts require you to place them
+within the page&#8217;s &lt;head&gt; tag. To do this, place them within the
+<tt class="docutils literal"><span class="pre">horizon/_custom_head_js.html</span></tt> file. Similar to the <tt class="docutils literal"><span class="pre">_scripts.html</span></tt> file
+mentioned above, you may link to an existing file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;script src=&#39;{{ STATIC_URL }}/my_custom_dashboard/js/my_marketing_js.js&#39; type=&#39;text/javascript&#39; charset=&#39;utf-8&#39;&gt;&lt;/script&gt;
+</pre></div>
+</div>
+<p>or you can paste your script directly in the file, being sure to use
+appropriate tags:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;script type=&quot;text/javascript&quot;&gt;
+//some javascript
+&lt;/script&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="customizing-meta-attributes">
+<h2>Customizing Meta Attributes<a class="headerlink" href="#customizing-meta-attributes" title="Permalink to this headline">¶</a></h2>
+<p>To add custom metadata attributes to your project&#8217;s base template, include
+them in the <tt class="docutils literal"><span class="pre">horizon/_custom_meta.html</span></tt> file. The contents of this file will be
+inserted into the page&#8217;s &lt;head&gt; just after the default Horizon meta tags.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Customizing Horizon</a><ul>
+<li><a class="reference internal" href="#themes">Themes</a><ul>
+<li><a class="reference internal" href="#organizing-your-theme-directory">Organizing Your Theme Directory</a></li>
+<li><a class="reference internal" href="#the-static-folder">The Static Folder</a></li>
+<li><a class="reference internal" href="#the-templates-folder">The Templates Folder</a></li>
+<li><a class="reference internal" href="#using-the-templates-folder">Using the Templates Folder</a></li>
+<li><a class="reference internal" href="#the-img-folder">The Img Folder</a></li>
+<li><a class="reference internal" href="#customizing-the-logo">Customizing the Logo</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#changing-the-site-title">Changing the Site Title</a></li>
+<li><a class="reference internal" href="#changing-the-brand-link">Changing the Brand Link</a></li>
+<li><a class="reference internal" href="#modifying-existing-dashboards-and-panels">Modifying Existing Dashboards and Panels</a></li>
+<li><a class="reference internal" href="#horizon-customization-module-overrides">Horizon customization module (overrides)</a></li>
+<li><a class="reference internal" href="#button-icons">Button Icons</a></li>
+<li><a class="reference internal" href="#custom-stylesheets">Custom Stylesheets</a></li>
+<li><a class="reference internal" href="#custom-javascript">Custom Javascript</a></li>
+<li><a class="reference internal" href="#customizing-meta-attributes">Customizing Meta Attributes</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="settings.html"
+                                  title="previous chapter">Settings and Configuration</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../intro.html"
+                                  title="next chapter">Horizon Basics</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/customizing.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../intro.html" title="Horizon Basics"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="settings.html" title="Settings and Configuration"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

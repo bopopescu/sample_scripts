@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon.tabs.views Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The horizon.tabs Module" href="horizon.tabs.html" />
+    <link rel="prev" title="The horizon.tabs.base Module" href="horizon.tabs.base.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-horizon-tabs-views-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">horizon.tabs.views</span></tt> Module<a class="headerlink" href="#the-horizon-tabs-views-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.tabs.views.</tt><tt class="descname">TabView</tt><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.views.HorizonTemplateView</span></tt></p>
+<p>A generic class-based view for displaying a
+<a class="reference internal" href="../../ref/tabs.html#horizon.tabs.TabGroup" title="horizon.tabs.TabGroup"><tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.TabGroup</span></tt></a>.</p>
+<p>This view handles selecting specific tabs and deals with AJAX requests
+gracefully.</p>
+<dl class="attribute">
+<dt id="horizon.tabs.views.TabView.tab_group_class">
+<tt class="descname">tab_group_class</tt><a class="headerlink" href="#horizon.tabs.views.TabView.tab_group_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The only required attribute for <tt class="docutils literal"><span class="pre">TabView</span></tt>. It should be a class which
+inherits from <a class="reference internal" href="../../ref/tabs.html#horizon.tabs.TabGroup" title="horizon.tabs.TabGroup"><tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.TabGroup</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabView.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabView.get_context_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds the <tt class="docutils literal"><span class="pre">tab_group</span></tt> variable to the context data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_tabs</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabView.get_tabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns the initialized tab group for this view.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle_tabbed_response</tt><big>(</big><em>tab_group</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabView.handle_tabbed_response"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Sends back an AJAX-appropriate response for the tab group if
+required, otherwise renders the response as normal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">render_to_response</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabView.render_to_response"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">tab_group_class</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.tabs.views.</tt><tt class="descname">TabbedTableView</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabbedTableView"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.views.MultiTableMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.views.TabView</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabbedTableView.get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_tables</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabbedTableView.get_tables"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>A no-op on this class. Tables are handled at the tab level.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle_table</tt><big>(</big><em>table_dict</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabbedTableView.handle_table"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>For the given dict containing a <tt class="docutils literal"><span class="pre">DataTable</span></tt> and a <tt class="docutils literal"><span class="pre">TableTab</span></tt>
+instance, it loads the table data for that tab and calls the
+table&#8217;s <a class="reference internal" href="../../ref/tables.html#horizon.tables.DataTable.maybe_handle" title="horizon.tables.DataTable.maybe_handle"><tt class="xref py py-meth docutils literal"><span class="pre">maybe_handle()</span></tt></a> method. The
+return value will be the result of <tt class="docutils literal"><span class="pre">maybe_handle</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">load_tabs</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabbedTableView.load_tabs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Loads the tab group, and compiles the table instances for each
+table attached to any <a class="reference internal" href="../../ref/tabs.html#horizon.tabs.TableTab" title="horizon.tabs.TableTab"><tt class="xref py py-class docutils literal"><span class="pre">horizon.tabs.TableTab</span></tt></a> instances on
+the tab group. This step is necessary before processing any
+tab or table actions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">post</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/tabs/views.html#TabbedTableView.post"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.tabs.base.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon.tabs.base</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.tabs.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon.tabs</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/horizon/horizon.tabs.views.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.tabs.html" title="The horizon.tabs Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.tabs.base.html" title="The horizon.tabs.base Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

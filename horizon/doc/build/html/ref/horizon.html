@@ -1,0 +1,520 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Horizon Workflows" href="workflows.html" />
+    <link rel="prev" title="The run_tests.sh Script" href="run_tests.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-horizon">
+<span id="the-horizon-module"></span><h1>The <tt class="docutils literal"><span class="pre">horizon</span></tt> Module<a class="headerlink" href="#module-horizon" title="Permalink to this headline">¶</a></h1>
+<p>Horizon ships with a single point of contact for hooking into your project if
+you aren&#8217;t developing your own <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> or
+<a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">horizon</span>
+</pre></div>
+</div>
+<p>From there you can access all the key methods you need.</p>
+<div class="section" id="horizon">
+<h2>Horizon<a class="headerlink" href="#horizon" title="Permalink to this headline">¶</a></h2>
+<dl class="attribute">
+<dt id="horizon.urls">
+<tt class="descclassname">horizon.</tt><tt class="descname">urls</tt><a class="headerlink" href="#horizon.urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>The auto-generated URLconf for horizon. Usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.register">
+<tt class="descclassname">horizon.</tt><tt class="descname">register</tt><big>(</big><em>self</em>, <em>dashboard</em><big>)</big><a class="headerlink" href="#horizon.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> with Horizon.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.unregister">
+<tt class="descclassname">horizon.</tt><tt class="descname">unregister</tt><big>(</big><em>self</em>, <em>dashboard</em><big>)</big><a class="headerlink" href="#horizon.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregisters a <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> from Horizon.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.get_absolute_url">
+<tt class="descclassname">horizon.</tt><tt class="descname">get_absolute_url</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#horizon.get_absolute_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default URL for Horizon&#8217;s URLconf.</p>
+<p>The default URL is determined by calling
+<a class="reference internal" href="#horizon.Dashboard.get_absolute_url" title="horizon.Dashboard.get_absolute_url"><tt class="xref py py-meth docutils literal"><span class="pre">get_absolute_url()</span></tt></a>
+on the <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> instance returned by
+<a class="reference internal" href="#horizon.get_default_dashboard" title="horizon.get_default_dashboard"><tt class="xref py py-meth docutils literal"><span class="pre">get_default_dashboard()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.get_user_home">
+<tt class="descclassname">horizon.</tt><tt class="descname">get_user_home</tt><big>(</big><em>self</em>, <em>user</em><big>)</big><a class="headerlink" href="#horizon.get_user_home" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default URL for a particular user.</p>
+<p>This method can be used to customize where a user is sent when
+they log in, etc. By default it returns the value of
+<a class="reference internal" href="#horizon.get_absolute_url" title="horizon.get_absolute_url"><tt class="xref py py-meth docutils literal"><span class="pre">get_absolute_url()</span></tt></a>.</p>
+<p>An alternative function can be supplied to customize this behavior
+by specifying a either a URL or a function which returns a URL via
+the <tt class="docutils literal"><span class="pre">&quot;user_home&quot;</span></tt> key in <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt>. Each of these
+would be valid:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;user_home&quot;</span><span class="p">:</span> <span class="s2">&quot;/home&quot;</span><span class="p">,}</span>  <span class="c1"># A URL</span>
+<span class="p">{</span><span class="s2">&quot;user_home&quot;</span><span class="p">:</span> <span class="s2">&quot;my_module.get_user_home&quot;</span><span class="p">,}</span>  <span class="c1"># Path to a function</span>
+<span class="p">{</span><span class="s2">&quot;user_home&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">user</span><span class="p">:</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,}</span>  <span class="c1"># A function</span>
+<span class="p">{</span><span class="s2">&quot;user_home&quot;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,}</span>  <span class="c1"># Will always return the default dashboard</span>
+</pre></div>
+</div>
+<p>This can be useful if the default dashboard may not be accessible
+to all users. When user_home is missing from HORIZON_CONFIG,
+it will default to the settings.LOGIN_REDIRECT_URL value.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.get_dashboard">
+<tt class="descclassname">horizon.</tt><tt class="descname">get_dashboard</tt><big>(</big><em>self</em>, <em>dashboard</em><big>)</big><a class="headerlink" href="#horizon.get_dashboard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the specified <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> instance.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.get_default_dashboard">
+<tt class="descclassname">horizon.</tt><tt class="descname">get_default_dashboard</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#horizon.get_default_dashboard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> instance.</p>
+<p>If <tt class="docutils literal"><span class="pre">&quot;default_dashboard&quot;</span></tt> is specified in <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt>
+then that dashboard will be returned. If not, the first dashboard
+returned by <a class="reference internal" href="#horizon.get_dashboards" title="horizon.get_dashboards"><tt class="xref py py-func docutils literal"><span class="pre">get_dashboards()</span></tt></a> will be returned.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="horizon.get_dashboards">
+<tt class="descclassname">horizon.</tt><tt class="descname">get_dashboards</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#horizon.get_dashboards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an ordered tuple of <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> modules.</p>
+<p>Orders dashboards according to the <tt class="docutils literal"><span class="pre">&quot;dashboards&quot;</span></tt> key in
+<tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt> or else returns all registered dashboards
+in alphabetical order.</p>
+<p>Any remaining <a class="reference internal" href="#horizon.Dashboard" title="horizon.Dashboard"><tt class="xref py py-class docutils literal"><span class="pre">Dashboard</span></tt></a> classes registered with
+Horizon but not listed in <tt class="docutils literal"><span class="pre">HORIZON_CONFIG['dashboards']</span></tt>
+will be appended to the end of the list alphabetically.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="dashboard">
+<h2>Dashboard<a class="headerlink" href="#dashboard" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.Dashboard">
+<em class="property">class </em><tt class="descclassname">horizon.</tt><tt class="descname">Dashboard</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.Dashboard" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for defining Horizon dashboards.</p>
+<p>All Horizon dashboards should extend from this base class. It provides the
+appropriate hooks for automatic discovery of <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a>
+modules, automatically constructing URLconfs, and providing
+permission-based access control.</p>
+<dl class="attribute">
+<dt id="horizon.Dashboard.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.Dashboard.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the dashboard. This will be displayed in the
+auto-generated navigation and various other places.
+Default: <tt class="docutils literal"><span class="pre">''</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.slug">
+<tt class="descname">slug</tt><a class="headerlink" href="#horizon.Dashboard.slug" title="Permalink to this definition">¶</a></dt>
+<dd><p>A unique &#8220;short name&#8221; for the dashboard. The slug is used as
+a component of the URL path for the dashboard. Default: <tt class="docutils literal"><span class="pre">''</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.panels">
+<tt class="descname">panels</tt><a class="headerlink" href="#horizon.Dashboard.panels" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">panels</span></tt> attribute can be either a flat list containing the name
+of each panel <strong>module</strong>  which should be loaded as part of this
+dashboard, or a list of <a class="reference internal" href="#horizon.PanelGroup" title="horizon.PanelGroup"><tt class="xref py py-class docutils literal"><span class="pre">PanelGroup</span></tt></a> classes which
+define groups of panels as in the following example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SystemPanels</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">PanelGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;syspanel&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;System&quot;</span><span class="p">)</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;overview&#39;</span><span class="p">,</span> <span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Syspanel</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Dashboard</span><span class="p">):</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="n">SystemPanels</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>Automatically generated navigation will use the order of the
+modules in this attribute.</p>
+<p>Default: <tt class="docutils literal"><span class="pre">[]</span></tt>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The values for this attribute should not correspond to the
+<a class="reference internal" href="../sourcecode/horizon/horizon.html#horizon.Panel.name" title="horizon.Panel.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> attributes of the <tt class="docutils literal"><span class="pre">Panel</span></tt> classes.
+They should be the names of the Python modules in which the
+<tt class="docutils literal"><span class="pre">panel.py</span></tt> files live. This is used for the automatic
+loading and registration of <tt class="docutils literal"><span class="pre">Panel</span></tt> classes much like
+Django&#8217;s <tt class="docutils literal"><span class="pre">ModelAdmin</span></tt> machinery.</p>
+<p class="last">Panel modules must be listed in <tt class="docutils literal"><span class="pre">panels</span></tt> in order to be
+discovered by the automatic registration mechanism.</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.default_panel">
+<tt class="descname">default_panel</tt><a class="headerlink" href="#horizon.Dashboard.default_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the panel which should be treated as the default
+panel for the dashboard, i.e. when you visit the root URL
+for this dashboard, that&#8217;s the panel that is displayed.
+Default: <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.permissions">
+<tt class="descname">permissions</tt><a class="headerlink" href="#horizon.Dashboard.permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of permission names, all of which a user must possess in order
+to access any panel registered with this dashboard. This attribute
+is combined cumulatively with any permissions required on individual
+<a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> classes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.urls">
+<tt class="descname">urls</tt><a class="headerlink" href="#horizon.Dashboard.urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional path to a URLconf of additional views for this dashboard
+which are not connected to specific panels. Default: <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.nav">
+<tt class="descname">nav</tt><a class="headerlink" href="#horizon.Dashboard.nav" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">nav</tt><big>(</big><em>context</em><big>)</big></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">nav</span></tt> attribute can be either boolean value or a callable
+which accepts a <tt class="docutils literal"><span class="pre">RequestContext</span></tt> object as a single argument
+to control whether or not this dashboard should appear in
+automatically-generated navigation. Default: <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Dashboard.public">
+<tt class="descname">public</tt><a class="headerlink" href="#horizon.Dashboard.public" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean value to determine whether this dashboard can be viewed
+without being logged in. Defaults to <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.Dashboard.allowed">
+<tt class="descname">allowed</tt><big>(</big><em>context</em><big>)</big><a class="headerlink" href="#horizon.Dashboard.allowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for role based access for this dashboard.</p>
+<p>Checks for access to any panels in the dashboard and of the the
+dashboard itself.</p>
+<p>This method should be overridden to return the result of
+any policy checks required for the user to access this dashboard
+when more complex checks are required.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.Dashboard.get_absolute_url">
+<tt class="descname">get_absolute_url</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.Dashboard.get_absolute_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default URL for this dashboard.</p>
+<p>The default URL is defined as the URL pattern with <tt class="docutils literal"><span class="pre">name=&quot;index&quot;</span></tt>
+in the URLconf for the <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> specified by
+<a class="reference internal" href="../sourcecode/horizon/horizon.html#horizon.Dashboard.default_panel" title="horizon.Dashboard.default_panel"><tt class="xref py py-attr docutils literal"><span class="pre">default_panel</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.Dashboard.get_panel">
+<tt class="descname">get_panel</tt><big>(</big><em>panel</em><big>)</big><a class="headerlink" href="#horizon.Dashboard.get_panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the specified <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> instance registered
+with this dashboard.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.Dashboard.get_panel_group">
+<tt class="descname">get_panel_group</tt><big>(</big><em>slug</em><big>)</big><a class="headerlink" href="#horizon.Dashboard.get_panel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the specified :class:~horizon.PanelGroup
+or None if not registered</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.Dashboard.get_panels">
+<tt class="descname">get_panels</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.Dashboard.get_panels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> instances registered with this
+dashboard in order, without any panel groupings.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="horizon.Dashboard.register">
+<em class="property">classmethod </em><tt class="descname">register</tt><big>(</big><em>panel</em><big>)</big><a class="headerlink" href="#horizon.Dashboard.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> with this dashboard.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="horizon.Dashboard.unregister">
+<em class="property">classmethod </em><tt class="descname">unregister</tt><big>(</big><em>panel</em><big>)</big><a class="headerlink" href="#horizon.Dashboard.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregisters a <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> from this dashboard.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="panel">
+<h2>Panel<a class="headerlink" href="#panel" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.Panel">
+<em class="property">class </em><tt class="descclassname">horizon.</tt><tt class="descname">Panel</tt><a class="headerlink" href="#horizon.Panel" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class for defining Horizon dashboard panels.</p>
+<p>All Horizon dashboard panels should extend from this class. It provides
+the appropriate hooks for automatically constructing URLconfs, and
+providing permission-based access control.</p>
+<dl class="attribute">
+<dt id="horizon.Panel.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.Panel.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the panel. This will be displayed in the
+auto-generated navigation and various other places.
+Default: <tt class="docutils literal"><span class="pre">''</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Panel.slug">
+<tt class="descname">slug</tt><a class="headerlink" href="#horizon.Panel.slug" title="Permalink to this definition">¶</a></dt>
+<dd><p>A unique &#8220;short name&#8221; for the panel. The slug is used as
+a component of the URL path for the panel. Default: <tt class="docutils literal"><span class="pre">''</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Panel.permissions">
+<tt class="descname">permissions</tt><a class="headerlink" href="#horizon.Panel.permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of permission names, all of which a user must possess in order
+to access any view associated with this panel. This attribute
+is combined cumulatively with any permissions required on the
+<tt class="docutils literal"><span class="pre">Dashboard</span></tt> class with which it is registered.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Panel.urls">
+<tt class="descname">urls</tt><a class="headerlink" href="#horizon.Panel.urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to a URLconf of views for this panel using dotted Python
+notation. If no value is specified, a file called <tt class="docutils literal"><span class="pre">urls.py</span></tt>
+living in the same package as the <tt class="docutils literal"><span class="pre">panel.py</span></tt> file is used.
+Default: <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Panel.nav">
+<tt class="descname">nav</tt><a class="headerlink" href="#horizon.Panel.nav" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">nav</tt><big>(</big><em>context</em><big>)</big></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">nav</span></tt> attribute can be either boolean value or a callable
+which accepts a <tt class="docutils literal"><span class="pre">RequestContext</span></tt> object as a single argument
+to control whether or not this panel should appear in
+automatically-generated navigation. Default: <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.Panel.index_url_name">
+<tt class="descname">index_url_name</tt><a class="headerlink" href="#horizon.Panel.index_url_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">name</span></tt> argument for the URL pattern which corresponds to
+the index view for this <tt class="docutils literal"><span class="pre">Panel</span></tt>. This is the view that
+<a class="reference internal" href="#horizon.Panel.get_absolute_url" title="horizon.Panel.get_absolute_url"><tt class="xref py py-meth docutils literal"><span class="pre">Panel.get_absolute_url()</span></tt></a> will attempt to reverse.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="horizon.Panel.can_register">
+<em class="property">static </em><tt class="descname">can_register</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.Panel.can_register" title="Permalink to this definition">¶</a></dt>
+<dd><p>This optional static method can be used to specify conditions that
+need to be satisfied to load this panel. Unlike <tt class="docutils literal"><span class="pre">permissions</span></tt> and
+<tt class="docutils literal"><span class="pre">allowed</span></tt> this method is intended to handle settings based
+conditions rather than user based permission and policy checks.
+The return value is boolean. If the method returns <tt class="docutils literal"><span class="pre">True</span></tt>, then the
+panel will be registered and available to user (if <tt class="docutils literal"><span class="pre">permissions</span></tt> and
+<tt class="docutils literal"><span class="pre">allowed</span></tt> runtime checks are also satisfied). If the method returns
+<tt class="docutils literal"><span class="pre">False</span></tt>, then the panel will not be registered and will not be
+available via normal navigation or direct URL access.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.Panel.get_absolute_url">
+<tt class="descname">get_absolute_url</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.Panel.get_absolute_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default URL for this panel.</p>
+<p>The default URL is defined as the URL pattern with <tt class="docutils literal"><span class="pre">name=&quot;index&quot;</span></tt> in
+the URLconf for this panel.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="horizon.PanelGroup">
+<em class="property">class </em><tt class="descclassname">horizon.</tt><tt class="descname">PanelGroup</tt><big>(</big><em>dashboard</em>, <em>slug=None</em>, <em>name=None</em>, <em>panels=None</em><big>)</big><a class="headerlink" href="#horizon.PanelGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for a set of <a class="reference internal" href="#horizon.Panel" title="horizon.Panel"><tt class="xref py py-class docutils literal"><span class="pre">Panel</span></tt></a> classes.</p>
+<p>When iterated, it will yield each of the <tt class="docutils literal"><span class="pre">Panel</span></tt> instances it
+contains.</p>
+<dl class="attribute">
+<dt id="horizon.PanelGroup.slug">
+<tt class="descname">slug</tt><a class="headerlink" href="#horizon.PanelGroup.slug" title="Permalink to this definition">¶</a></dt>
+<dd><p>A unique string to identify this panel group. Required.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.PanelGroup.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.PanelGroup.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A user-friendly name which will be used as the group heading in
+places such as the navigation. Default: <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.PanelGroup.panels">
+<tt class="descname">panels</tt><a class="headerlink" href="#horizon.PanelGroup.panels" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of panel module names which should be contained within this
+grouping.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">The <tt class="docutils literal"><span class="pre">horizon</span></tt> Module</a><ul>
+<li><a class="reference internal" href="#horizon">Horizon</a></li>
+<li><a class="reference internal" href="#dashboard">Dashboard</a></li>
+<li><a class="reference internal" href="#panel">Panel</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="run_tests.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> Script</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="workflows.html"
+                                  title="next chapter">Horizon Workflows</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/ref/horizon.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="workflows.html" title="Horizon Workflows"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="run_tests.html" title="The run_tests.sh Script"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

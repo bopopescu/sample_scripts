@@ -1,0 +1,604 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.containers.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.containers.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">django</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span> <span class="k">as</span> <span class="n">filters</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">safestring</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">swift</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.containers</span> <span class="kn">import</span> <span class="n">utils</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">static_url</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;STATIC_URL&#39;</span><span class="p">,</span> <span class="s1">&#39;/static/&#39;</span><span class="p">)</span>
+<span class="n">LOADING_IMAGE</span> <span class="o">=</span> <span class="s1">&#39;&lt;img src=&quot;</span><span class="si">%s</span><span class="s1">/dashboard/img/loading.gif&quot; /&gt;&#39;</span> <span class="o">%</span> <span class="n">static_url</span>
+
+
+<span class="k">def</span> <span class="nf">_escape_full_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="c1"># NOTE (lhcheng): In Django 1.8, HttpRequest.get_full_path()</span>
+    <span class="c1"># method now escapes unsafe characters</span>
+    <span class="c1"># TODO(robcresswell): Remove in M, once django 1.7 is dropped</span>
+    <span class="k">if</span> <span class="n">django</span><span class="o">.</span><span class="n">VERSION</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">url</span>
+
+
+<div class="viewcode-block" id="ViewContainer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ViewContainer">[docs]</a><span class="k">class</span> <span class="nc">ViewContainer</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;view&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;View Details&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:container_detail&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-view&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ViewContainer.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ViewContainer.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">obj_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">datum</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">obj_id</span><span class="p">,))</span>
+
+</div></div>
+<div class="viewcode-block" id="MakePublicContainer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.MakePublicContainer">[docs]</a><span class="k">class</span> <span class="nc">MakePublicContainer</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;make_public&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Make Public&quot;</span><span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+
+<div class="viewcode-block" id="MakePublicContainer.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.MakePublicContainer.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">container</span><span class="p">):</span>
+        <span class="c1"># Container metadata have not been loaded</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="s1">&#39;is_public&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">container</span><span class="o">.</span><span class="n">is_public</span>
+</div>
+<div class="viewcode-block" id="MakePublicContainer.single"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.MakePublicContainer.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_update_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                             <span class="n">obj_id</span><span class="p">,</span>
+                                             <span class="n">metadata</span><span class="o">=</span><span class="p">({</span><span class="s1">&#39;is_public&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">}))</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Updating container &quot;</span><span class="si">%s</span><span class="s1">&quot; access to public.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully updated container access to &#39;</span>
+                               <span class="s1">&#39;public.&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to update container access.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;horizon:project:containers:index&#39;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="MakePrivateContainer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.MakePrivateContainer">[docs]</a><span class="k">class</span> <span class="nc">MakePrivateContainer</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;make_private&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Make Private&quot;</span><span class="p">)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+
+<div class="viewcode-block" id="MakePrivateContainer.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.MakePrivateContainer.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">container</span><span class="p">):</span>
+        <span class="c1"># Container metadata have not been loaded</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="s1">&#39;is_public&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">container</span><span class="o">.</span><span class="n">is_public</span>
+</div>
+<div class="viewcode-block" id="MakePrivateContainer.single"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.MakePrivateContainer.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_update_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                             <span class="n">obj_id</span><span class="p">,</span>
+                                             <span class="n">metadata</span><span class="o">=</span><span class="p">({</span><span class="s1">&#39;is_public&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}))</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Updating container &quot;</span><span class="si">%s</span><span class="s1">&quot; access to private.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully updated container access to &#39;</span>
+                               <span class="s1">&#39;private.&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to update container access.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;horizon:project:containers:index&#39;</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteContainer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteContainer">[docs]</a><span class="k">class</span> <span class="nc">DeleteContainer</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteContainer.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteContainer.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Container&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Containers&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteContainer.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteContainer.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted Container&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Containers&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+
+<div class="viewcode-block" id="DeleteContainer.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteContainer.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_delete_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Conflict</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to delete container.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteContainer.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteContainer.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the URL to redirect to after a successful action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;container_name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="c1"># If the current_container is deleted, then redirect to the default</span>
+        <span class="c1"># completion url</span>
+        <span class="k">if</span> <span class="n">current_container</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_ids</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateContainer"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CreateContainer">[docs]</a><span class="k">class</span> <span class="nc">CreateContainer</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Container&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:create&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+
+</div>
+<div class="viewcode-block" id="ListObjects"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ListObjects">[docs]</a><span class="k">class</span> <span class="nc">ListObjects</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;list_objects&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;View Container&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:index&quot;</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;list&quot;</span>
+
+<div class="viewcode-block" id="ListObjects.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ListObjects.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">datum</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">container_name</span><span class="p">),)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreatePseudoFolder"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CreatePseudoFolder">[docs]</a><span class="k">class</span> <span class="nc">CreatePseudoFolder</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create_pseudo_folder&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Pseudo-folder&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:create_pseudo_folder&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+
+<div class="viewcode-block" id="CreatePseudoFolder.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CreatePseudoFolder.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Usable for both the container and object tables</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="s1">&#39;container&#39;</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+            <span class="n">container_name</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">urlquote</span><span class="p">(</span><span class="n">datum</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="n">subfolders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">bit</span> <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">subfolders</span><span class="p">)</span> <span class="k">if</span> <span class="n">bit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="CreatePseudoFolder.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CreatePseudoFolder.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;container_name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="CreatePseudoFolder.update"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CreatePseudoFolder.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c1"># This will only be called for the row, so we can remove the button</span>
+        <span class="c1"># styles meant for the table action version.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;ajax-modal&#39;</span><span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="UploadObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.UploadObject">[docs]</a><span class="k">class</span> <span class="nc">UploadObject</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;upload&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Upload Object&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:object_upload&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;upload&quot;</span>
+
+<div class="viewcode-block" id="UploadObject.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.UploadObject.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Usable for both the container and object tables</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="s1">&#39;container&#39;</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+            <span class="c1"># This is a container</span>
+            <span class="n">container_name</span> <span class="o">=</span> <span class="n">datum</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># This is a table action, and we already have the container name</span>
+            <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="n">subfolders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">bit</span> <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">subfolders</span><span class="p">)</span> <span class="k">if</span> <span class="n">bit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="UploadObject.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.UploadObject.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;container_name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="UploadObject.update"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.UploadObject.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="c1"># This will only be called for the row, so we can remove the button</span>
+        <span class="c1"># styles meant for the table action version.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;ajax-modal&#39;</span><span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="get_size_used"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.get_size_used">[docs]</a><span class="k">def</span> <span class="nf">get_size_used</span><span class="p">(</span><span class="n">container</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">filters</span><span class="o">.</span><span class="n">filesizeformat</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_container_link"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.get_container_link">[docs]</a><span class="k">def</span> <span class="nf">get_container_link</span><span class="p">(</span><span class="n">container</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:containers:index&quot;</span><span class="p">,</span>
+                   <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">name</span><span class="p">),))</span>
+
+</div>
+<div class="viewcode-block" id="ContainerAjaxUpdateRow"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainerAjaxUpdateRow">[docs]</a><span class="k">class</span> <span class="nc">ContainerAjaxUpdateRow</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">True</span>
+
+<div class="viewcode-block" id="ContainerAjaxUpdateRow.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainerAjaxUpdateRow.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">):</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_get_container</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="n">container_name</span><span class="p">,</span>
+                                                  <span class="n">with_data</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">container</span>
+
+</div></div>
+<div class="viewcode-block" id="get_metadata"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.get_metadata">[docs]</a><span class="k">def</span> <span class="nf">get_metadata</span><span class="p">(</span><span class="n">container</span><span class="p">):</span>
+    <span class="c1"># If the metadata has not been loading, display a loading image</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="s1">&#39;is_public&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">safestring</span><span class="o">.</span><span class="n">mark_safe</span><span class="p">(</span><span class="n">LOADING_IMAGE</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/containers/_container_metadata.html&#39;</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;container&quot;</span><span class="p">:</span> <span class="n">container</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_metadata_loaded"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.get_metadata_loaded">[docs]</a><span class="k">def</span> <span class="nf">get_metadata_loaded</span><span class="p">(</span><span class="n">container</span><span class="p">):</span>
+    <span class="c1"># Determine if metadata has been loaded if the attribute is already set.</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="s1">&#39;is_public&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">container</span><span class="o">.</span><span class="n">is_public</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+
+</div>
+<div class="viewcode-block" id="ContainersTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainersTable">[docs]</a><span class="k">class</span> <span class="nc">ContainersTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">METADATA_LOADED_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">link</span><span class="o">=</span><span class="n">get_container_link</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Container Name&quot;</span><span class="p">))</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_metadata</span><span class="p">,</span>
+                             <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Container Details&quot;</span><span class="p">),</span>
+                             <span class="n">classes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;nowrap-col&#39;</span><span class="p">,</span> <span class="p">),)</span>
+    <span class="n">metadata_loaded</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_metadata_loaded</span><span class="p">,</span>
+                                    <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                    <span class="n">status_choices</span><span class="o">=</span><span class="n">METADATA_LOADED_CHOICES</span><span class="p">,</span>
+                                    <span class="n">hidden</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ContainersTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainersTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;containers&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Containers&quot;</span><span class="p">)</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">ContainerAjaxUpdateRow</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;metadata_loaded&#39;</span><span class="p">,</span> <span class="p">]</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">CreateContainer</span><span class="p">,)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">ViewContainer</span><span class="p">,</span> <span class="n">MakePublicContainer</span><span class="p">,</span>
+                       <span class="n">MakePrivateContainer</span><span class="p">,</span> <span class="n">DeleteContainer</span><span class="p">,)</span>
+        <span class="n">browser_table</span> <span class="o">=</span> <span class="s2">&quot;navigation&quot;</span>
+        <span class="n">footer</span> <span class="o">=</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ContainersTable.get_object_id"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainersTable.get_object_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">container</span><span class="o">.</span><span class="n">name</span>
+</div>
+<div class="viewcode-block" id="ContainersTable.get_absolute_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainersTable.get_absolute_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ContainersTable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">_escape_full_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ContainersTable.get_full_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ContainersTable.get_full_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_full_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the encoded absolute URL path with its query string.</span>
+
+<span class="sd">        This is used for the POST action attribute on the form element</span>
+<span class="sd">        wrapping the table. We use this method to persist the</span>
+<span class="sd">        pagination marker.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ContainersTable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_full_url</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">_escape_full_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ViewObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ViewObject">[docs]</a><span class="k">class</span> <span class="nc">ViewObject</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;view&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;View Details&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:object_detail&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-view&quot;</span><span class="p">)</span>
+    <span class="n">allowed_data_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="ViewObject.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ViewObject.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.UpdateObject">[docs]</a><span class="k">class</span> <span class="nc">UpdateObject</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;update_object&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:object_update&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">allowed_data_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="UpdateObject.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.UpdateObject.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteObject">[docs]</a><span class="k">class</span> <span class="nc">DeleteObject</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteObject.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteObject.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Object&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Objects&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteObject.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteObject.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted Object&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Objects&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;delete_object&quot;</span>
+    <span class="n">allowed_data_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">,</span> <span class="s2">&quot;subfolders&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="DeleteObject.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteObject.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">container_name</span>
+        <span class="n">datum_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">data_type_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datum_type</span> <span class="o">==</span> <span class="s1">&#39;subfolders&#39;</span><span class="p">:</span>
+            <span class="n">obj_id</span> <span class="o">=</span> <span class="n">obj_id</span><span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">container_name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):]</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_delete_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">container_name</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteObject.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteObject.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DeleteObject</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_success_url</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_escape_full_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteMultipleObjects"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DeleteMultipleObjects">[docs]</a><span class="k">class</span> <span class="nc">DeleteMultipleObjects</span><span class="p">(</span><span class="n">DeleteObject</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;delete_multiple_objects&quot;</span>
+
+</div>
+<div class="viewcode-block" id="CopyObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CopyObject">[docs]</a><span class="k">class</span> <span class="nc">CopyObject</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;copy&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Copy&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:object_copy&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;circle-arrow-right&quot;</span>
+    <span class="n">allowed_data_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="CopyObject.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.CopyObject.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="DownloadObject"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DownloadObject">[docs]</a><span class="k">class</span> <span class="nc">DownloadObject</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;download&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Download&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:containers:object_download&quot;</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;download&quot;</span>
+    <span class="n">allowed_data_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="DownloadObject.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DownloadObject.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">container_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">container_name</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="DownloadObject.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.DownloadObject.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="n">bytes</span> <span class="ow">and</span> <span class="nb">object</span><span class="o">.</span><span class="n">bytes</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+</div></div>
+<div class="viewcode-block" id="ObjectFilterAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectFilterAction">[docs]</a><span class="k">class</span> <span class="nc">ObjectFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_filtered_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">request</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;container_name&#39;</span><span class="p">]</span>
+        <span class="n">subfolder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;subfolder_path&#39;</span><span class="p">]</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">subfolder</span><span class="p">)</span> <span class="k">if</span> <span class="n">subfolder</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_data</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swift</span><span class="o">.</span><span class="n">swift_filter_objects</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                            <span class="n">filter_string</span><span class="p">,</span>
+                                                            <span class="n">container</span><span class="p">,</span>
+                                                            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_data</span>
+
+<div class="viewcode-block" id="ObjectFilterAction.filter_subfolders_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectFilterAction.filter_subfolders_data">[docs]</a>    <span class="k">def</span> <span class="nf">filter_subfolders_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">objects</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_data</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">datum</span> <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span>
+                <span class="n">datum</span><span class="o">.</span><span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;application/pseudo-folder&quot;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="ObjectFilterAction.filter_objects_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectFilterAction.filter_objects_data">[docs]</a>    <span class="k">def</span> <span class="nf">filter_objects_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">objects</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filtered_data</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">datum</span> <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span>
+                <span class="n">datum</span><span class="o">.</span><span class="n">content_type</span> <span class="o">!=</span> <span class="s2">&quot;application/pseudo-folder&quot;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="ObjectFilterAction.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectFilterAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;container_name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="sanitize_name"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.sanitize_name">[docs]</a><span class="k">def</span> <span class="nf">sanitize_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">swift</span><span class="o">.</span><span class="n">FOLDER_DELIMITER</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="get_size"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.get_size">[docs]</a><span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">bytes</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;pseudo-folder&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filters</span><span class="o">.</span><span class="n">filesizeformat</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_link_subfolder"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.get_link_subfolder">[docs]</a><span class="k">def</span> <span class="nf">get_link_subfolder</span><span class="p">(</span><span class="n">subfolder</span><span class="p">):</span>
+    <span class="n">container_name</span> <span class="o">=</span> <span class="n">subfolder</span><span class="o">.</span><span class="n">container_name</span>
+    <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:containers:index&quot;</span><span class="p">,</span>
+                   <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">container_name</span><span class="p">),</span>
+                         <span class="n">utils</span><span class="o">.</span><span class="n">wrap_delimiter</span><span class="p">(</span><span class="n">subfolder</span><span class="o">.</span><span class="n">name</span><span class="p">)))</span>
+
+</div>
+<div class="viewcode-block" id="ObjectsTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectsTable">[docs]</a><span class="k">class</span> <span class="nc">ObjectsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">link</span><span class="o">=</span><span class="n">get_link_subfolder</span><span class="p">,</span>
+                         <span class="n">allowed_data_types</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;subfolders&quot;</span><span class="p">,),</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Object Name&quot;</span><span class="p">),</span>
+                         <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">sanitize_name</span><span class="p">,))</span>
+
+    <span class="n">size</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">get_size</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Size&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ObjectsTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;objects&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Objects&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">ObjectFilterAction</span><span class="p">,</span> <span class="n">CreatePseudoFolder</span><span class="p">,</span> <span class="n">UploadObject</span><span class="p">,</span>
+                         <span class="n">DeleteMultipleObjects</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">DownloadObject</span><span class="p">,</span> <span class="n">UpdateObject</span><span class="p">,</span> <span class="n">CopyObject</span><span class="p">,</span>
+                       <span class="n">ViewObject</span><span class="p">,</span> <span class="n">DeleteObject</span><span class="p">)</span>
+        <span class="n">data_types</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;subfolders&quot;</span><span class="p">,</span> <span class="s2">&quot;objects&quot;</span><span class="p">)</span>
+        <span class="n">browser_table</span> <span class="o">=</span> <span class="s2">&quot;content&quot;</span>
+        <span class="n">footer</span> <span class="o">=</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ObjectsTable.get_absolute_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectsTable.get_absolute_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ObjectsTable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">_escape_full_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ObjectsTable.get_full_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.containers.tables.html#openstack_dashboard.dashboards.project.containers.tables.ObjectsTable.get_full_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_full_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the encoded absolute URL path with its query string.</span>
+
+<span class="sd">        This is used for the POST action attribute on the form element</span>
+<span class="sd">        wrapping the table. We use this method to persist the</span>
+<span class="sd">        pagination marker.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ObjectsTable</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_full_url</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">_escape_full_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

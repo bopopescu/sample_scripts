@@ -1,0 +1,1104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>horizon.tables.actions &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="horizon.tables" href="../tables.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for horizon.tables.actions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">urlresolvers</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.functional</span> <span class="kn">import</span> <span class="n">Promise</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.http</span> <span class="kn">import</span> <span class="n">urlencode</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">functions</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">html</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+<span class="c1"># For Bootstrap integration; can be overridden in settings.</span>
+<span class="n">ACTION_CSS_CLASSES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;btn&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-default&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-sm&quot;</span><span class="p">)</span>
+<span class="n">STRING_SEPARATOR</span> <span class="o">=</span> <span class="s2">&quot;__&quot;</span>
+
+
+<div class="viewcode-block" id="BaseActionMetaClass"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseActionMetaClass">[docs]</a><span class="k">class</span> <span class="nc">BaseActionMetaClass</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Metaclass for adding all actions options from inheritance tree</span>
+<span class="sd">    to action.</span>
+<span class="sd">    This way actions can inherit from each other but still use</span>
+<span class="sd">    the class attributes DSL. Meaning, all attributes of Actions are</span>
+<span class="sd">    defined as class attributes, but in the background, it will be used as</span>
+<span class="sd">    parameters for the initializer of the object. The object is then</span>
+<span class="sd">    initialized clean way. Similar principle is used in DataTableMetaclass.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+        <span class="c1"># Options of action are set as class attributes, loading them.</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="n">attrs</span>
+
+        <span class="c1"># Iterate in reverse to preserve final order</span>
+        <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">bases</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="c1"># It actually throws all super classes away except immediate</span>
+            <span class="c1"># superclass. But it&#39;s fine, immediate super-class base_options</span>
+            <span class="c1"># includes everything because superclasses was created also by</span>
+            <span class="c1"># this metaclass. Same principle is used in DataTableMetaclass.</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s1">&#39;base_options&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">base</span><span class="o">.</span><span class="n">base_options</span><span class="p">:</span>
+                <span class="n">base_options</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="c1"># Updating options by superclasses.</span>
+                <span class="n">base_options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">base_options</span><span class="p">)</span>
+                <span class="c1"># Updating superclass options by actual class options.</span>
+                <span class="n">base_options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+                <span class="n">options</span> <span class="o">=</span> <span class="n">base_options</span>
+        <span class="c1"># Saving all options to class attribute, this will be used for</span>
+        <span class="c1"># instantiating of the specific Action.</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;base_options&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span>
+
+        <span class="k">return</span> <span class="nb">type</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">base_options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Adding cls.base_options to each init call.</span>
+        <span class="n">klass</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">BaseActionMetaClass</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__call__</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">cls</span><span class="o">.</span><span class="n">base_options</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">klass</span>
+
+</div>
+<span class="nd">@six.add_metaclass</span><span class="p">(</span><span class="n">BaseActionMetaClass</span><span class="p">)</span>
+<div class="viewcode-block" id="BaseAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction">[docs]</a><span class="k">class</span> <span class="nc">BaseAction</span><span class="p">(</span><span class="n">html</span><span class="o">.</span><span class="n">HTMLElement</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Common base class for all ``Action`` classes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datum</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;datum&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handles_multiple</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;handles_multiple&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requires_input</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;requires_input&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preempt</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;preempt&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy_rules</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;policy_rules&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseAction.data_type_matched"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.data_type_matched">[docs]</a>    <span class="k">def</span> <span class="nf">data_type_matched</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method to see if the action is allowed for a certain type of data.</span>
+<span class="sd">        Only affects mixed data type tables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">datum</span><span class="p">:</span>
+            <span class="n">action_data_types</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;allowed_data_types&quot;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="c1"># If the data types of this action is empty, we assume it accepts</span>
+            <span class="c1"># all kinds of data and this method will return True.</span>
+            <span class="k">if</span> <span class="n">action_data_types</span><span class="p">:</span>
+                <span class="n">datum_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">data_type_name</span><span class="p">,</span>
+                                     <span class="bp">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">datum_type</span> <span class="ow">and</span> <span class="p">(</span><span class="n">datum_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">action_data_types</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="BaseAction.get_policy_target"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.get_policy_target">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provide the target for a policy request.</span>
+
+<span class="sd">        This method is meant to be overridden to return target details when</span>
+<span class="sd">        one of the policy checks requires them.  E.g., {&quot;user_id&quot;: datum.id}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</div>
+<div class="viewcode-block" id="BaseAction.allowed"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether this action is allowed for the current request.</span>
+
+<span class="sd">        This method is meant to be overridden with more specific checks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+    <span class="k">def</span> <span class="nf">_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">policy_check</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;POLICY_CHECK_FUNCTION&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">policy_check</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy_rules</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_policy_target</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">policy_check</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policy_rules</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowed</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseAction.update"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allows per-action customization based on current conditions.</span>
+
+<span class="sd">        This is particularly useful when you wish to create a &quot;toggle&quot;</span>
+<span class="sd">        action that will be rendered differently based on the value of an</span>
+<span class="sd">        attribute on the current row&#39;s data.</span>
+
+<span class="sd">        By default this method is a no-op.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="BaseAction.get_default_classes"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.get_default_classes">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of the default classes for the action. Defaults to</span>
+<span class="sd">        ``[&quot;btn&quot;, &quot;btn-default&quot;, &quot;btn-sm&quot;]``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;ACTION_CSS_CLASSES&quot;</span><span class="p">,</span> <span class="n">ACTION_CSS_CLASSES</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BaseAction.get_default_attrs"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.get_default_attrs">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of the default HTML attributes for the action.</span>
+<span class="sd">        Defaults to returning an ``id`` attribute with the value</span>
+<span class="sd">        ``{{ table.name }}__action_{{ action.name }}__{{ creation counter }}``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">datum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="s2">&quot;row_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datum</span><span class="p">),</span>
+                    <span class="s2">&quot;action_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;action_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">STRING_SEPARATOR</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">)}</span>
+</div>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseAction.associate_with_table"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BaseAction.associate_with_table">[docs]</a>    <span class="k">def</span> <span class="nf">associate_with_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
+
+</div></div>
+<div class="viewcode-block" id="Action"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.Action">[docs]</a><span class="k">class</span> <span class="nc">Action</span><span class="p">(</span><span class="n">BaseAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents an action which can be taken on this table&#39;s data.</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        Required. The short name or &quot;slug&quot; representing this</span>
+<span class="sd">        action. This name should not be changed at runtime.</span>
+
+<span class="sd">    .. attribute:: verbose_name</span>
+
+<span class="sd">        A descriptive name used for display purposes. Defaults to the</span>
+<span class="sd">        value of ``name`` with the first letter of each word capitalized.</span>
+
+<span class="sd">    .. attribute:: verbose_name_plural</span>
+
+<span class="sd">        Used like ``verbose_name`` in cases where ``handles_multiple`` is</span>
+<span class="sd">        ``True``. Defaults to ``verbose_name`` with the letter &quot;s&quot; appended.</span>
+
+<span class="sd">    .. attribute:: method</span>
+
+<span class="sd">        The HTTP method for this action. Defaults to ``POST``. Other methods</span>
+<span class="sd">        may or may not succeed currently.</span>
+
+<span class="sd">    .. attribute:: requires_input</span>
+
+<span class="sd">        Boolean value indicating whether or not this action can be taken</span>
+<span class="sd">        without any additional input (e.g. an object id). Defaults to ``True``.</span>
+
+<span class="sd">    .. attribute:: preempt</span>
+
+<span class="sd">        Boolean value indicating whether this action should be evaluated in</span>
+<span class="sd">        the period after the table is instantiated but before the data has</span>
+<span class="sd">        been loaded.</span>
+
+<span class="sd">        This can allow actions which don&#39;t need access to the full table data</span>
+<span class="sd">        to bypass any API calls and processing which would otherwise be</span>
+<span class="sd">        required to load the table.</span>
+
+<span class="sd">    .. attribute:: allowed_data_types</span>
+
+<span class="sd">        A list that contains the allowed data types of the action.  If the</span>
+<span class="sd">        datum&#39;s type is in this list, the action will be shown on the row</span>
+<span class="sd">        for the datum.</span>
+
+<span class="sd">        Default to be an empty list (``[]``). When set to empty, the action</span>
+<span class="sd">        will accept any kind of data.</span>
+
+<span class="sd">    .. attribute:: policy_rules</span>
+
+<span class="sd">        list of scope and rule tuples to do policy checks on, the</span>
+<span class="sd">        composition of which is (scope, rule)</span>
+
+<span class="sd">            scope: service type managing the policy for action</span>
+<span class="sd">            rule: string representing the action to be checked</span>
+
+<span class="sd">            for a policy that requires a single rule check:</span>
+<span class="sd">                policy_rules should look like</span>
+<span class="sd">                    &quot;((&quot;compute&quot;, &quot;compute:create_instance&quot;),)&quot;</span>
+<span class="sd">            for a policy that requires multiple rule checks:</span>
+<span class="sd">                rules should look like</span>
+<span class="sd">                    &quot;((&quot;identity&quot;, &quot;identity:list_users&quot;),</span>
+<span class="sd">                      (&quot;identity&quot;, &quot;identity:list_roles&quot;))&quot;</span>
+
+<span class="sd">    At least one of the following methods must be defined:</span>
+
+<span class="sd">    .. method:: single(self, data_table, request, object_id)</span>
+
+<span class="sd">        Handler for a single-object action.</span>
+
+<span class="sd">    .. method:: multiple(self, data_table, request, object_ids)</span>
+
+<span class="sd">        Handler for multi-object actions.</span>
+
+<span class="sd">    .. method:: handle(self, data_table, request, object_ids)</span>
+
+<span class="sd">        If a single function can work for both single-object and</span>
+<span class="sd">        multi-object cases then simply providing a ``handle`` function</span>
+<span class="sd">        will internally route both ``single`` and ``multiple`` requests</span>
+<span class="sd">        to ``handle`` with the calls from ``single`` being transformed</span>
+<span class="sd">        into a list containing only the single object id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">multiple_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">handle_func</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">attrs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Action</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">requires_input</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;requires_input&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose_name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose_name_plural&#39;</span><span class="p">,</span>
+                                              <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_data_types</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowed_data_types&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icon</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;icon&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="c1"># Don&#39;t set these if they&#39;re None</span>
+        <span class="k">if</span> <span class="n">single_func</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">single</span> <span class="o">=</span> <span class="n">single_func</span>
+        <span class="k">if</span> <span class="n">multiple_func</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span> <span class="o">=</span> <span class="n">multiple_func</span>
+        <span class="k">if</span> <span class="n">handle_func</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle</span> <span class="o">=</span> <span class="n">handle_func</span>
+
+        <span class="c1"># Ensure we have the appropriate methods</span>
+        <span class="n">has_handler</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;handle&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">)</span>
+        <span class="n">has_single</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;single&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">single</span><span class="p">)</span>
+        <span class="n">has_multiple</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;multiple&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiple</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_handler</span> <span class="ow">or</span> <span class="n">has_multiple</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handles_multiple</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_handler</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">has_single</span> <span class="ow">or</span> <span class="n">has_multiple</span><span class="p">):</span>
+            <span class="n">cls_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;You must define either a &quot;handle&quot; &#39;</span>
+                                      <span class="s1">&#39;method or a &quot;single&quot; or &quot;multiple&quot; &#39;</span>
+                                      <span class="s1">&#39;method on </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="n">cls_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_single</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">object_id</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">data_table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="p">[</span><span class="n">object_id</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">single</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">single</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_multiple</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">handles_multiple</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">multiple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">object_ids</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">data_table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">object_ids</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">MethodType</span><span class="p">(</span><span class="n">multiple</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Action.get_param_name"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.Action.get_param_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_param_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the full POST parameter name for this action.</span>
+
+<span class="sd">        Defaults to</span>
+<span class="sd">        ``{{ table.name }}__{{ action.name }}``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;__&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="LinkAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.LinkAction">[docs]</a><span class="k">class</span> <span class="nc">LinkAction</span><span class="p">(</span><span class="n">BaseAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A table action which is simply a link rather than a form POST.</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        Required. The short name or &quot;slug&quot; representing this</span>
+<span class="sd">        action. This name should not be changed at runtime.</span>
+
+<span class="sd">    .. attribute:: verbose_name</span>
+
+<span class="sd">        A string which will be rendered as the link text. (Required)</span>
+
+<span class="sd">    .. attribute:: url</span>
+
+<span class="sd">        A string or a callable which resolves to a url to be used as the link</span>
+<span class="sd">        target. You must either define the ``url`` attribute or override</span>
+<span class="sd">        the ``get_link_url`` method on the class.</span>
+
+<span class="sd">    .. attribute:: allowed_data_types</span>
+
+<span class="sd">        A list that contains the allowed data types of the action.  If the</span>
+<span class="sd">        datum&#39;s type is in this list, the action will be shown on the row</span>
+<span class="sd">        for the datum.</span>
+
+<span class="sd">        Defaults to be an empty list (``[]``). When set to empty, the action</span>
+<span class="sd">        will accept any kind of data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># class attribute name is used for ordering of Actions in table</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;link&quot;</span>
+    <span class="n">ajax</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LinkAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s2">&quot;GET&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bound_url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bound_url&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose_name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">title</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowed_data_types</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowed_data_types&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icon</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;icon&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose_name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;A LinkAction object must have a &#39;</span>
+                                      <span class="s1">&#39;verbose_name attribute.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ajax</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;ajax-update&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="LinkAction.get_ajax_update_url"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.LinkAction.get_ajax_update_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_ajax_update_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">table_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span>
+            <span class="n">OrderedDict</span><span class="p">([(</span><span class="s2">&quot;action&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">)])</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">?</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">table_url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LinkAction.render"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.LinkAction.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s2">&quot;horizon/common/_data_table_table_action.html&quot;</span><span class="p">,</span>
+                                <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="LinkAction.associate_with_table"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.LinkAction.associate_with_table">[docs]</a>    <span class="k">def</span> <span class="nf">associate_with_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LinkAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">associate_with_table</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ajax</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;data-update-url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ajax_update_url</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="LinkAction.get_link_url"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.LinkAction.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the final URL based on the value of ``url``.</span>
+
+<span class="sd">        If ``url`` is callable it will call the function.</span>
+<span class="sd">        If not, it will then try to call ``reverse`` on ``url``.</span>
+<span class="sd">        Failing that, it will simply return the value of ``url`` as-is.</span>
+
+<span class="sd">        When called for a row action, the current row data object will be</span>
+<span class="sd">        passed as the first parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;A LinkAction class must have a &#39;</span>
+                                      <span class="s1">&#39;url attribute or define its own &#39;</span>
+                                      <span class="s1">&#39;get_link_url method.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">datum</span><span class="p">:</span>
+                <span class="n">obj_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">datum</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">obj_id</span><span class="p">,))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">urlresolvers</span><span class="o">.</span><span class="n">NoReverseMatch</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;No reverse found for &quot;</span><span class="si">%s</span><span class="s1">&quot;: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span>
+
+</div></div>
+<div class="viewcode-block" id="FilterAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FilterAction">[docs]</a><span class="k">class</span> <span class="nc">FilterAction</span><span class="p">(</span><span class="n">BaseAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A base class representing a filter action for a table.</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        The short name or &quot;slug&quot; representing this action. Defaults to</span>
+<span class="sd">        ``&quot;filter&quot;``.</span>
+
+<span class="sd">    .. attribute:: verbose_name</span>
+
+<span class="sd">        A descriptive name used for display purposes. Defaults to the</span>
+<span class="sd">        value of ``name`` with the first letter of each word capitalized.</span>
+
+<span class="sd">    .. attribute:: param_name</span>
+
+<span class="sd">        A string representing the name of the request parameter used for the</span>
+<span class="sd">        search term. Default: ``&quot;q&quot;``.</span>
+
+<span class="sd">    .. attribute:: filter_type</span>
+
+<span class="sd">        A string representing the type of this filter. If this is set to</span>
+<span class="sd">        ``&quot;server&quot;`` then ``filter_choices`` must also be provided.</span>
+<span class="sd">        Default: ``&quot;query&quot;``.</span>
+
+<span class="sd">    .. attribute:: filter_choices</span>
+
+<span class="sd">        Required for server type filters. A tuple of tuples representing the</span>
+<span class="sd">        filter options. Tuple composition should evaluate to (string, string,</span>
+<span class="sd">        boolean), representing the filter parameter, display value, and whether</span>
+<span class="sd">        or not it should be applied to the API request as an API query</span>
+<span class="sd">        attribute. API type filters do not need to be accounted for in the</span>
+<span class="sd">        filter method since the API will do the filtering. However, server</span>
+<span class="sd">        type filters in general will need to be performed in the filter method.</span>
+<span class="sd">        By default this attribute is not provided.</span>
+
+<span class="sd">    .. attribute:: needs_preloading</span>
+
+<span class="sd">        If True, the filter function will be called for the initial</span>
+<span class="sd">        GET request with an empty ``filter_string``, regardless of the</span>
+<span class="sd">        value of ``method``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO(gabriel): The method for a filter action should be a GET,</span>
+    <span class="c1"># but given the form structure of the table that&#39;s currently impossible.</span>
+    <span class="c1"># At some future date this needs to be reworked to get the filter action</span>
+    <span class="c1"># separated from the table&#39;s POST form.</span>
+
+    <span class="c1"># class attribute name is used for ordering of Actions in table</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;filter&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FilterAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose_name&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Filter&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter_type&#39;</span><span class="p">,</span> <span class="s2">&quot;query&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_choices</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter_choices&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">needs_preloading</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;needs_preloading&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">param_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;param_name&#39;</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;search&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;server&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_choices</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s1">&#39;A FilterAction object with the &#39;</span>
+                <span class="s1">&#39;filter_type attribute set to &quot;server&quot; must also have a &#39;</span>
+                <span class="s1">&#39;filter_choices attribute.&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FilterAction.get_param_name"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FilterAction.get_param_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_param_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the full query parameter name for this action.</span>
+
+<span class="sd">        Defaults to</span>
+<span class="sd">        ``{{ table.name }}__{{ action.name }}__{{ action.param_name }}``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;__&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_name</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="FilterAction.assign_type_string"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FilterAction.assign_type_string">[docs]</a>    <span class="k">def</span> <span class="nf">assign_type_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">type_string</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">datum</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">datum</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">data_type_name</span><span class="p">,</span> <span class="n">type_string</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="FilterAction.data_type_filter"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FilterAction.data_type_filter">[docs]</a>    <span class="k">def</span> <span class="nf">data_type_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="n">filtered_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">data_types</span><span class="p">:</span>
+            <span class="n">func_name</span> <span class="o">=</span> <span class="s2">&quot;filter_</span><span class="si">%s</span><span class="s2">_data&quot;</span> <span class="o">%</span> <span class="n">data_type</span>
+            <span class="n">filter_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_func</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">filter_func</span><span class="p">):</span>
+                <span class="c1"># The check of filter function implementation should happen</span>
+                <span class="c1"># in the __init__. However, the current workflow of DataTable</span>
+                <span class="c1"># and actions won&#39;t allow it. Need to be fixed in the future.</span>
+                <span class="n">cls_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;You must define a </span><span class="si">%s</span><span class="s2"> method &quot;</span>
+                                          <span class="s2">&quot;for </span><span class="si">%s</span><span class="s2"> data type in </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span>
+                                          <span class="p">(</span><span class="n">func_name</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">cls_name</span><span class="p">))</span>
+            <span class="n">_data</span> <span class="o">=</span> <span class="n">filter_func</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assign_type_string</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">_data</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
+            <span class="n">filtered_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filtered_data</span>
+</div>
+<div class="viewcode-block" id="FilterAction.filter"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides the actual filtering logic.</span>
+
+<span class="sd">        This method must be overridden by subclasses and return</span>
+<span class="sd">        the filtered data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">data</span>
+</div>
+<div class="viewcode-block" id="FilterAction.is_api_filter"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FilterAction.is_api_filter">[docs]</a>    <span class="k">def</span> <span class="nf">is_api_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_field</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine if the given filter field should be used as an</span>
+<span class="sd">        API filter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">==</span> <span class="s1">&#39;server&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">choice</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_choices</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">choice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">filter_field</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span>
+                        <span class="n">choice</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">True</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="NameFilterAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.NameFilterAction">[docs]</a><span class="k">class</span> <span class="nc">NameFilterAction</span><span class="p">(</span><span class="n">FilterAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A filter action for name property.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NameFilterAction.filter"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.NameFilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">items</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Naive case-insensitive search.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span>
+                <span class="k">if</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+
+</div></div>
+<div class="viewcode-block" id="FixedFilterAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FixedFilterAction">[docs]</a><span class="k">class</span> <span class="nc">FixedFilterAction</span><span class="p">(</span><span class="n">FilterAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A filter action with fixed buttons.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FixedFilterAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filter_type&#39;</span><span class="p">,</span> <span class="s2">&quot;fixed&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">needs_preloading</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;needs_preloading&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_buttons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_fixed_buttons</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+<div class="viewcode-block" id="FixedFilterAction.filter"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FixedFilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_string</span> <span class="o">=</span> <span class="n">filter_string</span>
+        <span class="n">categories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorize</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">images</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">categories</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">categories</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">button</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_buttons</span><span class="p">:</span>
+            <span class="n">button</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="n">button</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_string</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">images</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">[</span><span class="n">filter_string</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="FixedFilterAction.get_fixed_buttons"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FixedFilterAction.get_fixed_buttons">[docs]</a>    <span class="k">def</span> <span class="nf">get_fixed_buttons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of dictionaries describing the fixed buttons</span>
+<span class="sd">        to use for filtering.</span>
+
+<span class="sd">        Each list item should be a dict with the following keys:</span>
+
+<span class="sd">        * ``text``: Text to display on the button</span>
+<span class="sd">        * ``icon``: Icon class for icon element (inserted before text).</span>
+<span class="sd">        * ``value``: Value returned when the button is clicked. This value is</span>
+<span class="sd">          passed to ``filter()`` as ``filter_string``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="FixedFilterAction.categorize"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.FixedFilterAction.categorize">[docs]</a>    <span class="k">def</span> <span class="nf">categorize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">images</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override to separate images into categories.</span>
+
+<span class="sd">        Return a dict with a key for the value of each fixed button,</span>
+<span class="sd">        and a value that is a list of images in that category.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+</div></div>
+<div class="viewcode-block" id="BatchAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BatchAction">[docs]</a><span class="k">class</span> <span class="nc">BatchAction</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A table action which takes batch action on one or more</span>
+<span class="sd">    objects. This action should not require user input on a</span>
+<span class="sd">    per-object basis.</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">       An internal name for this action.</span>
+
+<span class="sd">    .. method:: action_present</span>
+
+<span class="sd">       Method accepting an integer/long parameter and returning the display</span>
+<span class="sd">       forms of the name properly pluralised (depending on the integer) and</span>
+<span class="sd">       translated in a string or tuple/list.</span>
+
+<span class="sd">    .. attribute:: action_present (PendingDeprecation)</span>
+
+<span class="sd">       String or tuple/list. The display forms of the name.</span>
+<span class="sd">       Should be a transitive verb, capitalized and translated. (&quot;Delete&quot;,</span>
+<span class="sd">       &quot;Rotate&quot;, etc.) If tuple or list - then setting</span>
+<span class="sd">       self.current_present_action = n will set the current active item</span>
+<span class="sd">       from the list(action_present[n])</span>
+
+<span class="sd">       You can pass a complete action name including &#39;data_type&#39; by specifying</span>
+<span class="sd">       &#39;%(data_type)s&#39; substitution in action_present (&quot;Delete %(data_type)s&quot;).</span>
+<span class="sd">       Otherwise a complete action name is a format of &quot;&lt;action&gt; &lt;data_type&gt;&quot;.</span>
+<span class="sd">       &lt;data_type&gt; is determined based on the number of items.</span>
+<span class="sd">       By passing a complete action name you allow translators to control</span>
+<span class="sd">       the order of words as they want.</span>
+
+<span class="sd">       NOTE: action_present attribute is bad for translations and should be</span>
+<span class="sd">       avoided. Please use the action_present method instead.</span>
+<span class="sd">       This form is kept for legacy.</span>
+
+<span class="sd">    .. method:: action_past</span>
+
+<span class="sd">       Method accepting an integer/long parameter and returning the display</span>
+<span class="sd">       forms of the name properly pluralised (depending on the integer) and</span>
+<span class="sd">       translated in a string or tuple/list.</span>
+
+<span class="sd">    .. attribute:: action_past (PendingDeprecation)</span>
+
+<span class="sd">       String or tuple/list. The past tense of action_present. (&quot;Deleted&quot;,</span>
+<span class="sd">       &quot;Rotated&quot;, etc.) If tuple or list - then</span>
+<span class="sd">       setting self.current_past_action = n will set the current active item</span>
+<span class="sd">       from the list(action_past[n])</span>
+
+<span class="sd">       NOTE: action_past attribute is bad for translations and should be</span>
+<span class="sd">       avoided. Please use the action_past method instead.</span>
+<span class="sd">       This form is kept for legacy.</span>
+
+<span class="sd">    .. attribute:: data_type_singular</span>
+
+<span class="sd">       Optional display name (if the data_type method is not defined) for the</span>
+<span class="sd">       type of data that receives the action. (&quot;Key Pair&quot;, &quot;Floating IP&quot;, etc.)</span>
+
+<span class="sd">    .. attribute:: data_type_plural</span>
+
+<span class="sd">       Optional plural word (if the data_type method is not defined) for the</span>
+<span class="sd">       type of data being acted on. Defaults to appending &#39;s&#39;. Relying on the</span>
+<span class="sd">       default is bad for translations and should not be done, so it&#39;s absence</span>
+<span class="sd">       will raise a DeprecationWarning. It is currently kept as optional for</span>
+<span class="sd">       legacy code.</span>
+
+<span class="sd">       NOTE: data_type_singular and data_type_plural attributes are bad for</span>
+<span class="sd">       translations and should be avoided. Please use the action_present and</span>
+<span class="sd">       action_past methods. This form is kept for legacy.</span>
+
+<span class="sd">    .. attribute:: success_url</span>
+
+<span class="sd">       Optional location to redirect after completion of the delete</span>
+<span class="sd">       action. Defaults to the current page.</span>
+
+<span class="sd">    .. attribute:: help_text</span>
+
+<span class="sd">       Optional message for providing an appropriate help text for</span>
+<span class="sd">       the horizon user.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;This action cannot be undone.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BatchAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">action_present_method</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;action_present&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_present</span><span class="p">):</span>
+                <span class="n">action_present_method</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="ne">PendingDeprecationWarning</span><span class="p">(</span>
+                    <span class="s1">&#39;The </span><span class="si">%s</span><span class="s1"> BatchAction class must have an action_present &#39;</span>
+                    <span class="s1">&#39;method instead of attribute.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="p">))</span>
+
+        <span class="n">action_past_method</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;action_past&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_past</span><span class="p">):</span>
+                <span class="n">action_past_method</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="ne">PendingDeprecationWarning</span><span class="p">(</span>
+                    <span class="s1">&#39;The </span><span class="si">%s</span><span class="s1"> BatchAction class must have an action_past &#39;</span>
+                    <span class="s1">&#39;method instead of attribute.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="p">))</span>
+
+        <span class="n">action_methods</span> <span class="o">=</span> <span class="n">action_present_method</span> <span class="ow">and</span> <span class="n">action_past_method</span>
+        <span class="n">has_action_method</span> <span class="o">=</span> <span class="n">action_present_method</span> <span class="ow">or</span> <span class="n">action_past_method</span>
+
+        <span class="k">if</span> <span class="n">has_action_method</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">action_methods</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s1">&#39;The </span><span class="si">%s</span><span class="s1"> BatchAction class must have both action_past and&#39;</span>
+                <span class="s1">&#39;action_present methods.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">action_methods</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_type_singular&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="s1">&#39;The </span><span class="si">%s</span><span class="s1"> BatchAction class must have a data_type_singular &#39;</span>
+                    <span class="s1">&#39;attribute when action_past and action_present attributes &#39;</span>
+                    <span class="s1">&#39;are used.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_type_singular</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_type_singular&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_type_plural</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data_type_plural&#39;</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">data_type_singular</span> <span class="o">+</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+
+        <span class="c1"># TODO(ygbo): get rid of self.use_action_method once action_present and</span>
+        <span class="c1"># action_past are changed to methods handling plurals.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_action_method</span> <span class="o">=</span> <span class="n">action_methods</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;success_url&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="c1"># If setting a default name, don&#39;t initialize it too early</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;verbose_name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;verbose_name_plural&#39;</span><span class="p">,</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="s1">&#39;plural&#39;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_present_action</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_past_action</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Keep record of successfully handled objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">success_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;help_text&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">help_text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># Override the default internal action method to prevent batch</span>
+        <span class="c1"># actions from appearing on tables with no data.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">datum</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">BatchAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_allowed</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_action_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">past</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds combinations like &#39;Delete Object&#39; and &#39;Deleted</span>
+<span class="sd">        Objects&#39; based on the number of items and `past` flag.</span>
+
+<span class="sd">        :param items:</span>
+
+<span class="sd">            A list or tuple of items (or container with a __len__ method) to</span>
+<span class="sd">            count the number of concerned items for which this method is</span>
+<span class="sd">            called.</span>
+<span class="sd">            When this method is called for a single item (by the BatchAction</span>
+<span class="sd">            itself), this parameter can be omitted and the number of items</span>
+<span class="sd">            will be considered as &quot;one&quot;.</span>
+<span class="sd">            If we want to evaluate to &quot;zero&quot; this parameter must not be omitted</span>
+<span class="sd">            (and should be an empty container).</span>
+
+<span class="sd">        :param past:</span>
+
+<span class="sd">            Boolean flag indicating if the action took place in the past.</span>
+<span class="sd">            By default a present action is considered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">action_type</span> <span class="o">=</span> <span class="s2">&quot;past&quot;</span> <span class="k">if</span> <span class="n">past</span> <span class="k">else</span> <span class="s2">&quot;present&quot;</span>
+        <span class="k">if</span> <span class="n">items</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c1"># Called without items parameter (by a single instance.)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+
+        <span class="c1"># TODO(ygbo): get rid of self.use_action_method once action_present and</span>
+        <span class="c1"># action_past are changed to methods handling plurals.</span>
+        <span class="n">action_attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;action_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">action_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_action_method</span><span class="p">:</span>
+            <span class="n">action_attr</span> <span class="o">=</span> <span class="n">action_attr</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action_attr</span><span class="p">,</span> <span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">,</span> <span class="n">Promise</span><span class="p">)):</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">action_attr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">toggle_selection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;current_</span><span class="si">%s</span><span class="s2">_action&quot;</span> <span class="o">%</span> <span class="n">action_type</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">action_attr</span><span class="p">[</span><span class="n">toggle_selection</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_action_method</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">action</span>
+        <span class="c1"># TODO(ygbo): get rid of all this bellow once action_present and</span>
+        <span class="c1"># action_past are changed to methods handling plurals.</span>
+        <span class="n">data_type</span> <span class="o">=</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_type_singular</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_type_plural</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%(data_type)s</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">action</span><span class="p">:</span>
+            <span class="c1"># If full action string is specified, use action as format string.</span>
+            <span class="n">msgstr</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">action_type</span> <span class="o">==</span> <span class="s2">&quot;past&quot;</span><span class="p">:</span>
+                <span class="n">msgstr</span> <span class="o">=</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">u&quot;past&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%(action)s</span><span class="s2"> </span><span class="si">%(data_type)s</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msgstr</span> <span class="o">=</span> <span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">u&quot;present&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%(action)s</span><span class="s2"> </span><span class="si">%(data_type)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">msgstr</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span> <span class="s1">&#39;data_type&#39;</span><span class="p">:</span> <span class="n">data_type</span><span class="p">}</span>
+
+<div class="viewcode-block" id="BatchAction.action"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BatchAction.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Required. Accepts a single object id and performs the specific</span>
+<span class="sd">        action.</span>
+
+<span class="sd">        Return values are discarded, errors raised are caught and logged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="BatchAction.update"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BatchAction.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Switches the action verbose name, if needed.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;action_present&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="s1">&#39;plural&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="BatchAction.get_success_url"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BatchAction.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the URL to redirect to after a successful action.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_url</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="BatchAction.get_default_attrs"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BatchAction.get_default_attrs">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of the default HTML attributes for the action.&quot;&quot;&quot;</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">BatchAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_default_attrs</span><span class="p">()</span>
+        <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;data-batch-action&#39;</span><span class="p">:</span> <span class="s1">&#39;true&#39;</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">attrs</span>
+</div>
+<div class="viewcode-block" id="BatchAction.handle"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.BatchAction.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_ids</span><span class="p">):</span>
+        <span class="n">action_success</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">action_failure</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">action_not_allowed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">datum_id</span> <span class="ow">in</span> <span class="n">obj_ids</span><span class="p">:</span>
+            <span class="n">datum</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">datum_id</span><span class="p">)</span>
+            <span class="n">datum_display</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get_object_display</span><span class="p">(</span><span class="n">datum</span><span class="p">)</span> <span class="ow">or</span> <span class="n">datum_id</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">table</span><span class="o">.</span><span class="n">_filter_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+                <span class="n">action_not_allowed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datum_display</span><span class="p">)</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">u&#39;Permission denied to </span><span class="si">%s</span><span class="s1">: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span>
+                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="n">past</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+                             <span class="n">datum_display</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum_id</span><span class="p">)</span>
+                <span class="c1"># Call update to invoke changes if needed</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">)</span>
+                <span class="n">action_success</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datum_display</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">success_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datum_id</span><span class="p">)</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">u&#39;</span><span class="si">%s</span><span class="s1">: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span>
+                         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="n">past</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">datum_display</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="c1"># Handle the exception but silence it since we&#39;ll display</span>
+                <span class="c1"># an aggregate error message later. Otherwise we&#39;d get</span>
+                <span class="c1"># multiple error messages displayed to the user.</span>
+                <span class="n">action_failure</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datum_display</span><span class="p">)</span>
+                <span class="n">action_description</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="n">past</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">datum_display</span><span class="p">)</span>
+                <span class="n">LOG</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s1">&#39;Action </span><span class="si">%(action)s</span><span class="s1"> Failed for </span><span class="si">%(reason)s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">{</span>
+                        <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">action_description</span><span class="p">,</span> <span class="s1">&#39;reason&#39;</span><span class="p">:</span> <span class="n">ex</span><span class="p">})</span>
+
+        <span class="c1"># Begin with success message class, downgrade to info if problems.</span>
+        <span class="n">success_message_level</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">success</span>
+        <span class="k">if</span> <span class="n">action_not_allowed</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;You are not allowed to </span><span class="si">%(action)s</span><span class="s1">: </span><span class="si">%(objs)s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="n">action_not_allowed</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+                      <span class="s2">&quot;objs&quot;</span><span class="p">:</span> <span class="n">functions</span><span class="o">.</span><span class="n">lazy_join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">,</span> <span class="n">action_not_allowed</span><span class="p">)}</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">params</span><span class="p">)</span>
+            <span class="n">success_message_level</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">info</span>
+        <span class="k">if</span> <span class="n">action_failure</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to </span><span class="si">%(action)s</span><span class="s1">: </span><span class="si">%(objs)s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="n">action_failure</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+                      <span class="s2">&quot;objs&quot;</span><span class="p">:</span> <span class="n">functions</span><span class="o">.</span><span class="n">lazy_join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">,</span> <span class="n">action_failure</span><span class="p">)}</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">params</span><span class="p">)</span>
+            <span class="n">success_message_level</span> <span class="o">=</span> <span class="n">messages</span><span class="o">.</span><span class="n">info</span>
+        <span class="k">if</span> <span class="n">action_success</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(action)s</span><span class="s1">: </span><span class="si">%(objs)s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_get_action_name</span><span class="p">(</span><span class="n">action_success</span><span class="p">,</span> <span class="n">past</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                      <span class="s2">&quot;objs&quot;</span><span class="p">:</span> <span class="n">functions</span><span class="o">.</span><span class="n">lazy_join</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="p">,</span> <span class="n">action_success</span><span class="p">)}</span>
+            <span class="n">success_message_level</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">params</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_success_url</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.DeleteAction">[docs]</a><span class="k">class</span> <span class="nc">DeleteAction</span><span class="p">(</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A table action used to perform delete operations on table data.</span>
+
+<span class="sd">    .. attribute:: name</span>
+
+<span class="sd">        A short name or &quot;slug&quot; representing this action.</span>
+<span class="sd">        Defaults to &#39;delete&#39;</span>
+
+<span class="sd">    .. method:: action_present</span>
+
+<span class="sd">        Method accepting an integer/long parameter and returning the display</span>
+<span class="sd">        forms of the name properly pluralised (depending on the integer) and</span>
+<span class="sd">        translated in a string or tuple/list.</span>
+
+<span class="sd">    .. attribute:: action_present (PendingDeprecation)</span>
+
+<span class="sd">        A string containing the transitive verb describing the delete action.</span>
+<span class="sd">        Defaults to &#39;Delete&#39;</span>
+
+<span class="sd">        NOTE: action_present attribute is bad for translations and should be</span>
+<span class="sd">        avoided. Please use the action_present method instead.</span>
+<span class="sd">        This form is kept for legacy.</span>
+
+<span class="sd">    .. method:: action_past</span>
+
+<span class="sd">        Method accepting an integer/long parameter and returning the display</span>
+<span class="sd">        forms of the name properly pluralised (depending on the integer) and</span>
+<span class="sd">        translated in a string or tuple/list.</span>
+
+<span class="sd">    .. attribute:: action_past (PendingDeprecation)</span>
+
+<span class="sd">        A string set to the past tense of action_present.</span>
+<span class="sd">        Defaults to &#39;Deleted&#39;</span>
+
+<span class="sd">        NOTE: action_past attribute is bad for translations and should be</span>
+<span class="sd">        avoided. Please use the action_past method instead.</span>
+<span class="sd">        This form is kept for legacy.</span>
+
+<span class="sd">    .. attribute:: data_type_singular (PendingDeprecation)</span>
+
+<span class="sd">        A string used to name the data to be deleted.</span>
+
+<span class="sd">    .. attribute:: data_type_plural (PendingDeprecation)</span>
+
+<span class="sd">        Optional. Plural of ``data_type_singular``.</span>
+<span class="sd">        Defaults to ``data_type_singular`` appended with an &#39;s&#39;.  Relying on</span>
+<span class="sd">        the default is bad for translations and should not be done, so it&#39;s</span>
+<span class="sd">        absence will raise a DeprecationWarning. It is currently kept as</span>
+<span class="sd">        optional for legacy code.</span>
+
+<span class="sd">        NOTE: data_type_singular and data_type_plural attributes are bad for</span>
+<span class="sd">        translations and should be avoided. Please use the action_present and</span>
+<span class="sd">        action_past methods. This form is kept for legacy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;delete&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DeleteAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;action_present&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_present</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action_present&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Delete&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;action_past&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_past</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;action_past&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Deleted&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;remove&quot;</span>
+
+<div class="viewcode-block" id="DeleteAction.action"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.DeleteAction.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Action entry point. Overrides base class&#39; action method.</span>
+
+<span class="sd">        Accepts a single object id passing it over to the delete method</span>
+<span class="sd">        responsible for the object&#39;s destruction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DeleteAction.delete"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.DeleteAction.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Required. Deletes an object referenced by obj_id.</span>
+
+<span class="sd">        Override to provide delete functionality specific to your data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="DeleteAction.get_default_classes"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.DeleteAction.get_default_classes">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Appends ``btn-danger`` to the action&#39;s default css classes.</span>
+
+<span class="sd">        This method ensures the corresponding button is highlighted</span>
+<span class="sd">        as a trigger for a potentially dangerous action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DeleteAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_default_classes</span><span class="p">()</span>
+        <span class="n">classes</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;btn-danger&quot;</span><span class="p">,)</span>
+        <span class="k">return</span> <span class="n">classes</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateAction"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.UpdateAction">[docs]</a><span class="k">class</span> <span class="nc">UpdateAction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A table action for cell updates by inline editing.&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;update&quot;</span>
+    <span class="n">action_present</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Update&quot;</span><span class="p">)</span>
+    <span class="n">action_past</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Updated&quot;</span><span class="p">)</span>
+    <span class="n">data_type_singular</span> <span class="o">=</span> <span class="s2">&quot;update&quot;</span>
+
+<div class="viewcode-block" id="UpdateAction.action"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.UpdateAction.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">,</span> <span class="n">cell_name</span><span class="p">,</span> <span class="n">new_cell_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_cell</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">,</span> <span class="n">cell_name</span><span class="p">,</span> <span class="n">new_cell_value</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="UpdateAction.update_cell"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.UpdateAction.update_cell">[docs]</a>    <span class="k">def</span> <span class="nf">update_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">,</span> <span class="n">cell_name</span><span class="p">,</span> <span class="n">new_cell_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method for saving data of the cell.</span>
+
+<span class="sd">        This method must implements saving logic of the inline edited table</span>
+<span class="sd">        cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+</div>
+<div class="viewcode-block" id="UpdateAction.allowed"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.tables.actions.html#horizon.tables.actions.UpdateAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether updating is allowed for the current request.</span>
+
+<span class="sd">        This method is meant to be overridden with more specific checks.</span>
+<span class="sd">        Data of the row and of the cell are passed to the method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">True</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../horizon.html" >horizon</a> &raquo;</li>
+          <li><a href="../tables.html" accesskey="U">horizon.tables</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

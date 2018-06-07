@@ -1,0 +1,806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.project.vpn.tables Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.project.vpn.workflows Module" href="openstack_dashboard.dashboards.project.vpn.workflows.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.project.vpn.urls Module" href="openstack_dashboard.dashboards.project.vpn.urls.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-project-vpn-tables-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.project.vpn.tables</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-project-vpn-tables-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">AddIKEPolicyLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#AddIKEPolicyLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'create_ikepolicy'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'addikepolicy', 'url': 'horizon:project:vpn:addikepolicy', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b5887c90&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'addikepolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'create_ikepolicy'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:vpn:addikepolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b5887c90&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">AddIPSecPolicyLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#AddIPSecPolicyLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'create_ipsecpolicy'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'addipsecpolicy', 'url': 'horizon:project:vpn:addipsecpolicy', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b5887a50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'addipsecpolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'create_ipsecpolicy'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:vpn:addipsecpolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b5887a50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">AddIPSecSiteConnectionLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#AddIPSecSiteConnectionLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'create_ipsec_site_connection'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'addipsecsiteconnection', 'url': 'horizon:project:vpn:addipsecsiteconnection', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9026d50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'addipsecsiteconnection'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'create_ipsec_site_connection'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:vpn:addipsecsiteconnection'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9026d50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">AddVPNServiceLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#AddVPNServiceLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'create_vpnservice'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'addvpnservice', 'url': 'horizon:project:vpn:addvpnservice', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9026150&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'addvpnservice'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'create_vpnservice'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:project:vpn:addvpnservice'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9026150&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">DeleteIKEPolicyLink</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIKEPolicyLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIKEPolicyLink.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIKEPolicyLink.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIKEPolicyLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('network', 'delete_ikepolicy'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3b4ea7848&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'deleteikepolicy', 'action_present': &lt;staticmethod object at 0x7ff3b5006a98&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b50841d8&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3bea06e60&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'deleteikepolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'delete_ikepolicy'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">DeleteIPSecPolicyLink</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecPolicyLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecPolicyLink.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecPolicyLink.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecPolicyLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('network', 'delete_ipsecpolicy'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3b4ea79b0&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'deleteipsecpolicy', 'action_present': &lt;staticmethod object at 0x7ff3b50840f8&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b4eb5fd8&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3bea06e60&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'deleteipsecpolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'delete_ipsecpolicy'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">DeleteIPSecSiteConnectionLink</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecSiteConnectionLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecSiteConnectionLink.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteIPSecSiteConnectionLink.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('network', 'delete_ipsec_site_connection'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'deleteipsecsiteconnection', 'action_present': &lt;staticmethod object at 0x7ff3b4eb5d38&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b4eb5ef8&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3bea06e60&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'deleteipsecsiteconnection'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'delete_ipsec_site_connection'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">DeleteVPNServiceLink</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteVPNServiceLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteVPNServiceLink.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteVPNServiceLink.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#DeleteVPNServiceLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('network', 'delete_vpnservice'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3b4ea76e0&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'deletevpnservice', 'action_present': &lt;staticmethod object at 0x7ff3b5006cc8&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b5006868&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3bea06e60&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'deletevpnservice'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'delete_vpnservice'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">IKEPoliciesTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#IKEPoliciesTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#IKEPoliciesTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'ikepoliciestable'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.UpdateIKEPolicyLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteIKEPolicyLink'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.AddIKEPolicyLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteIKEPolicyLink'&gt;, &lt;class 'horizon.tables.actions.NameFilterAction'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b62e7810&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IKEPoliciesTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('addikepolicy', &lt;AddIKEPolicyLink: addikepolicy&gt;), ('deleteikepolicy', &lt;DeleteIKEPolicyLink: deleteikepolicy&gt;), ('filter', &lt;NameFilterAction: filter&gt;), ('updateikepolicy', &lt;UpdateIKEPolicyLink: updateikepolicy&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IKEPoliciesTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('id', &lt;Column: id&gt;), ('name', &lt;Column: name&gt;), ('description', &lt;Column: description&gt;), ('auth_algorithm', &lt;Column: auth_algorithm&gt;), ('encryption_algorithm', &lt;Column: encryption_algorithm&gt;), ('pfs', &lt;Column: pfs&gt;)])</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">IPSecPoliciesTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#IPSecPoliciesTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#IPSecPoliciesTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'ipsecpoliciestable'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.UpdateIPSecPolicyLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteIPSecPolicyLink'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.AddIPSecPolicyLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteIPSecPolicyLink'&gt;, &lt;class 'horizon.tables.actions.NameFilterAction'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b61aea10&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IPSecPoliciesTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('addipsecpolicy', &lt;AddIPSecPolicyLink: addipsecpolicy&gt;), ('deleteipsecpolicy', &lt;DeleteIPSecPolicyLink: deleteipsecpolicy&gt;), ('filter', &lt;NameFilterAction: filter&gt;), ('updateipsecpolicy', &lt;UpdateIPSecPolicyLink: updateipsecpolicy&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IPSecPoliciesTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('id', &lt;Column: id&gt;), ('name', &lt;Column: name&gt;), ('description', &lt;Column: description&gt;), ('auth_algorithm', &lt;Column: auth_algorithm&gt;), ('encryption_algorithm', &lt;Column: encryption_algorithm&gt;), ('pfs', &lt;Column: pfs&gt;)])</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">IPSecSiteConnectionsTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#IPSecSiteConnectionsTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#IPSecSiteConnectionsTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'ipsecsiteconnectionstable'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.UpdateIPSecSiteConnectionLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteIPSecSiteConnectionLink'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.AddIPSecSiteConnectionLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteIPSecSiteConnectionLink'&gt;, &lt;class 'horizon.tables.actions.NameFilterAction'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b65bc110&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IPSecSiteConnectionsTable.</tt><tt class="descname">STATUS_CHOICES</tt><em class="property"> = (('Active', True), ('Down', True), ('Error', False))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IPSecSiteConnectionsTable.</tt><tt class="descname">STATUS_DISPLAY_CHOICES</tt><em class="property"> = (('Active', &lt;django.utils.functional.__proxy__ object at 0x7ff3b637ee10&gt;), ('Down', &lt;django.utils.functional.__proxy__ object at 0x7ff3b637e790&gt;), ('Error', &lt;django.utils.functional.__proxy__ object at 0x7ff3b637ec10&gt;))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IPSecSiteConnectionsTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('addipsecsiteconnection', &lt;AddIPSecSiteConnectionLink: addipsecsiteconnection&gt;), ('deleteipsecsiteconnection', &lt;DeleteIPSecSiteConnectionLink: deleteipsecsiteconnection&gt;), ('filter', &lt;NameFilterAction: filter&gt;), ('updateipsecsiteconnection', &lt;UpdateIPSecSiteConnectionLink: updateipsecsiteconnection&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">IPSecSiteConnectionsTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('id', &lt;Column: id&gt;), ('name', &lt;Column: name&gt;), ('description', &lt;Column: description&gt;), ('vpnservice_name', &lt;Column: vpnservice_name&gt;), ('ikepolicy_name', &lt;Column: ikepolicy_name&gt;), ('ipsecpolicy_name', &lt;Column: ipsecpolicy_name&gt;), ('status', &lt;Column: status&gt;)])</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">UpdateIKEPolicyLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIKEPolicyLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIKEPolicyLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'update_ikepolicy'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b4ea7c08&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b4ea7c80&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'updateikepolicy', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal', 'btn-update'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9026ad0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal', 'btn-update')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>ikepolicy</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIKEPolicyLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'updateikepolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'update_ikepolicy'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9026ad0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">UpdateIPSecPolicyLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIPSecPolicyLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIPSecPolicyLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'update_ipsecpolicy'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b4ea7cf8&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b4ea7d70&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'updateipsecpolicy', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal', 'btn-update'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b90268d0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal', 'btn-update')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>ipsecpolicy</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIPSecPolicyLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'updateipsecpolicy'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'update_ipsecpolicy'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90268d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">UpdateIPSecSiteConnectionLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIPSecSiteConnectionLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIPSecSiteConnectionLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'update_ipsec_site_connection'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b4ea7de8&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b4ea7e60&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'updateipsecsiteconnection', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal', 'btn-update'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b637e690&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal', 'btn-update')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>ipsecsiteconnection</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateIPSecSiteConnectionLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'updateipsecsiteconnection'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'update_ipsec_site_connection'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b637e690&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">UpdateVPNServiceLink</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateVPNServiceLink"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateVPNServiceLink.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.project.vpn.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'update_vpnservice'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b4ea7b18&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b4ea7b90&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'name': 'update_vpnservice', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal', 'btn-update'), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b90260d0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal', 'btn-update')</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>vpnservice</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#UpdateVPNServiceLink.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'update_vpnservice'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'update_vpnservice'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b90260d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">VPNServicesTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#VPNServicesTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#VPNServicesTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'vpnservicestable'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.UpdateVPNServiceLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteVPNServiceLink'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.project.vpn.tables.AddVPNServiceLink'&gt;, &lt;class 'openstack_dashboard.dashboards.project.vpn.tables.DeleteVPNServiceLink'&gt;, &lt;class 'horizon.tables.actions.NameFilterAction'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0c890&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">VPNServicesTable.</tt><tt class="descname">STATUS_CHOICES</tt><em class="property"> = (('Active', True), ('Down', True), ('Error', False))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">VPNServicesTable.</tt><tt class="descname">STATUS_DISPLAY_CHOICES</tt><em class="property"> = (('Active', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0cf90&gt;), ('Down', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0c810&gt;), ('Error', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0ce10&gt;), ('Created', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0c050&gt;), ('Pending_Create', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0c2d0&gt;), ('Pending_Update', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0cad0&gt;), ('Pending_Delete', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0c190&gt;), ('Inactive', &lt;django.utils.functional.__proxy__ object at 0x7ff3b7d0c150&gt;))</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">VPNServicesTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('addvpnservice', &lt;AddVPNServiceLink: addvpnservice&gt;), ('deletevpnservice', &lt;DeleteVPNServiceLink: deletevpnservice&gt;), ('filter', &lt;NameFilterAction: filter&gt;), ('update_vpnservice', &lt;UpdateVPNServiceLink: update_vpnservice&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">VPNServicesTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('id', &lt;Column: id&gt;), ('name', &lt;Column: name&gt;), ('description', &lt;Column: description&gt;), ('local_ips', &lt;Column: local_ips&gt;), ('subnet_name', &lt;Column: subnet_name&gt;), ('router_name', &lt;Column: router_name&gt;), ('status', &lt;Column: status&gt;)])</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.project.vpn.tables.</tt><tt class="descname">get_local_ips</tt><big>(</big><em>vpn</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/project/vpn/tables.html#get_local_ips"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.vpn.urls.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.vpn.urls</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.project.vpn.workflows.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.project.vpn.workflows</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.tables.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.vpn.workflows.html" title="The openstack_dashboard.dashboards.project.vpn.workflows Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.project.vpn.urls.html" title="The openstack_dashboard.dashboards.project.vpn.urls Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

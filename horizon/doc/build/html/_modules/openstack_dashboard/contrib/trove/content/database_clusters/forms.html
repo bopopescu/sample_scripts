@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.contrib.trove.content.database_clusters.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.contrib.trove.content.database_clusters.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2015 HP Software, LLC</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.debug</span> <span class="kn">import</span> <span class="n">sensitive_variables</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.trove</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">trove_api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.contrib.trove.content.databases</span> <span class="kn">import</span> <span class="n">db_capability</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LaunchForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm">[docs]</a><span class="k">class</span> <span class="nc">LaunchForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Cluster Name&quot;</span><span class="p">),</span>
+                           <span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+    <span class="n">datastore</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Datastore&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Type and version of datastore.&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span>
+        <span class="p">}))</span>
+    <span class="n">mongodb_flavor</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of instance to launch.&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+    <span class="n">vertica_flavor</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of instance to launch.&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Network attached to instance.&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">volume</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Size&quot;</span><span class="p">),</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size of the volume in GB.&quot;</span><span class="p">))</span>
+    <span class="n">root_password</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Root Password&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Password for root user.&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+    <span class="n">num_instances_vertica</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of Instances&quot;</span><span class="p">),</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of instances in the cluster. (Read only)&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+    <span class="n">num_shards</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of Shards&quot;</span><span class="p">),</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of shards. (Read only)&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+    <span class="n">num_instances_per_shards</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances Per Shard&quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of instances per shard. (Read only)&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;datastore&#39;</span><span class="p">,</span>
+        <span class="p">}))</span>
+
+    <span class="c1"># (name of field variable, label)</span>
+    <span class="n">mongodb_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;mongodb_flavor&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Flavor&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;num_shards&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Number of Shards&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;num_instances_per_shards&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Instances Per Shard&#39;</span><span class="p">))</span>
+    <span class="p">]</span>
+    <span class="n">vertica_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;num_instances_vertica&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Number of Instances&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;vertica_flavor&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Flavor&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s1">&#39;root_password&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Root Password&#39;</span><span class="p">)),</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LaunchForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;datastore&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_datastore_choices</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">populate_flavor_choices</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_network_choices</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LaunchForm.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">datastore_field_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datastore&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datastore_field_value</span><span class="p">:</span>
+            <span class="n">datastore</span> <span class="o">=</span> <span class="n">datastore_field_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_mongodb_datastore</span><span class="p">(</span><span class="n">datastore</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;num_shards&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;The number of shards must be greater than 1.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s2">&quot;num_shards&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+            <span class="k">elif</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_vertica_datastore</span><span class="p">(</span><span class="n">datastore</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vertica_flavor&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;The flavor must be specified.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s2">&quot;vertica_flavor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;root_password&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Password for root user must be specified.&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s2">&quot;root_password&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="LaunchForm.datastore_flavors"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.datastore_flavors">[docs]</a>    <span class="k">def</span> <span class="nf">datastore_flavors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datastore_name</span><span class="p">,</span> <span class="n">datastore_version</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trove_api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">datastore_flavors</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">datastore_name</span><span class="p">,</span> <span class="n">datastore_version</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Exception while obtaining flavors list&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flavors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;horizon:project:database_clusters:index&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to obtain flavors.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LaunchForm.populate_flavor_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.populate_flavor_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_flavor_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">valid_flavor</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastores</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="c1"># TODO(michayu): until capabilities lands</span>
+            <span class="k">if</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_mongodb_datastore</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">versions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastore_versions</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">versions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">version</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;inactive&quot;</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">valid_flavor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastore_flavors</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                          <span class="n">versions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">valid_flavor</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;mongodb_flavor&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                            <span class="p">[(</span><span class="n">f</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">valid_flavor</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_vertica_datastore</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">versions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastore_versions</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">versions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">version</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;inactive&quot;</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">valid_flavor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastore_flavors</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                          <span class="n">versions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">valid_flavor</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;vertica_flavor&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                            <span class="p">[(</span><span class="n">f</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">valid_flavor</span><span class="p">])</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="LaunchForm.populate_network_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.populate_network_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_network_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">network_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">is_service_enabled</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;network&#39;</span><span class="p">):</span>
+                <span class="n">tenant_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+                <span class="n">networks</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_list_for_tenant</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                               <span class="n">tenant_id</span><span class="p">)</span>
+                <span class="n">network_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">network</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">network</span><span class="o">.</span><span class="n">name_or_id</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ServiceCatalogException</span><span class="p">:</span>
+            <span class="n">network_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;horizon:project:database_clusters:index&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve networks.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">network_list</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="LaunchForm.datastores"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.datastores">[docs]</a>    <span class="k">def</span> <span class="nf">datastores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trove_api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">datastore_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Exception while obtaining datastores list&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datastores</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;horizon:project:database_clusters:index&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to obtain datastores.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LaunchForm.filter_cluster_datastores"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.filter_cluster_datastores">[docs]</a>    <span class="k">def</span> <span class="nf">filter_cluster_datastores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">datastores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastores</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="c1"># TODO(michayu): until capabilities lands</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">db_capability</span><span class="o">.</span><span class="n">is_vertica_datastore</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_mongodb_datastore</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">)):</span>
+                <span class="n">datastores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">datastores</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="LaunchForm.datastore_versions"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.datastore_versions">[docs]</a>    <span class="k">def</span> <span class="nf">datastore_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datastore</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">trove_api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">datastore_version_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">datastore</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Exception while obtaining datastore version list&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datastore_versions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;horizon:project:database_clusters:index&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to obtain datastore versions.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="LaunchForm.populate_datastore_choices"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.populate_datastore_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_datastore_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="n">datastores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_cluster_datastores</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datastores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">datastores</span><span class="p">:</span>
+                <span class="n">versions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datastore_versions</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">versions</span><span class="p">:</span>
+                    <span class="c1"># only add to choices if datastore has at least one version</span>
+                    <span class="n">version_choices</span> <span class="o">=</span> <span class="p">()</span>
+                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">versions</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s2">&quot;inactive&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">selection_text</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39; - &#39;</span> <span class="o">+</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span>
+                        <span class="n">widget_text</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span>
+                        <span class="n">version_choices</span> <span class="o">=</span> <span class="p">(</span><span class="n">version_choices</span> <span class="o">+</span>
+                                           <span class="p">((</span><span class="n">widget_text</span><span class="p">,</span> <span class="n">selection_text</span><span class="p">),))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_add_attr_to_optional_fields</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                          <span class="n">widget_text</span><span class="p">)</span>
+
+                    <span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span> <span class="o">+</span> <span class="n">version_choices</span>
+        <span class="k">return</span> <span class="n">choices</span>
+</div>
+    <span class="k">def</span> <span class="nf">_add_attr_to_optional_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datastore</span><span class="p">,</span> <span class="n">selection_text</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_mongodb_datastore</span><span class="p">(</span><span class="n">datastore</span><span class="p">):</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mongodb_fields</span>
+        <span class="k">elif</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_vertica_datastore</span><span class="p">(</span><span class="n">datastore</span><span class="p">):</span>
+            <span class="n">fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertica_fields</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="n">attr_key</span> <span class="o">=</span> <span class="s1">&#39;data-datastore-&#39;</span> <span class="o">+</span> <span class="n">selection_text</span>
+            <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">widget</span>
+            <span class="k">if</span> <span class="n">attr_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+                <span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">attr_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@sensitive_variables</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="LaunchForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.LaunchForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">datastore</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;datastore&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">datastore_version</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;datastore&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">final_flavor</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;mongodb_flavor&#39;</span><span class="p">]</span>
+            <span class="n">num_instances</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;num_instances_per_shards&#39;</span><span class="p">]</span>
+            <span class="n">root_password</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="n">db_capability</span><span class="o">.</span><span class="n">is_vertica_datastore</span><span class="p">(</span><span class="n">datastore</span><span class="p">):</span>
+                <span class="n">final_flavor</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;vertica_flavor&#39;</span><span class="p">]</span>
+                <span class="n">root_password</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;root_password&#39;</span><span class="p">]</span>
+                <span class="n">num_instances</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;num_instances_vertica&#39;</span><span class="p">]</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Launching cluster with parameters &quot;</span>
+                     <span class="s2">&quot;{name=</span><span class="si">%s</span><span class="s2">, volume=</span><span class="si">%s</span><span class="s2">, flavor=</span><span class="si">%s</span><span class="s2">, &quot;</span>
+                     <span class="s2">&quot;datastore=</span><span class="si">%s</span><span class="s2">, datastore_version=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">],</span> <span class="n">final_flavor</span><span class="p">,</span>
+                     <span class="n">datastore</span><span class="p">,</span> <span class="n">datastore_version</span><span class="p">)</span>
+
+            <span class="n">trove_api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">cluster_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                           <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                           <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">],</span>
+                                           <span class="n">final_flavor</span><span class="p">,</span>
+                                           <span class="n">num_instances</span><span class="p">,</span>
+                                           <span class="n">datastore</span><span class="o">=</span><span class="n">datastore</span><span class="p">,</span>
+                                           <span class="n">datastore_version</span><span class="o">=</span><span class="n">datastore_version</span><span class="p">,</span>
+                                           <span class="n">nics</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;network&#39;</span><span class="p">],</span>
+                                           <span class="n">root_password</span><span class="o">=</span><span class="n">root_password</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Launched cluster &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:database_clusters:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to launch cluster. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="AddShardForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.AddShardForm">[docs]</a><span class="k">class</span> <span class="nc">AddShardForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Cluster Name&quot;</span><span class="p">),</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+    <span class="n">num_shards</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of Shards&quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+    <span class="n">num_instances</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances Per Shard&quot;</span><span class="p">),</span>
+                                       <span class="n">initial</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                                       <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+                                           <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+    <span class="n">cluster_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                 <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+
+<div class="viewcode-block" id="AddShardForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.AddShardForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding shard with parameters &quot;</span>
+                     <span class="s2">&quot;{name=</span><span class="si">%s</span><span class="s2">, num_shards=</span><span class="si">%s</span><span class="s2">, num_instances=</span><span class="si">%s</span><span class="s2">, &quot;</span>
+                     <span class="s2">&quot;cluster_id=</span><span class="si">%s</span><span class="s2">}&quot;</span><span class="p">,</span>
+                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;num_shards&#39;</span><span class="p">],</span>
+                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;num_instances&#39;</span><span class="p">],</span>
+                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">])</span>
+            <span class="n">trove_api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">cluster_add_shard</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">])</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Added shard to &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:database_clusters:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to add shard. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="ResetPasswordForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.ResetPasswordForm">[docs]</a><span class="k">class</span> <span class="nc">ResetPasswordForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">cluster_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">(),</span>
+                               <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;New Password&quot;</span><span class="p">),</span>
+                               <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                               <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;New password for cluster access.&quot;</span><span class="p">))</span>
+
+    <span class="nd">@sensitive_variables</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="ResetPasswordForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.contrib.trove.content.database_clusters.forms.html#openstack_dashboard.contrib.trove.content.database_clusters.forms.ResetPasswordForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">)</span>
+        <span class="n">cluster_id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cluster_id&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">trove_api</span><span class="o">.</span><span class="n">trove</span><span class="o">.</span><span class="n">create_cluster_root</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                <span class="n">cluster_id</span><span class="p">,</span>
+                                                <span class="n">password</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Root password updated for &#39;</span>
+                                        <span class="s1">&#39;cluster &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">cluster_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:database_clusters:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to reset password. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">%</span>
+                              <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

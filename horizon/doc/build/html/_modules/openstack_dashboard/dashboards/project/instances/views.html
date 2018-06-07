@@ -1,0 +1,601 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.instances.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.instances.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 United States Government as represented by the</span>
+<span class="c1"># Administrator of the National Aeronautics and Space Administration.</span>
+<span class="c1"># All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Views for managing instances.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse_lazy</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">memoized</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">console</span> <span class="k">as</span> <span class="n">project_console</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">forms</span> <span class="k">as</span> <span class="n">project_forms</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">tables</span> <span class="k">as</span> <span class="n">project_tables</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">tabs</span> <span class="k">as</span> <span class="n">project_tabs</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">workflows</span> <span class="k">as</span> <span class="n">project_workflows</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="IndexView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.IndexView">[docs]</a><span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTableView</span><span class="p">):</span>
+    <span class="n">table_class</span> <span class="o">=</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">InstancesTable</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/index.html&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IndexView.has_more_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.IndexView.has_more_data">[docs]</a>    <span class="k">def</span> <span class="nf">has_more_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_more</span>
+</div>
+<div class="viewcode-block" id="IndexView.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.IndexView.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">project_tables</span><span class="o">.</span><span class="n">InstancesTable</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">pagination_param</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">search_opts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filters</span><span class="p">({</span><span class="s1">&#39;marker&#39;</span><span class="p">:</span> <span class="n">marker</span><span class="p">,</span> <span class="s1">&#39;paginate&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
+        <span class="c1"># Gather our instances</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_list</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                <span class="n">search_opts</span><span class="o">=</span><span class="n">search_opts</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_more</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">instances</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve instances.&#39;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">servers_update_addresses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">instances</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve IP addresses from Neutron.&#39;</span><span class="p">),</span>
+                    <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="c1"># Gather our flavors and images and correlate our instances to them</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flavors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">flavors</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># TODO(gabriel): Handle pagination.</span>
+                <span class="n">images</span><span class="p">,</span> <span class="n">more</span><span class="p">,</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_list_detailed</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="n">full_flavors</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="nb">str</span><span class="p">(</span><span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">flavor</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">])</span>
+            <span class="n">image_map</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([(</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">image</span><span class="p">)</span>
+                                    <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">])</span>
+
+            <span class="c1"># Loop through instances to get flavor info.</span>
+            <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">instances</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">):</span>
+                    <span class="c1"># Instance from image returns dict</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">image</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">image_map</span><span class="p">:</span>
+                            <span class="n">instance</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">image_map</span><span class="p">[</span><span class="n">instance</span><span class="o">.</span><span class="n">image</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]]</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">flavor</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">flavor_id</span> <span class="ow">in</span> <span class="n">full_flavors</span><span class="p">:</span>
+                        <span class="n">instance</span><span class="o">.</span><span class="n">full_flavor</span> <span class="o">=</span> <span class="n">full_flavors</span><span class="p">[</span><span class="n">flavor_id</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># If the flavor_id is not in full_flavors list,</span>
+                        <span class="c1"># get it via nova api.</span>
+                        <span class="n">instance</span><span class="o">.</span><span class="n">full_flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Unable to retrieve flavor &quot;</span><span class="si">%s</span><span class="s1">&quot; for instance &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span>
+                           <span class="o">%</span> <span class="p">(</span><span class="n">flavor_id</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instances</span>
+</div>
+<div class="viewcode-block" id="IndexView.get_filters"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.IndexView.get_filters">[docs]</a>    <span class="k">def</span> <span class="nf">get_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="p">):</span>
+        <span class="n">filter_action</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">_filter_action</span>
+        <span class="k">if</span> <span class="n">filter_action</span><span class="p">:</span>
+            <span class="n">filter_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_filter_field</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">filter_action</span><span class="o">.</span><span class="n">is_api_filter</span><span class="p">(</span><span class="n">filter_field</span><span class="p">):</span>
+                <span class="n">filter_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_filter_string</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">filter_field</span> <span class="ow">and</span> <span class="n">filter_string</span><span class="p">:</span>
+                    <span class="n">filters</span><span class="p">[</span><span class="n">filter_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_string</span>
+        <span class="k">return</span> <span class="n">filters</span>
+
+</div></div>
+<div class="viewcode-block" id="LaunchInstanceView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.LaunchInstanceView">[docs]</a><span class="k">class</span> <span class="nc">LaunchInstanceView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">LaunchInstance</span>
+
+<div class="viewcode-block" id="LaunchInstanceView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.LaunchInstanceView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">LaunchInstanceView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;project_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+        <span class="n">initial</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="console"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.console">[docs]</a><span class="k">def</span> <span class="nf">console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get log for instance &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">instance_id</span>
+    <span class="n">tail</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;length&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tail</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tail</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Log length must be a nonnegative integer.&#39;</span><span class="p">)</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_console_output</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                  <span class="n">instance_id</span><span class="p">,</span>
+                                                  <span class="n">tail_length</span><span class="o">=</span><span class="n">tail</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;text/plain&#39;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="vnc"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.vnc">[docs]</a><span class="k">def</span> <span class="nf">vnc</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="n">console_url</span> <span class="o">=</span> <span class="n">project_console</span><span class="o">.</span><span class="n">get_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;VNC&#39;</span><span class="p">,</span> <span class="n">instance</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">console_url</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get VNC console for instance &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">instance_id</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="spice"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.spice">[docs]</a><span class="k">def</span> <span class="nf">spice</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="n">console_url</span> <span class="o">=</span> <span class="n">project_console</span><span class="o">.</span><span class="n">get_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;SPICE&#39;</span><span class="p">,</span>
+                                                  <span class="n">instance</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">console_url</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get SPICE console for instance &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">instance_id</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="rdp"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.rdp">[docs]</a><span class="k">def</span> <span class="nf">rdp</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="n">console_url</span> <span class="o">=</span> <span class="n">project_console</span><span class="o">.</span><span class="n">get_console</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;RDP&#39;</span><span class="p">,</span> <span class="n">instance</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">console_url</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get RDP console for instance &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">instance_id</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="SerialConsoleView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.SerialConsoleView">[docs]</a><span class="k">class</span> <span class="nc">SerialConsoleView</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">TemplateView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/serial_console.html&#39;</span>
+
+<div class="viewcode-block" id="SerialConsoleView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.SerialConsoleView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SerialConsoleView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                           <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot find instance </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+            <span class="c1"># name is unknown, so leave it blank for the window title</span>
+            <span class="c1"># in full-screen mode, so only the instance id is shown.</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">return</span> <span class="n">context</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">console_url</span> <span class="o">=</span> <span class="n">project_console</span><span class="o">.</span><span class="n">get_console</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                      <span class="s2">&quot;SERIAL&quot;</span><span class="p">,</span> <span class="n">instance</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;console_url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">console_url</span>
+        <span class="k">except</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">NotAvailable</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot get console for instance </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span>
+                <span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.UpdateView">[docs]</a><span class="k">class</span> <span class="nc">UpdateView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">UpdateInstance</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UpdateView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.UpdateView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;instance_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="UpdateView.get_object"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.UpdateView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve instance details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="UpdateView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.UpdateView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">UpdateView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">initial</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;instance_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">(),</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)})</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="RebuildView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.RebuildView">[docs]</a><span class="k">class</span> <span class="nc">RebuildView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">RebuildInstanceForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/rebuild.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s1">&#39;horizon:project:instances:index&#39;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Rebuild Instance&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RebuildView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.RebuildView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RebuildView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;can_set_server_password&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">can_set_server_password</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="RebuildView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.RebuildView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;instance_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="DecryptPasswordView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DecryptPasswordView">[docs]</a><span class="k">class</span> <span class="nc">DecryptPasswordView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">DecryptPasswordInstanceForm</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/decryptpassword.html&#39;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s1">&#39;horizon:project:instances:index&#39;</span><span class="p">)</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Retrieve Instance Password&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DecryptPasswordView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DecryptPasswordView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DecryptPasswordView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;keypair_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;keypair_name&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="DecryptPasswordView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DecryptPasswordView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;instance_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;keypair_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;keypair_name&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="DetailView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetailView">[docs]</a><span class="k">class</span> <span class="nc">DetailView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">project_tabs</span><span class="o">.</span><span class="n">InstanceDetailTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/detail.html&#39;</span>
+    <span class="n">redirect_url</span> <span class="o">=</span> <span class="s1">&#39;horizon:project:instances:index&#39;</span>
+    <span class="n">page_title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instance Details: {{ instance.name }}&quot;</span><span class="p">)</span>
+    <span class="n">image_url</span> <span class="o">=</span> <span class="s1">&#39;horizon:project:images:images:detail&#39;</span>
+    <span class="n">volume_url</span> <span class="o">=</span> <span class="s1">&#39;horizon:project:volumes:volumes:detail&#39;</span>
+
+<div class="viewcode-block" id="DetailView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetailView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">image</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">image_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_url</span><span class="p">,</span>
+                                         <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">instance</span><span class="o">.</span><span class="n">image</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]])</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">volume_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_url</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">instance</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redirect_url</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_actions</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">InstancesTable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">render_row_actions</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="DetailView.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetailView.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redirect_url</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve details for &#39;</span>
+                                <span class="s1">&#39;instance &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">instance_id</span><span class="p">,</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+            <span class="c1"># Not all exception types handled above will result in a redirect.</span>
+            <span class="c1"># Need to raise here just in case.</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">Http302</span><span class="p">(</span><span class="n">redirect</span><span class="p">)</span>
+
+        <span class="n">status_label</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span> <span class="k">for</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span>
+                        <span class="n">project_tables</span><span class="o">.</span><span class="n">STATUS_DISPLAY_CHOICES</span>
+                        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="n">status_label</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">status_label</span> <span class="o">=</span> <span class="n">status_label</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">status_label</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">volumes</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">instance_volumes_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                                              <span class="n">instance_id</span><span class="p">)</span>
+            <span class="c1"># Sort by device name</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">vol</span><span class="p">:</span> <span class="n">vol</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve volume list for instance &#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%(name)s</span><span class="s1">&quot; (</span><span class="si">%(id)s</span><span class="s1">).&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                               <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">instance_id</span><span class="p">}</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">full_flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">.</span><span class="n">flavor</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve flavor information for instance &#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%(name)s</span><span class="s1">&quot; (</span><span class="si">%(id)s</span><span class="s1">).&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                               <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">instance_id</span><span class="p">}</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">security_groups</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">server_security_groups</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve security groups for instance &#39;</span>
+                    <span class="s1">&#39;&quot;</span><span class="si">%(name)s</span><span class="s1">&quot; (</span><span class="si">%(id)s</span><span class="s1">).&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                               <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">instance_id</span><span class="p">}</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">servers_update_addresses</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="p">[</span><span class="n">instance</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve IP addresses from Neutron for &#39;</span>
+                    <span class="s1">&#39;instance &quot;</span><span class="si">%(name)s</span><span class="s1">&quot; (</span><span class="si">%(id)s</span><span class="s1">).&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                        <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">instance_id</span><span class="p">}</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">instance</span>
+</div>
+<div class="viewcode-block" id="DetailView.get_tabs"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetailView.get_tabs">[docs]</a>    <span class="k">def</span> <span class="nf">get_tabs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_group_class</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ResizeView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.ResizeView">[docs]</a><span class="k">class</span> <span class="nc">ResizeView</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">WorkflowView</span><span class="p">):</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="n">project_workflows</span><span class="o">.</span><span class="n">ResizeInstance</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResizeView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.ResizeView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ResizeView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;instance_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="ResizeView.get_object"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.ResizeView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve instance details.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+        <span class="n">flavor_id</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">flavor</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">flavors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flavors</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">flavor_id</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">flavor_name</span> <span class="o">=</span> <span class="n">flavors</span><span class="p">[</span><span class="n">flavor_id</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flavor</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">flavor_id</span><span class="p">)</span>
+                <span class="n">instance</span><span class="o">.</span><span class="n">flavor_name</span> <span class="o">=</span> <span class="n">flavor</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve flavor information for instance &#39;</span>
+                        <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">instance_id</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="n">instance</span><span class="o">.</span><span class="n">flavor_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not available&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span>
+</div>
+    <span class="nd">@memoized.memoized_method</span>
+<div class="viewcode-block" id="ResizeView.get_flavors"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.ResizeView.get_flavors">[docs]</a>    <span class="k">def</span> <span class="nf">get_flavors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flavors</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">flavor_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="nb">str</span><span class="p">(</span><span class="n">flavor</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">flavor</span><span class="p">)</span> <span class="k">for</span> <span class="n">flavor</span> <span class="ow">in</span> <span class="n">flavors</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:instances:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve flavors.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ResizeView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.ResizeView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ResizeView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">_object</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">_object</span><span class="p">:</span>
+            <span class="n">initial</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span><span class="s1">&#39;instance_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_object</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                 <span class="s1">&#39;old_flavor_id&#39;</span><span class="p">:</span> <span class="n">_object</span><span class="o">.</span><span class="n">flavor</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;old_flavor_name&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_object</span><span class="p">,</span> <span class="s1">&#39;flavor_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                 <span class="s1">&#39;flavors&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_flavors</span><span class="p">()})</span>
+        <span class="k">return</span> <span class="n">initial</span>
+
+</div></div>
+<div class="viewcode-block" id="AttachInterfaceView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.AttachInterfaceView">[docs]</a><span class="k">class</span> <span class="nc">AttachInterfaceView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">AttachInterface</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/attach_interface.html&#39;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Attach Interface&quot;</span><span class="p">)</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;attach_interface_form&quot;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Attach Interface&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:instances:attach_interface&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s1">&#39;horizon:project:instances:index&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AttachInterfaceView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.AttachInterfaceView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AttachInterfaceView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="AttachInterfaceView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.AttachInterfaceView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;instance_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]}</span>
+
+</div></div>
+<div class="viewcode-block" id="DetachInterfaceView"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetachInterfaceView">[docs]</a><span class="k">class</span> <span class="nc">DetachInterfaceView</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModalFormView</span><span class="p">):</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">project_forms</span><span class="o">.</span><span class="n">DetachInterface</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;project/instances/detach_interface.html&#39;</span>
+    <span class="n">modal_header</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Detach Interface&quot;</span><span class="p">)</span>
+    <span class="n">form_id</span> <span class="o">=</span> <span class="s2">&quot;detach_interface_form&quot;</span>
+    <span class="n">submit_label</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Detach Interface&quot;</span><span class="p">)</span>
+    <span class="n">submit_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:instances:detach_interface&quot;</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s1">&#39;horizon:project:instances:index&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DetachInterfaceView.get_context_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetachInterfaceView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DetachInterfaceView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">],)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;submit_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submit_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="DetachInterfaceView.get_initial"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.instances.views.html#openstack_dashboard.dashboards.project.instances.views.DetachInterfaceView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;instance_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;instance_id&#39;</span><span class="p">]}</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

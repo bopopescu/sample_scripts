@@ -1,0 +1,756 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.admin.volumes.volume_types.tables Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.admin.volumes.volume_types.forms Module" href="openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.admin.volumes.volume_types.urls Module" href="openstack_dashboard.dashboards.admin.volumes.volume_types.urls.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-admin-volumes-volume-types-tables-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.volumes.volume_types.tables</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-admin-volumes-volume-types-tables-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">CreateQosSpec</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#CreateQosSpec"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'create', 'url': 'horizon:admin:volumes:volume_types:create_qos_spec', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4fed0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'create'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:create_qos_spec'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4fed0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">CreateVolumeType</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#CreateVolumeType"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'create', 'url': 'horizon:admin:volumes:volume_types:create_type', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3e50&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'create'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:create_type'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3e50&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">CreateVolumeTypeEncryption</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#CreateVolumeTypeEncryption"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>volume_type</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#CreateVolumeTypeEncryption.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:volume_type_encryption'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3b8d39500&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'create_encryption', 'url': 'horizon:admin:volumes:volume_types:create_type_encryption', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3710&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'create_encryption'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:volume_type_encryption'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:create_type_encryption'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3710&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">DeleteQosSpecs</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteQosSpecs"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteQosSpecs.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteQosSpecs.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'delete', 'action_present': &lt;staticmethod object at 0x7ff3b9024e18&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b8d4d0f8&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3b8dc5050&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>request</em>, <em>qos_spec_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteQosSpecs.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">DeleteVolumeType</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeType"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeType.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeType.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'delete', 'action_present': &lt;staticmethod object at 0x7ff3b9024ec0&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b8b94d00&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3b8d39488&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeType.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">DeleteVolumeTypeEncryption</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeTypeEncryption"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeTypeEncryption.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeTypeEncryption.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>volume_type=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeTypeEncryption.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('volume', 'volume_extension:volume_type_encryption'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3b8d396e0&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'delete_encryption', 'action_present': &lt;staticmethod object at 0x7ff3b8b94c20&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b8b94d70&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3b8d39668&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#DeleteVolumeTypeEncryption.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'delete_encryption'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:volume_type_encryption'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">EditConsumer</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#EditConsumer"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'edit_consumer', 'url': 'horizon:admin:volumes:volume_types:edit_qos_spec_consumer', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4f8d0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pencil'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'edit_consumer'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:edit_qos_spec_consumer'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4f8d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">EditVolumeType</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#EditVolumeType"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'edit', 'url': 'horizon:admin:volumes:volume_types:update_type', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3110&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pencil'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'edit'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:update_type'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3110&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">ManageQosSpec</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#ManageQosSpec"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'qos_spec', 'url': 'horizon:admin:volumes:volume_types:qos_specs:index', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4fbd0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pencil'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'qos_spec'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:qos_specs:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4fbd0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">ManageQosSpecAssociation</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#ManageQosSpecAssociation"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'associate', 'url': 'horizon:admin:volumes:volume_types:manage_qos_spec_association', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3190&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pencil'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'associate'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:manage_qos_spec_association'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3190&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">QosSpecsTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#QosSpecsTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#QosSpecsTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">hidden_title</tt><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'qos_specs'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.ManageQosSpec'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.EditConsumer'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.DeleteQosSpecs'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.CreateQosSpec'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.DeleteQosSpecs'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bcc4f5d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">QosSpecsTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('create', &lt;CreateQosSpec: create&gt;), ('delete', &lt;DeleteQosSpecs: delete&gt;), ('edit_consumer', &lt;EditConsumer: edit_consumer&gt;), ('qos_spec', &lt;ManageQosSpec: qos_spec&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">QosSpecsTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('name', &lt;Column: name&gt;), ('consumer', &lt;Column: consumer&gt;), ('specs', &lt;Column: specs&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descclassname">QosSpecsTable.</tt><tt class="descname">get_object_display</tt><big>(</big><em>qos_specs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#QosSpecsTable.get_object_display"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descclassname">QosSpecsTable.</tt><tt class="descname">get_object_id</tt><big>(</big><em>qos_specs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#QosSpecsTable.get_object_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">UpdateCell</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#UpdateCell"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.UpdateAction</span></tt></p>
+<dl class="method">
+<dt>
+<tt class="descname">allowed</tt><big>(</big><em>request</em>, <em>volume_type</em>, <em>cell</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#UpdateCell.allowed"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">update_cell</tt><big>(</big><em>request</em>, <em>data</em>, <em>volume_type_id</em>, <em>cell_name</em>, <em>new_cell_value</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#UpdateCell.update_cell"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">UpdateRow</tt><big>(</big><em>table</em>, <em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#UpdateRow"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.Row</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">ajax</tt><em class="property"> = True</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#UpdateRow.get_data"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">ViewVolumeTypeExtras</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#ViewVolumeTypeExtras"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('volume', 'volume_extension:types_manage'),), 'get_link_url': &lt;function get_link_url at 0x7ff3bea06410&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'extras', 'url': 'horizon:admin:volumes:volume_types:extras:index', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3a10&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'pencil'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'extras'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('volume', 'volume_extension:types_manage'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:volumes:volume_types:extras:index'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bacf3a10&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">VolumeTypesFilterAction</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#VolumeTypesFilterAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.FilterAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables', 'is_api_filter': &lt;function is_api_filter at 0x7ff3bea066e0&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06488&gt;, 'filter': &lt;function filter at 0x7ff3b8d39848&gt;, 'name': 'filter', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea06500&gt;, '__doc__': 'A base class representing a filter action for a table.\n\n    .. attribute:: name\n\n        The short name or &quot;slug&quot; representing this action. Defaults to\n        ``&quot;filter&quot;``.\n\n    .. attribute:: verbose_name\n\n        A descriptive name used for display purposes. Defaults to the\n        value of ``name`` with the first letter of each word capitalized.\n\n    .. attribute:: param_name\n\n        A string representing the name of the request parameter used for the\n        search term. Default: ``&quot;q&quot;``.\n\n    .. attribute:: filter_type\n\n        A string representing the type of this filter. If this is set to\n        ``&quot;server&quot;`` then ``filter_choices`` must also be provided.\n        Default: ``&quot;query&quot;``.\n\n    .. attribute:: filter_choices\n\n        Required for server type filters. A tuple of tuples representing the\n        filter options. Tuple composition should evaluate to (string, string,\n        boolean), representing the filter parameter, display value, and whether\n        or not it should be applied to the API request as an API query\n        attribute. API type filters do not need to be accounted for in the\n        filter method since the API will do the filtering. However, server\n        type filters in general will need to be performed in the filter method.\n        By default this attribute is not provided.\n\n    .. attribute:: needs_preloading\n\n        If True, the filter function will be called for the initial\n        GET request with an empty ``filter_string``, regardless of the\n        value of ``method``.\n    ', 'data_type_filter': &lt;function data_type_filter at 0x7ff3bea065f0&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'assign_type_string': &lt;function assign_type_string at 0x7ff3bea06578&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">filter</tt><big>(</big><em>table</em>, <em>volume_types</em>, <em>filter_string</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#VolumeTypesFilterAction.filter"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Naive case-insensitive search.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">VolumeTypesTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#VolumeTypesTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.base.DataTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#VolumeTypesTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">hidden_title</tt><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'volume_types'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.CreateVolumeTypeEncryption'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.ViewVolumeTypeExtras'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.ManageQosSpecAssociation'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.EditVolumeType'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.DeleteVolumeTypeEncryption'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.DeleteVolumeType'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateRow</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.VolumeTypesFilterAction'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.CreateVolumeType'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.volumes.volume_types.tables.DeleteVolumeType'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bbf34bd0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">VolumeTypesTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('associate', &lt;ManageQosSpecAssociation: associate&gt;), ('create', &lt;CreateVolumeType: create&gt;), ('create_encryption', &lt;CreateVolumeTypeEncryption: create_encryption&gt;), ('delete', &lt;DeleteVolumeType: delete&gt;), ('delete_encryption', &lt;DeleteVolumeTypeEncryption: delete_encryption&gt;), ('edit', &lt;EditVolumeType: edit&gt;), ('extras', &lt;ViewVolumeTypeExtras: extras&gt;), ('filter', &lt;VolumeTypesFilterAction: filter&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">VolumeTypesTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('name', &lt;Column: name&gt;), ('description', &lt;Column: description&gt;), ('assoc_qos_spec', &lt;Column: assoc_qos_spec&gt;), ('encryption', &lt;Column: encryption&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descclassname">VolumeTypesTable.</tt><tt class="descname">get_object_display</tt><big>(</big><em>vol_type</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#VolumeTypesTable.get_object_display"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descclassname">VolumeTypesTable.</tt><tt class="descname">get_object_id</tt><big>(</big><em>vol_type</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#VolumeTypesTable.get_object_id"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">get_volume_type_encryption</tt><big>(</big><em>volume_type</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#get_volume_type_encryption"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.dashboards.admin.volumes.volume_types.tables.</tt><tt class="descname">render_spec_keys</tt><big>(</big><em>qos_spec</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/volumes/volume_types/tables.html#render_spec_keys"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.admin.volumes.volume_types.urls.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.volumes.volume_types.urls</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.volumes.volume_types.forms</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.volumes.volume_types.tables.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.admin.volumes.volume_types.forms.html" title="The openstack_dashboard.dashboards.admin.volumes.volume_types.forms Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.admin.volumes.volume_types.urls.html" title="The openstack_dashboard.dashboards.admin.volumes.volume_types.urls Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

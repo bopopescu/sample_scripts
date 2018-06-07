@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.settings.user.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.settings.user.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>  <span class="c1"># noqa</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="kn">import</span> <span class="nn">babel</span>
+<span class="kn">import</span> <span class="nn">babel.dates</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">encoding</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">translation</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">import</span> <span class="nn">pytz</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+
+<span class="k">def</span> <span class="nf">_one_year</span><span class="p">():</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">now</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="UserSettingsForm"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.settings.user.forms.html#openstack_dashboard.dashboards.settings.user.forms.UserSettingsForm">[docs]</a><span class="k">class</span> <span class="nc">UserSettingsForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Language&quot;</span><span class="p">))</span>
+    <span class="n">timezone</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Timezone&quot;</span><span class="p">))</span>
+    <span class="n">pagesize</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Items Per Page&quot;</span><span class="p">),</span>
+                                  <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">max_value</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                                    <span class="s1">&#39;API_RESULT_LIMIT&#39;</span><span class="p">,</span>
+                                                    <span class="mi">1000</span><span class="p">),</span>
+                                  <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of items to show per &quot;</span>
+                                              <span class="s2">&quot;page (applies to the pages &quot;</span>
+                                              <span class="s2">&quot;that have API supported &quot;</span>
+                                              <span class="s2">&quot;pagination)&quot;</span><span class="p">))</span>
+    <span class="n">instance_log_length</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Log Lines Per Instance&quot;</span><span class="p">),</span> <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of log lines to be shown per instance&quot;</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_sorted_zones</span><span class="p">():</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">zones</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tz</span><span class="p">,</span> <span class="n">pytz</span><span class="o">.</span><span class="n">timezone</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span><span class="o">.</span><span class="n">localize</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%z&#39;</span><span class="p">))</span>
+                 <span class="k">for</span> <span class="n">tz</span> <span class="ow">in</span> <span class="n">pytz</span><span class="o">.</span><span class="n">common_timezones</span><span class="p">]</span>
+        <span class="n">zones</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">zone</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">zone</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">zones</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UserSettingsForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Languages</span>
+        <span class="k">def</span> <span class="nf">get_language_display_name</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">desc</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">desc</span> <span class="o">=</span> <span class="n">translation</span><span class="o">.</span><span class="n">get_language_info</span><span class="p">(</span><span class="n">code</span><span class="p">)[</span><span class="s1">&#39;name_local&#39;</span><span class="p">]</span>
+                <span class="n">desc</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">capwords</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="c1"># If a language is not defined in django.conf.locale.LANG_INFO</span>
+                <span class="c1"># get_language_info raises KeyError</span>
+                <span class="k">pass</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+        <span class="n">languages</span> <span class="o">=</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">get_language_display_name</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">LANGUAGES</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;language&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">languages</span>
+
+        <span class="c1"># Timezones</span>
+        <span class="n">timezones</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">language</span> <span class="o">=</span> <span class="n">translation</span><span class="o">.</span><span class="n">get_language</span><span class="p">()</span>
+        <span class="n">current_locale</span> <span class="o">=</span> <span class="n">translation</span><span class="o">.</span><span class="n">to_locale</span><span class="p">(</span><span class="n">language</span><span class="p">)</span>
+        <span class="n">babel_locale</span> <span class="o">=</span> <span class="n">babel</span><span class="o">.</span><span class="n">Locale</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">current_locale</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tz</span><span class="p">,</span> <span class="n">offset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sorted_zones</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">utc_offset</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;UTC </span><span class="si">%(hour)s</span><span class="s2">:</span><span class="si">%(min)s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;hour&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span>
+                                                          <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">[</span><span class="mi">3</span><span class="p">:]}</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">utc_offset</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="k">if</span> <span class="n">tz</span> <span class="o">==</span> <span class="s2">&quot;UTC&quot;</span><span class="p">:</span>
+                <span class="n">tz_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;UTC&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">tz</span> <span class="o">==</span> <span class="s2">&quot;GMT&quot;</span><span class="p">:</span>
+                <span class="n">tz_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;GMT&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tz_label</span> <span class="o">=</span> <span class="n">babel</span><span class="o">.</span><span class="n">dates</span><span class="o">.</span><span class="n">get_timezone_location</span><span class="p">(</span>
+                    <span class="n">tz</span><span class="p">,</span> <span class="n">locale</span><span class="o">=</span><span class="n">babel_locale</span><span class="p">)</span>
+                <span class="c1"># Translators:  UTC offset and timezone label</span>
+                <span class="n">tz_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(offset)s</span><span class="s2">: </span><span class="si">%(label)s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">utc_offset</span><span class="p">,</span>
+                                                        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">tz_label</span><span class="p">}</span>
+            <span class="n">timezones</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">tz</span><span class="p">,</span> <span class="n">tz_name</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;timezone&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">timezones</span>
+
+<div class="viewcode-block" id="UserSettingsForm.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.settings.user.forms.html#openstack_dashboard.dashboards.settings.user.forms.UserSettingsForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">())</span>
+        <span class="c1"># Language</span>
+        <span class="n">lang_code</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;language&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">lang_code</span> <span class="ow">and</span> <span class="n">translation</span><span class="o">.</span><span class="n">check_for_language</span><span class="p">(</span><span class="n">lang_code</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;session&#39;</span><span class="p">):</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;django_language&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lang_code</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">LANGUAGE_COOKIE_NAME</span><span class="p">,</span> <span class="n">lang_code</span><span class="p">,</span>
+                                <span class="n">expires</span><span class="o">=</span><span class="n">_one_year</span><span class="p">())</span>
+
+        <span class="c1"># Timezone</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;django_timezone&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">timezone</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;timezone&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">zone</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="s1">&#39;django_timezone&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;timezone&#39;</span><span class="p">],</span>
+                            <span class="n">expires</span><span class="o">=</span><span class="n">_one_year</span><span class="p">())</span>
+
+        <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;horizon_pagesize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;pagesize&#39;</span><span class="p">]</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="s1">&#39;horizon_pagesize&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;pagesize&#39;</span><span class="p">],</span>
+                            <span class="n">expires</span><span class="o">=</span><span class="n">_one_year</span><span class="p">())</span>
+
+        <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;instance_log_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;instance_log_length&#39;</span><span class="p">]</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span><span class="s1">&#39;instance_log_length&#39;</span><span class="p">,</span>
+                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;instance_log_length&#39;</span><span class="p">],</span> <span class="n">expires</span><span class="o">=</span><span class="n">_one_year</span><span class="p">())</span>
+
+        <span class="k">with</span> <span class="n">translation</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">lang_code</span><span class="p">):</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                             <span class="n">encoding</span><span class="o">.</span><span class="n">force_text</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Settings saved.&quot;</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">response</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

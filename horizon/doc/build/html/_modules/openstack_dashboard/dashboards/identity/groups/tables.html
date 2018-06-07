@@ -1,0 +1,382 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.identity.groups.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.identity.groups.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2013 Hewlett-Packard Development Company, L.P.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.identity.groups</span> <span class="kn">import</span> <span class="n">constants</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">LOGOUT_URL</span> <span class="o">=</span> <span class="s1">&#39;logout&#39;</span>
+<span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;false&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="CreateGroupLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.CreateGroupLink">[docs]</a><span class="k">class</span> <span class="nc">CreateGroupLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Group&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">GROUPS_CREATE_URL</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:create_group&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="CreateGroupLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.CreateGroupLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="EditGroupLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.EditGroupLink">[docs]</a><span class="k">class</span> <span class="nc">EditGroupLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;edit&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit Group&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">GROUPS_UPDATE_URL</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:update_group&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="EditGroupLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.EditGroupLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteGroupsAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.DeleteGroupsAction">[docs]</a><span class="k">class</span> <span class="nc">DeleteGroupsAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteGroupsAction.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.DeleteGroupsAction.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Group&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Groups&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteGroupsAction.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.DeleteGroupsAction.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted Group&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Groups&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;delete&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:delete_group&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="DeleteGroupsAction.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.DeleteGroupsAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="DeleteGroupsAction.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.DeleteGroupsAction.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Deleting group &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">group_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ManageUsersLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.ManageUsersLink">[docs]</a><span class="k">class</span> <span class="nc">ManageUsersLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Manage Members&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">GROUPS_MANAGE_URL</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:get_group&quot;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:list_users&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="ManageUsersLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.ManageUsersLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="GroupFilterAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupFilterAction">[docs]</a><span class="k">class</span> <span class="nc">GroupFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupFilterAction.filter"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupFilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Naive case-insensitive search.&quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">comp</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="nb">filter</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="GroupsTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupsTable">[docs]</a><span class="k">class</span> <span class="nc">GroupsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Description&#39;</span><span class="p">))</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Group ID&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="GroupsTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;groups&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Groups&quot;</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">ManageUsersLink</span><span class="p">,</span> <span class="n">EditGroupLink</span><span class="p">,</span> <span class="n">DeleteGroupsAction</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">GroupFilterAction</span><span class="p">,</span> <span class="n">CreateGroupLink</span><span class="p">,</span>
+                         <span class="n">DeleteGroupsAction</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="UserFilterAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.UserFilterAction">[docs]</a><span class="k">class</span> <span class="nc">UserFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+<div class="viewcode-block" id="UserFilterAction.filter"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.UserFilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">users</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Naive case-insensitive search.&quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">user</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span>
+                <span class="k">if</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="ow">or</span> <span class="n">q</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+
+</div></div>
+<div class="viewcode-block" id="RemoveMembers"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.RemoveMembers">[docs]</a><span class="k">class</span> <span class="nc">RemoveMembers</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RemoveMembers.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.RemoveMembers.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Remove User&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Remove Users&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="RemoveMembers.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.RemoveMembers.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Removed User&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Removed Users&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;removeGroupMember&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:remove_user_from_group&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="RemoveMembers.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.RemoveMembers.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="RemoveMembers.action"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.RemoveMembers.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">user_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="n">group_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Removing user </span><span class="si">%s</span><span class="s1"> from group </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user_obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                      <span class="n">group_id</span><span class="p">))</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">remove_group_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                       <span class="n">group_id</span><span class="o">=</span><span class="n">group_id</span><span class="p">,</span>
+                                       <span class="n">user_id</span><span class="o">=</span><span class="n">user_obj</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="c1"># TODO(lin-hua-cheng): Fix the bug when removing current user</span>
+        <span class="c1"># Keystone revokes the token of the user removed from the group.</span>
+        <span class="c1"># If the logon user was removed, redirect the user to logout.</span>
+
+</div></div>
+<div class="viewcode-block" id="AddMembersLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembersLink">[docs]</a><span class="k">class</span> <span class="nc">AddMembersLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;add_user_link&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add Users&quot;</span><span class="p">)</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">GROUPS_ADD_MEMBER_URL</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:list_users&quot;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:add_user_to_group&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="AddMembersLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembersLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="AddMembersLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembersLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datum</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="UsersTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.UsersTable">[docs]</a><span class="k">class</span> <span class="nc">UsersTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;User Name&#39;</span><span class="p">))</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Email&#39;</span><span class="p">),</span>
+                          <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="n">defaultfilters</span><span class="o">.</span><span class="n">escape</span><span class="p">,</span>
+                                   <span class="n">defaultfilters</span><span class="o">.</span><span class="n">urlize</span><span class="p">])</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;User ID&#39;</span><span class="p">))</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Enabled&#39;</span><span class="p">),</span>
+                            <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">status_choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+                            <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">defaultfilters</span><span class="o">.</span><span class="n">yesno</span><span class="p">,</span>
+                                     <span class="n">defaultfilters</span><span class="o">.</span><span class="n">capfirst</span><span class="p">),</span>
+                            <span class="n">empty_value</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;False&#39;</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="GroupMembersTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupMembersTable">[docs]</a><span class="k">class</span> <span class="nc">GroupMembersTable</span><span class="p">(</span><span class="n">UsersTable</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupMembersTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupMembersTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;group_members&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Group Members&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">UserFilterAction</span><span class="p">,</span> <span class="n">AddMembersLink</span><span class="p">,</span> <span class="n">RemoveMembers</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="AddMembers"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembers">[docs]</a><span class="k">class</span> <span class="nc">AddMembers</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AddMembers.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembers.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Add User&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Add Users&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AddMembers.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembers.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Added User&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Added Users&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;addMember&quot;</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">requires_input</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">GROUPS_MANAGE_URL</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:add_user_to_group&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="AddMembers.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembers.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_group</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="AddMembers.action"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembers.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">user_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="n">group_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;group_id&#39;</span><span class="p">]</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Adding user </span><span class="si">%s</span><span class="s1"> to group </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">user_obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                  <span class="n">group_id</span><span class="p">))</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">add_group_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                    <span class="n">group_id</span><span class="o">=</span><span class="n">group_id</span><span class="p">,</span>
+                                    <span class="n">user_id</span><span class="o">=</span><span class="n">user_obj</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="c1"># TODO(lin-hua-cheng): Fix the bug when adding current user</span>
+        <span class="c1"># Keystone revokes the token of the user added to the group.</span>
+        <span class="c1"># If the logon user was added, redirect the user to logout.</span>
+</div>
+<div class="viewcode-block" id="AddMembers.get_success_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.AddMembers.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">group_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_id&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">success_url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">group_id</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="GroupNonMembersTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupNonMembersTable">[docs]</a><span class="k">class</span> <span class="nc">GroupNonMembersTable</span><span class="p">(</span><span class="n">UsersTable</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupNonMembersTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.groups.tables.html#openstack_dashboard.dashboards.identity.groups.tables.GroupNonMembersTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;group_non_members&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Non-Members&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">UserFilterAction</span><span class="p">,</span> <span class="n">AddMembers</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

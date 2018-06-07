@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>horizon.workflows.views &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="horizon.workflows" href="../workflows.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for horizon.workflows.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">shortcuts</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon.forms</span> <span class="kn">import</span> <span class="n">views</span> <span class="k">as</span> <span class="n">hz_views</span>
+<span class="kn">from</span> <span class="nn">horizon.forms.views</span> <span class="kn">import</span> <span class="n">ADD_TO_FIELD_HEADER</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+
+<div class="viewcode-block" id="WorkflowView"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView">[docs]</a><span class="k">class</span> <span class="nc">WorkflowView</span><span class="p">(</span><span class="n">hz_views</span><span class="o">.</span><span class="n">ModalBackdropMixin</span><span class="p">,</span> <span class="n">generic</span><span class="o">.</span><span class="n">TemplateView</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A generic class-based view which handles the intricacies of workflow</span>
+<span class="sd">    processing with minimal user configuration.</span>
+
+<span class="sd">    .. attribute:: workflow_class</span>
+
+<span class="sd">        The :class:`~horizon.workflows.Workflow` class which this view handles.</span>
+<span class="sd">        Required.</span>
+
+<span class="sd">    .. attribute:: template_name</span>
+
+<span class="sd">        The template to use when rendering this view via standard HTTP</span>
+<span class="sd">        requests. Required.</span>
+
+<span class="sd">    .. attribute:: ajax_template_name</span>
+
+<span class="sd">        The template to use when rendering the workflow for AJAX requests.</span>
+<span class="sd">        In general the default common template should be used. Defaults to</span>
+<span class="sd">        ``&quot;horizon/common/_workflow.html&quot;``.</span>
+
+<span class="sd">    .. attribute:: context_object_name</span>
+
+<span class="sd">        The key which should be used for the workflow object in the template</span>
+<span class="sd">        context. Defaults to ``&quot;workflow&quot;``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">workflow_class</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;horizon/common/_workflow_base.html&#39;</span>
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">&quot;workflow&quot;</span>
+    <span class="n">ajax_template_name</span> <span class="o">=</span> <span class="s1">&#39;horizon/common/_workflow.html&#39;</span>
+    <span class="n">step_errors</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WorkflowView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow_class</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;You must set the workflow_class attribute &quot;</span>
+                                 <span class="s2">&quot;on </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WorkflowView.get_initial"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns initial data for the workflow. Defaults to using the GET</span>
+<span class="sd">        parameters to allow pre-seeding of the workflow context values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get_workflow"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_workflow">[docs]</a>    <span class="k">def</span> <span class="nf">get_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the instantiated workflow class.&quot;&quot;&quot;</span>
+        <span class="n">extra_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_initial</span><span class="p">()</span>
+        <span class="n">entry_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;step&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">workflow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                       <span class="n">context_seed</span><span class="o">=</span><span class="n">extra_context</span><span class="p">,</span>
+                                       <span class="n">entry_point</span><span class="o">=</span><span class="n">entry_point</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">workflow</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get_context_data"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the template context, including the workflow class.</span>
+
+<span class="sd">        This method should be overridden in subclasses to provide additional</span>
+<span class="sd">        context data to the template.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">WorkflowView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">workflow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_workflow</span><span class="p">()</span>
+        <span class="n">context</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">context_object_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">workflow</span>
+        <span class="nb">next</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">redirect_param_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;REDIRECT_URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">next</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_layout</span><span class="p">()</span>
+        <span class="c1"># For consistency with Workflow class</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;modal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;modal&#39;</span> <span class="ow">in</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;layout&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ADD_TO_FIELD_HEADER</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">:</span>
+            <span class="n">context</span><span class="p">[</span><span class="s1">&#39;add_to_field&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">[</span><span class="n">ADD_TO_FIELD_HEADER</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get_layout"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_layout">[docs]</a>    <span class="k">def</span> <span class="nf">get_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns classes for the workflow element in template based on</span>
+<span class="sd">        the workflow characteristics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">is_ajax</span><span class="p">():</span>
+            <span class="n">layout</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;modal&#39;</span><span class="p">,</span> <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow_class</span><span class="o">.</span><span class="n">fullscreen</span><span class="p">:</span>
+                <span class="n">layout</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;fullscreen&#39;</span><span class="p">,</span> <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">layout</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;static_page&#39;</span><span class="p">,</span> <span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow_class</span><span class="o">.</span><span class="n">wizard</span><span class="p">:</span>
+            <span class="n">layout</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;wizard&#39;</span><span class="p">,</span> <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">layout</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get_template_names"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_template_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_template_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the template name to use for this request.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">is_ajax</span><span class="p">():</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ajax_template_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span>
+        <span class="k">return</span> <span class="n">template</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get_object_id"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_object_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get_object_display"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get_object_display">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.add_error_to_step"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.add_error_to_step">[docs]</a>    <span class="k">def</span> <span class="nf">add_error_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_errors</span><span class="p">[</span><span class="n">step</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_msg</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.set_workflow_step_errors"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.set_workflow_step_errors">[docs]</a>    <span class="k">def</span> <span class="nf">set_workflow_step_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">workflow</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;workflow&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_errors</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_errors</span><span class="p">[</span><span class="n">step</span><span class="p">]</span>
+            <span class="n">workflow</span><span class="o">.</span><span class="n">add_error_to_step</span><span class="p">(</span><span class="n">error_msg</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.get"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handler for HTTP GET requests.&quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_workflow_step_errors</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.validate_steps"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.validate_steps">[docs]</a>    <span class="k">def</span> <span class="nf">validate_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">workflow</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates the workflow steps from ``start`` to ``end``, inclusive.</span>
+
+<span class="sd">        Returns a dict describing the validation state of the workflow.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">workflow</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">errors</span><span class="p">[</span><span class="n">step</span><span class="o">.</span><span class="n">slug</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="p">[</span><span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">errors</span><span class="p">)</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">errors</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;has_errors&#39;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">errors</span><span class="p">),</span>
+            <span class="s1">&#39;workflow_slug&#39;</span><span class="p">:</span> <span class="n">workflow</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+            <span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="n">errors</span><span class="p">,</span>
+        <span class="p">}</span>
+</div>
+<div class="viewcode-block" id="WorkflowView.post"><a class="viewcode-back" href="../../../sourcecode/horizon/horizon.workflows.views.html#horizon.workflows.views.WorkflowView.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handler for HTTP POST requests.&quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">workflow</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">context_object_name</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Check for the VALIDATE_STEP* headers, if they are present</span>
+            <span class="c1"># and valid integers, return validation results as JSON,</span>
+            <span class="c1"># otherwise proceed normally.</span>
+            <span class="n">validate_step_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s1">&#39;HTTP_X_HORIZON_VALIDATE_STEP_START&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="n">validate_step_end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s1">&#39;HTTP_X_HORIZON_VALIDATE_STEP_END&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="c1"># No VALIDATE_STEP* headers, or invalid values. Just proceed</span>
+            <span class="c1"># with normal workflow handling for POSTs.</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># There are valid VALIDATE_STEP* headers, so only do validation</span>
+            <span class="c1"># for the specified steps and return results.</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_steps</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">workflow</span><span class="p">,</span>
+                                       <span class="n">validate_step_start</span><span class="p">,</span>
+                                       <span class="n">validate_step_end</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">),</span>
+                                     <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">workflow</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">format_status_message</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">success_message</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">format_status_message</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">failure_message</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;HTTP_X_HORIZON_ADD_TO_FIELD&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">:</span>
+            <span class="n">field_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">[</span><span class="s2">&quot;HTTP_X_HORIZON_ADD_TO_FIELD&quot;</span><span class="p">]</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">workflow</span><span class="o">.</span><span class="n">object</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object_id</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">object</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">get_object_display</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">object</span><span class="p">)]</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">response</span><span class="p">[</span><span class="s2">&quot;X-Horizon-Add-To-Field&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">field_id</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="n">next_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">REQUEST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">redirect_param_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shortcuts</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="n">next_url</span> <span class="ow">or</span> <span class="n">workflow</span><span class="o">.</span><span class="n">get_success_url</span><span class="p">())</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../../horizon.html" >horizon</a> &raquo;</li>
+          <li><a href="../workflows.html" accesskey="U">horizon.workflows</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

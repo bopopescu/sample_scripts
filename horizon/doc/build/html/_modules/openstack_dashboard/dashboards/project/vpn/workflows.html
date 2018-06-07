@@ -1,0 +1,640 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.vpn.workflows &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.vpn.workflows</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2013, Mirantis Inc</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">workflows</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+
+
+<div class="viewcode-block" id="AddVPNServiceAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNServiceAction">[docs]</a><span class="k">class</span> <span class="nc">AddVPNServiceAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">))</span>
+    <span class="n">router_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Router&quot;</span><span class="p">))</span>
+    <span class="n">subnet_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Subnet&quot;</span><span class="p">))</span>
+    <span class="n">admin_state_up</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="bp">True</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;UP&#39;</span><span class="p">)),</span>
+                                                <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;DOWN&#39;</span><span class="p">))],</span>
+                                       <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin State&quot;</span><span class="p">),</span>
+                                       <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;The state to start in.&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddVPNServiceAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddVPNServiceAction.populate_subnet_id_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNServiceAction.populate_subnet_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_subnet_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">subnet_id_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select a Subnet&quot;</span><span class="p">))]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+            <span class="n">networks</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">network_list_for_tenant</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve networks list.&#39;</span><span class="p">))</span>
+            <span class="n">networks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">n</span><span class="p">[</span><span class="s1">&#39;subnets&#39;</span><span class="p">]:</span>
+                <span class="n">subnet_id_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">cidr</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">subnet_id_choices</span>
+        <span class="k">return</span> <span class="n">subnet_id_choices</span>
+</div>
+<div class="viewcode-block" id="AddVPNServiceAction.populate_router_id_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNServiceAction.populate_router_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_router_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">router_id_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select a Router&quot;</span><span class="p">))]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+            <span class="n">routers</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">neutron</span><span class="o">.</span><span class="n">router_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve routers list.&#39;</span><span class="p">))</span>
+            <span class="n">routers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">routers</span><span class="p">:</span>
+            <span class="n">router_id_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;router_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">router_id_choices</span>
+        <span class="k">return</span> <span class="n">router_id_choices</span>
+</div>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New VPN Service&quot;</span><span class="p">)</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.network&#39;</span><span class="p">,)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create VPN Service for current project.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;Specify a name, description, router, and subnet &quot;</span>
+                      <span class="s2">&quot;for the VPN Service. &quot;</span>
+                      <span class="s2">&quot;Admin State is Up (checked) by default.&quot;</span>
+                      <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddVPNServiceStep"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNServiceStep">[docs]</a><span class="k">class</span> <span class="nc">AddVPNServiceStep</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">AddVPNServiceAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;subnet_id&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;router_id&quot;</span><span class="p">,</span> <span class="s2">&quot;admin_state_up&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddVPNServiceStep.contribute"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNServiceStep.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddVPNServiceStep</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="AddVPNService"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNService">[docs]</a><span class="k">class</span> <span class="nc">AddVPNService</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;addvpnservice&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add VPN Service&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Added VPN Service &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to add VPN Service &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:vpn:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddVPNServiceStep</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="AddVPNService.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNService.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AddVPNService.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddVPNService.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">vpnservice_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="AddIKEPolicyAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIKEPolicyAction">[docs]</a><span class="k">class</span> <span class="nc">AddIKEPolicyAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">))</span>
+    <span class="n">auth_algorithm</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Authorization algorithm&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">encryption_algorithm</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Encryption algorithm&quot;</span><span class="p">),</span>
+                                             <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ike_version</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IKE version&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">lifetime_units</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Lifetime units for IKE keys&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">lifetime_value</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Lifetime value for IKE keys&quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Equal to or greater than 60&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">pfs</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Perfect Forward Secrecy&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">phase1_negotiation_mode</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IKE Phase1 negotiation mode&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddIKEPolicyAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">auth_algorithm_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;sha1&quot;</span><span class="p">,</span> <span class="s2">&quot;sha1&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;auth_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">auth_algorithm_choices</span>
+        <span class="c1"># Currently this field has only one choice, so mark it as readonly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;auth_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;readonly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="n">encryption_algorithm_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;3des&quot;</span><span class="p">,</span> <span class="s2">&quot;3des&quot;</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">&quot;aes-128&quot;</span><span class="p">,</span> <span class="s2">&quot;aes-128&quot;</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">&quot;aes-192&quot;</span><span class="p">,</span> <span class="s2">&quot;aes-192&quot;</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">&quot;aes-256&quot;</span><span class="p">,</span> <span class="s2">&quot;aes-256&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span>
+            <span class="s1">&#39;encryption_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">encryption_algorithm_choices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;encryption_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="s2">&quot;aes-128&quot;</span>
+
+        <span class="n">ike_version_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;v1&quot;</span><span class="p">,</span> <span class="s2">&quot;v1&quot;</span><span class="p">),</span>
+                               <span class="p">(</span><span class="s2">&quot;v2&quot;</span><span class="p">,</span> <span class="s2">&quot;v2&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ike_version&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">ike_version_choices</span>
+
+        <span class="n">lifetime_units_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;seconds&quot;</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">lifetime_units_choices</span>
+        <span class="c1"># Currently this field has only one choice, so mark it as readonly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;readonly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="n">pfs_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;group2&quot;</span><span class="p">,</span> <span class="s2">&quot;group2&quot;</span><span class="p">),</span>
+                       <span class="p">(</span><span class="s2">&quot;group5&quot;</span><span class="p">,</span> <span class="s2">&quot;group5&quot;</span><span class="p">),</span>
+                       <span class="p">(</span><span class="s2">&quot;group14&quot;</span><span class="p">,</span> <span class="s2">&quot;group14&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;pfs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">pfs_choices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;pfs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="s2">&quot;group5&quot;</span>
+
+        <span class="n">phase1_neg_mode_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span>
+            <span class="s1">&#39;phase1_negotiation_mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">phase1_neg_mode_choices</span>
+        <span class="c1"># Currently this field has only one choice, so mark it as readonly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;phase1_negotiation_mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;readonly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New IKE Policy&quot;</span><span class="p">)</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.network&#39;</span><span class="p">,)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create IKE Policy for current project.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;Assign a name and description for the IKE Policy. &quot;</span>
+                      <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddIKEPolicyStep"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIKEPolicyStep">[docs]</a><span class="k">class</span> <span class="nc">AddIKEPolicyStep</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">AddIKEPolicyAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;auth_algorithm&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;encryption_algorithm&quot;</span><span class="p">,</span> <span class="s2">&quot;ike_version&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;lifetime_units&quot;</span><span class="p">,</span> <span class="s2">&quot;lifetime_value&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;pfs&quot;</span><span class="p">,</span> <span class="s2">&quot;phase1_negotiation_mode&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddIKEPolicyStep.contribute"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIKEPolicyStep.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddIKEPolicyStep</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;lifetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">],</span>
+                               <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lifetime_value&#39;</span><span class="p">]}</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;lifetime_value&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="AddIKEPolicy"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIKEPolicy">[docs]</a><span class="k">class</span> <span class="nc">AddIKEPolicy</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;addikepolicy&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add IKE Policy&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Added IKE Policy &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to add IKE Policy &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:vpn:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddIKEPolicyStep</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="AddIKEPolicy.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIKEPolicy.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AddIKEPolicy.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIKEPolicy.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">ikepolicy_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="AddIPSecPolicyAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecPolicyAction">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecPolicyAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">))</span>
+    <span class="n">auth_algorithm</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Authorization algorithm&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">encapsulation_mode</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Encapsulation mode&quot;</span><span class="p">),</span>
+                                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">encryption_algorithm</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Encryption algorithm&quot;</span><span class="p">),</span>
+                                             <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">lifetime_units</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Lifetime units&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">lifetime_value</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Lifetime value for IKE keys &quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Equal to or greater than 60&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">pfs</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Perfect Forward Secrecy&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">transform_protocol</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Transform Protocol&quot;</span><span class="p">),</span>
+                                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddIPSecPolicyAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">auth_algorithm_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;sha1&quot;</span><span class="p">,</span> <span class="s2">&quot;sha1&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;auth_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">auth_algorithm_choices</span>
+        <span class="c1"># Currently this field has only one choice, so mark it as readonly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;auth_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;readonly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="n">encapsulation_mode_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;tunnel&quot;</span><span class="p">,</span> <span class="s2">&quot;tunnel&quot;</span><span class="p">),</span>
+                                      <span class="p">(</span><span class="s2">&quot;transport&quot;</span><span class="p">,</span> <span class="s2">&quot;transport&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;encapsulation_mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">encapsulation_mode_choices</span>
+
+        <span class="n">encryption_algorithm_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;3des&quot;</span><span class="p">,</span> <span class="s2">&quot;3des&quot;</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">&quot;aes-128&quot;</span><span class="p">,</span> <span class="s2">&quot;aes-128&quot;</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">&quot;aes-192&quot;</span><span class="p">,</span> <span class="s2">&quot;aes-192&quot;</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s2">&quot;aes-256&quot;</span><span class="p">,</span> <span class="s2">&quot;aes-256&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span>
+            <span class="s1">&#39;encryption_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">encryption_algorithm_choices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;encryption_algorithm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="s2">&quot;aes-128&quot;</span>
+
+        <span class="n">lifetime_units_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;seconds&quot;</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">lifetime_units_choices</span>
+        <span class="c1"># Currently this field has only one choice, so mark it as readonly.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;readonly&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="n">pfs_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;group2&quot;</span><span class="p">,</span> <span class="s2">&quot;group2&quot;</span><span class="p">),</span>
+                       <span class="p">(</span><span class="s2">&quot;group5&quot;</span><span class="p">,</span> <span class="s2">&quot;group5&quot;</span><span class="p">),</span>
+                       <span class="p">(</span><span class="s2">&quot;group14&quot;</span><span class="p">,</span> <span class="s2">&quot;group14&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;pfs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">pfs_choices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;pfs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="s2">&quot;group5&quot;</span>
+
+        <span class="n">transform_protocol_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;esp&quot;</span><span class="p">,</span> <span class="s2">&quot;esp&quot;</span><span class="p">),</span>
+                                      <span class="p">(</span><span class="s2">&quot;ah&quot;</span><span class="p">,</span> <span class="s2">&quot;ah&quot;</span><span class="p">),</span>
+                                      <span class="p">(</span><span class="s2">&quot;ah-esp&quot;</span><span class="p">,</span> <span class="s2">&quot;ah-esp&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;transform_protocol&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">transform_protocol_choices</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New IPSec Policy&quot;</span><span class="p">)</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.network&#39;</span><span class="p">,)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create IPSec Policy for current project.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;Assign a name and description for the IPSec Policy. &quot;</span>
+                      <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddIPSecPolicyStep"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecPolicyStep">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecPolicyStep</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">AddIPSecPolicyAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;auth_algorithm&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;encapsulation_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;encryption_algorithm&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;lifetime_units&quot;</span><span class="p">,</span> <span class="s2">&quot;lifetime_value&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;pfs&quot;</span><span class="p">,</span> <span class="s2">&quot;transform_protocol&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddIPSecPolicyStep.contribute"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecPolicyStep.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddIPSecPolicyStep</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;lifetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">],</span>
+                               <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;lifetime_value&#39;</span><span class="p">]}</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;lifetime_units&#39;</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;lifetime_value&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="AddIPSecPolicy"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecPolicy">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecPolicy</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;addipsecpolicy&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add IPSec Policy&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Added IPSec Policy &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to add IPSec Policy &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:vpn:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddIPSecPolicyStep</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="AddIPSecPolicy.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecPolicy.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AddIPSecPolicy.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecPolicy.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">ipsecpolicy_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionAction">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecSiteConnectionAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">initial</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">))</span>
+    <span class="n">vpnservice_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;VPN Service associated with this connection&quot;</span><span class="p">))</span>
+    <span class="n">ikepolicy_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IKE Policy associated with this connection&quot;</span><span class="p">))</span>
+    <span class="n">ipsecpolicy_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IPSec Policy associated with this connection&quot;</span><span class="p">))</span>
+    <span class="n">peer_address</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Peer gateway public IPv4/IPv6 Address or FQDN&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Peer gateway public IPv4/IPv6 address or FQDN for &quot;</span>
+                    <span class="s2">&quot;the VPN Connection&quot;</span><span class="p">),</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">IPv4</span> <span class="o">|</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPv6</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">peer_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Peer router identity for authentication (Peer ID)&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Peer router identity for authentication. &quot;</span>
+                    <span class="s2">&quot;Can be IPv4/IPv6 address, e-mail, key ID, or FQDN&quot;</span><span class="p">),</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">IPv4</span> <span class="o">|</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPv6</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">peer_cidrs</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">MultiIPField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remote peer subnet(s)&quot;</span><span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remote peer subnet(s) address(es) &quot;</span>
+                    <span class="s2">&quot;with mask(s) in CIDR format &quot;</span>
+                    <span class="s2">&quot;separated with commas if needed &quot;</span>
+                    <span class="s2">&quot;(e.g. 20.1.0.0/24, 21.1.0.0/24)&quot;</span><span class="p">),</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">IPv4</span> <span class="o">|</span> <span class="n">forms</span><span class="o">.</span><span class="n">IPv6</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">psk</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+                          <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Pre-Shared Key (PSK) string&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AddIPSecSiteConnectionAction.populate_ikepolicy_id_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionAction.populate_ikepolicy_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_ikepolicy_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">ikepolicy_id_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select IKE Policy&quot;</span><span class="p">))]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+            <span class="n">ikepolicies</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">ikepolicy_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve IKE Policies list.&#39;</span><span class="p">))</span>
+            <span class="n">ikepolicies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ikepolicies</span><span class="p">:</span>
+            <span class="n">ikepolicy_id_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ikepolicy_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">ikepolicy_id_choices</span>
+        <span class="k">return</span> <span class="n">ikepolicy_id_choices</span>
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionAction.populate_ipsecpolicy_id_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionAction.populate_ipsecpolicy_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_ipsecpolicy_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">ipsecpolicy_id_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select IPSec Policy&quot;</span><span class="p">))]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+            <span class="n">ipsecpolicies</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">ipsecpolicy_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                     <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve IPSec Policies list.&#39;</span><span class="p">))</span>
+            <span class="n">ipsecpolicies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ipsecpolicies</span><span class="p">:</span>
+            <span class="n">ipsecpolicy_id_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;ipsecpolicy_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">ipsecpolicy_id_choices</span>
+        <span class="k">return</span> <span class="n">ipsecpolicy_id_choices</span>
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionAction.populate_vpnservice_id_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionAction.populate_vpnservice_id_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_vpnservice_id_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">vpnservice_id_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select VPN Service&quot;</span><span class="p">))]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tenant_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span>
+            <span class="n">vpnservices</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">vpnservice_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">tenant_id</span><span class="o">=</span><span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve VPN Services list.&#39;</span><span class="p">))</span>
+            <span class="n">vpnservices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">vpnservices</span><span class="p">:</span>
+            <span class="n">vpnservice_id_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;vpnservice_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">vpnservice_id_choices</span>
+        <span class="k">return</span> <span class="n">vpnservice_id_choices</span>
+</div>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add New IPSec Site Connection&quot;</span><span class="p">)</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.network&#39;</span><span class="p">,)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create IPSec Site Connection for current project.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                      <span class="s2">&quot;Assign a name and description for the &quot;</span>
+                      <span class="s2">&quot;IPSec Site Connection. &quot;</span>
+                      <span class="s2">&quot;All fields in this tab are required.&quot;</span>
+                      <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionStep"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionStep">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecSiteConnectionStep</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">AddIPSecSiteConnectionAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;vpnservice_id&quot;</span><span class="p">,</span> <span class="s2">&quot;ikepolicy_id&quot;</span><span class="p">,</span> <span class="s2">&quot;ipsecpolicy_id&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;peer_address&quot;</span><span class="p">,</span> <span class="s2">&quot;peer_id&quot;</span><span class="p">,</span> <span class="s2">&quot;peer_cidrs&quot;</span><span class="p">,</span> <span class="s2">&quot;psk&quot;</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionOptionalAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionOptionalAction">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecSiteConnectionOptionalAction</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">mtu</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">68</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Maximum Transmission Unit size for the connection&quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Equal to or greater than 68 if the local subnet is IPv4. &quot;</span>
+                    <span class="s2">&quot;Equal to or greater than 1280 if the local subnet &quot;</span>
+                    <span class="s2">&quot;is IPv6.&quot;</span><span class="p">))</span>
+    <span class="n">dpd_action</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Dead peer detection actions&quot;</span><span class="p">),</span>
+                                   <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">dpd_interval</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Dead peer detection interval&quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Valid integer lesser than DPD timeout&quot;</span><span class="p">))</span>
+    <span class="n">dpd_timeout</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Dead peer detection timeout&quot;</span><span class="p">),</span>
+        <span class="n">initial</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Valid integer greater than the DPD interval&quot;</span><span class="p">))</span>
+    <span class="n">initiator</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Initiator state&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">admin_state_up</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="p">[(</span><span class="bp">True</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;UP&#39;</span><span class="p">)),</span>
+                                                <span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;DOWN&#39;</span><span class="p">))],</span>
+                                       <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Admin State&quot;</span><span class="p">),</span>
+                                       <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                       <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;The state to start in.&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AddIPSecSiteConnectionOptionalAction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">initiator_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;bi-directional&quot;</span><span class="p">,</span> <span class="s2">&quot;bi-directional&quot;</span><span class="p">),</span>
+                             <span class="p">(</span><span class="s2">&quot;response-only&quot;</span><span class="p">,</span> <span class="s2">&quot;response-only&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;initiator&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">initiator_choices</span>
+
+<div class="viewcode-block" id="AddIPSecSiteConnectionOptionalAction.populate_dpd_action_choices"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionOptionalAction.populate_dpd_action_choices">[docs]</a>    <span class="k">def</span> <span class="nf">populate_dpd_action_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">dpd_action_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;hold&quot;</span><span class="p">,</span> <span class="s2">&quot;hold&quot;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="s2">&quot;clear&quot;</span><span class="p">,</span> <span class="s2">&quot;clear&quot;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="s2">&quot;disabled&quot;</span><span class="p">,</span> <span class="s2">&quot;disabled&quot;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="s2">&quot;restart&quot;</span><span class="p">,</span> <span class="s2">&quot;restart&quot;</span><span class="p">),</span>
+                              <span class="p">(</span><span class="s2">&quot;restart-by-peer&quot;</span><span class="p">,</span> <span class="s2">&quot;restart-by-peer&quot;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;dpd_action&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">dpd_action_choices</span>
+        <span class="k">return</span> <span class="n">dpd_action_choices</span>
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionOptionalAction.clean"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionOptionalAction.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AddIPSecSiteConnectionOptionalAction</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="n">interval</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpd_interval&#39;</span><span class="p">)</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dpd_timeout&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">interval</span> <span class="o">&lt;</span> <span class="n">timeout</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;DPD Timeout must be greater than DPD Interval&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;dpd_timeout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Optional Parameters&quot;</span><span class="p">)</span>
+        <span class="n">permissions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;openstack.services.network&#39;</span><span class="p">,)</span>
+        <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Fields in this tab are optional. &quot;</span>
+                      <span class="s2">&quot;You can configure the detail of &quot;</span>
+                      <span class="s2">&quot;IPSec site connection created.&quot;</span>
+                      <span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnectionOptionalStep"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionOptionalStep">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecSiteConnectionOptionalStep</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Step</span><span class="p">):</span>
+    <span class="n">action_class</span> <span class="o">=</span> <span class="n">AddIPSecSiteConnectionOptionalAction</span>
+    <span class="n">contributes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;dpd_action&quot;</span><span class="p">,</span> <span class="s2">&quot;dpd_interval&quot;</span><span class="p">,</span> <span class="s2">&quot;dpd_timeout&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;initiator&quot;</span><span class="p">,</span> <span class="s2">&quot;mtu&quot;</span><span class="p">,</span> <span class="s2">&quot;admin_state_up&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddIPSecSiteConnectionOptionalStep.contribute"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnectionOptionalStep.contribute">[docs]</a>    <span class="k">def</span> <span class="nf">contribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span>
+            <span class="n">AddIPSecSiteConnectionOptionalStep</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">contribute</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;dpd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dpd_action&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;interval&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dpd_interval&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dpd_timeout&#39;</span><span class="p">]}</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;dpd_action&#39;</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;dpd_interval&#39;</span><span class="p">)</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;dpd_timeout&#39;</span><span class="p">)</span>
+
+        <span class="n">cidrs</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;peer_cidrs&#39;</span><span class="p">]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s1">&#39;peer_cidrs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cidrs</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">context</span>
+
+</div></div>
+<div class="viewcode-block" id="AddIPSecSiteConnection"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnection">[docs]</a><span class="k">class</span> <span class="nc">AddIPSecSiteConnection</span><span class="p">(</span><span class="n">workflows</span><span class="o">.</span><span class="n">Workflow</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;addipsecsiteconnection&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add IPSec Site Connection&quot;</span><span class="p">)</span>
+    <span class="n">finalize_button_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Add&quot;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Added IPSec Site Connection &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">failure_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to add IPSec Site Connection &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="s2">&quot;horizon:project:vpn:index&quot;</span>
+    <span class="n">default_steps</span> <span class="o">=</span> <span class="p">(</span><span class="n">AddIPSecSiteConnectionStep</span><span class="p">,</span>
+                     <span class="n">AddIPSecSiteConnectionOptionalStep</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AddIPSecSiteConnection.format_status_message"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnection.format_status_message">[docs]</a>    <span class="k">def</span> <span class="nf">format_status_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">message</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="AddIPSecSiteConnection.handle"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.vpn.workflows.html#openstack_dashboard.dashboards.project.vpn.workflows.AddIPSecSiteConnection.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">vpn</span><span class="o">.</span><span class="n">ipsecsiteconnection_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

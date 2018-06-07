@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The horizon.browsers.base Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The horizon.browsers.views Module" href="horizon.browsers.views.html" />
+    <link rel="prev" title="The horizon.conf.panel_template Module" href="horizon.conf.panel_template.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-horizon-browsers-base-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">horizon.browsers.base</span></tt> Module<a class="headerlink" href="#the-horizon-browsers-base-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">horizon.browsers.base.</tt><tt class="descname">ResourceBrowser</tt><big>(</big><em>request</em>, <em>tables_dict=None</em>, <em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/horizon/browsers/base.html#ResourceBrowser"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.utils.html.HTMLElement</span></tt></p>
+<p>A class which defines a browser for displaying data.</p>
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A short name or slug for the browser.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.verbose_name">
+<tt class="descname">verbose_name</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.verbose_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A more verbose name for the browser meant for display purposes.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.navigation_table_class">
+<tt class="descname">navigation_table_class</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.navigation_table_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>This table displays data on the left side of the browser.
+Set the <tt class="docutils literal"><span class="pre">navigation_table_class</span></tt> attribute with
+the desired <a class="reference internal" href="../../ref/tables.html#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> class.
+This table class must set browser_table attribute in Meta to
+<tt class="docutils literal"><span class="pre">&quot;navigation&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.content_table_class">
+<tt class="descname">content_table_class</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.content_table_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>This table displays data on the right side of the browser.
+Set the <tt class="docutils literal"><span class="pre">content_table_class</span></tt> attribute with
+the desired <a class="reference internal" href="../../ref/tables.html#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> class.
+This table class must set browser_table attribute in Meta to
+<tt class="docutils literal"><span class="pre">&quot;content&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.navigation_kwarg_name">
+<tt class="descname">navigation_kwarg_name</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.navigation_kwarg_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>This attribute represents the key of the navigatable items in the
+kwargs property of this browser&#8217;s view.
+Defaults to <tt class="docutils literal"><span class="pre">&quot;navigation_kwarg&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.content_kwarg_name">
+<tt class="descname">content_kwarg_name</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.content_kwarg_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>This attribute represents the key of the content items in the
+kwargs property of this browser&#8217;s view.
+Defaults to <tt class="docutils literal"><span class="pre">&quot;content_kwarg&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.template">
+<tt class="descname">template</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.template" title="Permalink to this definition">¶</a></dt>
+<dd><p>String containing the template which should be used to render
+the browser. Defaults to <tt class="docutils literal"><span class="pre">&quot;horizon/common/_resource_browser.html&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.context_var_name">
+<tt class="descname">context_var_name</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.context_var_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the context variable which will contain the browser when
+it is rendered. Defaults to <tt class="docutils literal"><span class="pre">&quot;browser&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.has_breadcrumb">
+<tt class="descname">has_breadcrumb</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.has_breadcrumb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates if the content table of the browser would have breadcrumb.
+Defaults to false.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.browsers.base.ResourceBrowser.breadcrumb_template">
+<tt class="descname">breadcrumb_template</tt><a class="headerlink" href="#horizon.browsers.base.ResourceBrowser.breadcrumb_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a template used to render the breadcrumb.
+Defaults to <tt class="docutils literal"><span class="pre">&quot;horizon/common/_breadcrumb.html&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">breadcrumb_template</tt><em class="property"> = 'horizon/common/_breadcrumb.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">breadcrumb_url</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">check_table_class</tt><big>(</big><em>cls</em>, <em>attr_name</em><big>)</big><a class="reference internal" href="../../_modules/horizon/browsers/base.html#ResourceBrowser.check_table_class"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">content_kwarg_name</tt><em class="property"> = 'content_kwarg'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">content_table_class</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">context_var_name</tt><em class="property"> = 'browser'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">has_breadcrumb</tt><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">navigable_item_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3bd515f50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">navigation_kwarg_name</tt><em class="property"> = 'navigation_kwarg'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">navigation_table_class</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">prepare_breadcrumb</tt><big>(</big><em>tables</em>, <em>navigation_item</em>, <em>content_path</em><big>)</big><a class="reference internal" href="../../_modules/horizon/browsers/base.html#ResourceBrowser.prepare_breadcrumb"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/horizon/browsers/base.html#ResourceBrowser.render"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">set_tables</tt><big>(</big><em>tables</em><big>)</big><a class="reference internal" href="../../_modules/horizon/browsers/base.html#ResourceBrowser.set_tables"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Sets the table instances on the browser from a dictionary mapping
+table names to table instances (as constructed by MultiTableView).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template</tt><em class="property"> = 'horizon/common/_resource_browser.html'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.conf.panel_template.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon.conf.panel_template</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.browsers.views.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon.browsers.views</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/horizon/horizon.browsers.base.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.browsers.views.html" title="The horizon.browsers.views Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.conf.panel_template.html" title="The horizon.conf.panel_template Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

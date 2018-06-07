@@ -1,0 +1,737 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Horizon Workflows &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Horizon DataTables" href="tables.html" />
+    <link rel="prev" title="The horizon Module" href="horizon.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-horizon.workflows">
+<span id="horizon-workflows"></span><h1>Horizon Workflows<a class="headerlink" href="#module-horizon.workflows" title="Permalink to this headline">¶</a></h1>
+<p>One of the most challenging aspects of building a compelling user experience
+is crafting complex multi-part workflows. Horizon&#8217;s <tt class="docutils literal"><span class="pre">workflows</span></tt> module
+aims to bring that capability within everyday reach.</p>
+<blockquote>
+<div><div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For usage information, tips &amp; tricks and more examples check out the
+<a class="reference internal" href="../topics/workflows.html"><em>Workflows Topic Guide</em></a>.</p>
+</div>
+</div></blockquote>
+<div class="section" id="workflows">
+<h2>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.workflows.Workflow">
+<em class="property">class </em><tt class="descclassname">horizon.workflows.</tt><tt class="descname">Workflow</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Workflow is a collection of Steps. Its interface is very
+straightforward, but it is responsible for handling some very
+important tasks such as:</p>
+<ul class="simple">
+<li>Handling the injection, removal, and ordering of arbitrary steps.</li>
+<li>Determining if the workflow can be completed by a given user at runtime
+based on all available information.</li>
+<li>Dispatching connections between steps to ensure that when context data
+changes all the applicable callback functions are executed.</li>
+<li>Verifying/validating the overall data integrity and subsequently
+triggering the final method to complete the workflow.</li>
+</ul>
+<p>The <tt class="docutils literal"><span class="pre">Workflow</span></tt> class has the following attributes:</p>
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.workflows.Workflow.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The verbose name for this workflow which will be displayed to the user.
+Defaults to the class name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.slug">
+<tt class="descname">slug</tt><a class="headerlink" href="#horizon.workflows.Workflow.slug" title="Permalink to this definition">¶</a></dt>
+<dd><p>The unique slug for this workflow. Required.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.steps">
+<tt class="descname">steps</tt><a class="headerlink" href="#horizon.workflows.Workflow.steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read-only access to the final ordered set of step instances for
+this workflow.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.default_steps">
+<tt class="descname">default_steps</tt><a class="headerlink" href="#horizon.workflows.Workflow.default_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of <a class="reference internal" href="#horizon.workflows.Step" title="horizon.workflows.Step"><tt class="xref py py-class docutils literal"><span class="pre">Step</span></tt></a> classes which serve as the
+starting point for this workflow&#8217;s ordered steps. Defaults to an empty
+list (<tt class="docutils literal"><span class="pre">[]</span></tt>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.finalize_button_name">
+<tt class="descname">finalize_button_name</tt><a class="headerlink" href="#horizon.workflows.Workflow.finalize_button_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name which will appear on the submit button for the workflow&#8217;s
+form. Defaults to <tt class="docutils literal"><span class="pre">&quot;Save&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.success_message">
+<tt class="descname">success_message</tt><a class="headerlink" href="#horizon.workflows.Workflow.success_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string which will be displayed to the user upon successful completion
+of the workflow. Defaults to
+<tt class="docutils literal"><span class="pre">&quot;{{</span> <span class="pre">workflow.name</span> <span class="pre">}}</span> <span class="pre">completed</span> <span class="pre">successfully.&quot;</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.failure_message">
+<tt class="descname">failure_message</tt><a class="headerlink" href="#horizon.workflows.Workflow.failure_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string which will be displayed to the user upon failure to complete
+the workflow. Defaults to <tt class="docutils literal"><span class="pre">&quot;{{</span> <span class="pre">workflow.name</span> <span class="pre">}}</span> <span class="pre">did</span> <span class="pre">not</span> <span class="pre">complete.&quot;</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.depends_on">
+<tt class="descname">depends_on</tt><a class="headerlink" href="#horizon.workflows.Workflow.depends_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>A roll-up list of all the <tt class="docutils literal"><span class="pre">depends_on</span></tt> values compiled from the
+workflow&#8217;s steps.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.contributions">
+<tt class="descname">contributions</tt><a class="headerlink" href="#horizon.workflows.Workflow.contributions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A roll-up list of all the <tt class="docutils literal"><span class="pre">contributes</span></tt> values compiled from the
+workflow&#8217;s steps.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.template_name">
+<tt class="descname">template_name</tt><a class="headerlink" href="#horizon.workflows.Workflow.template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the template which should be used to render this workflow.
+In general the default common template should be used. Default:
+<tt class="docutils literal"><span class="pre">&quot;horizon/common/_workflow.html&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.entry_point">
+<tt class="descname">entry_point</tt><a class="headerlink" href="#horizon.workflows.Workflow.entry_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>The slug of the step which should initially be active when the
+workflow is rendered. This can be passed in upon initialization of
+the workflow, or set anytime after initialization but before calling
+either <tt class="docutils literal"><span class="pre">get_entry_point</span></tt> or <tt class="docutils literal"><span class="pre">render</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.redirect_param_name">
+<tt class="descname">redirect_param_name</tt><a class="headerlink" href="#horizon.workflows.Workflow.redirect_param_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of a parameter used for tracking the URL to redirect to upon
+completion of the workflow. Defaults to <tt class="docutils literal"><span class="pre">&quot;next&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.object">
+<tt class="descname">object</tt><a class="headerlink" href="#horizon.workflows.Workflow.object" title="Permalink to this definition">¶</a></dt>
+<dd><p>The object (if any) which this workflow relates to. In the case of
+a workflow which creates a new resource the object would be the created
+resource after the relevant creation steps have been undertaken. In
+the case of a workflow which updates a resource it would be the
+resource being updated after it has been retrieved.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.wizard">
+<tt class="descname">wizard</tt><a class="headerlink" href="#horizon.workflows.Workflow.wizard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to present the workflow as a wizard, with &#8220;prev&#8221; and &#8220;next&#8221;
+buttons and validation after every step.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Workflow.fullscreen">
+<tt class="descname">fullscreen</tt><a class="headerlink" href="#horizon.workflows.Workflow.fullscreen" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the workflow is presented in a modal, and this attribute is
+set to True, then the <tt class="docutils literal"><span class="pre">fullscreen</span></tt> css class will be added so
+the modal can take advantage of the available screen estate.
+Defaults to <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.add_error_to_step">
+<tt class="descname">add_error_to_step</tt><big>(</big><em>message</em>, <em>slug</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.add_error_to_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an error to the workflow&#8217;s Step with the
+specified slug based on API issues. This is useful
+when you wish for API errors to appear as errors on
+the form rather than using the messages framework.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.finalize">
+<tt class="descname">finalize</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalizes a workflow by running through all the actions in order
+and calling their <tt class="docutils literal"><span class="pre">handle</span></tt> methods. Returns <tt class="docutils literal"><span class="pre">True</span></tt> on full success,
+or <tt class="docutils literal"><span class="pre">False</span></tt> for a partial success, e.g. there were non-critical
+errors. (If it failed completely the function wouldn&#8217;t return.)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.format_status_message">
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.format_status_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook to allow customization of the message returned to the user
+upon successful or unsuccessful completion of the workflow.</p>
+<p>By default it simply inserts the workflow&#8217;s name into the message
+string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.get_absolute_url">
+<tt class="descname">get_absolute_url</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.get_absolute_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the canonical URL for this workflow.</p>
+<p>This is used for the POST action attribute on the form element
+wrapping the workflow.</p>
+<p>For convenience it defaults to the value of
+<tt class="docutils literal"><span class="pre">request.get_full_path()</span></tt> with any query string stripped off,
+e.g. the path at which the workflow was requested.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.get_entry_point">
+<tt class="descname">get_entry_point</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.get_entry_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the slug of the step which the workflow should begin on.</p>
+<p>This method takes into account both already-available data and errors
+within the steps.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.get_step">
+<tt class="descname">get_step</tt><big>(</big><em>slug</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.get_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the instantiated step matching the given slug.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a URL to redirect the user to upon completion. By default it
+will attempt to parse a <tt class="docutils literal"><span class="pre">success_url</span></tt> attribute on the workflow,
+which can take the form of a reversible URL pattern name, or a
+standard HTTP URL.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.handle">
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles any final processing for this workflow. Should return a
+boolean value indicating success.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.is_valid">
+<tt class="descname">is_valid</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verified that all required data is present in the context and
+calls the <tt class="docutils literal"><span class="pre">validate</span></tt> method to allow for finer-grained checks
+on the context data.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="horizon.workflows.Workflow.register">
+<em class="property">classmethod </em><tt class="descname">register</tt><big>(</big><em>step_class</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a <a class="reference internal" href="#horizon.workflows.Step" title="horizon.workflows.Step"><tt class="xref py py-class docutils literal"><span class="pre">Step</span></tt></a> with the workflow.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.render">
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the workflow.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="horizon.workflows.Workflow.unregister">
+<em class="property">classmethod </em><tt class="descname">unregister</tt><big>(</big><em>step_class</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregisters a <a class="reference internal" href="#horizon.workflows.Step" title="horizon.workflows.Step"><tt class="xref py py-class docutils literal"><span class="pre">Step</span></tt></a> from the workflow.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Workflow.validate">
+<tt class="descname">validate</tt><big>(</big><em>context</em><big>)</big><a class="headerlink" href="#horizon.workflows.Workflow.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for custom context data validation. Should return a boolean
+value or raise <a class="reference internal" href="exceptions.html#horizon.exceptions.WorkflowValidationError" title="horizon.exceptions.WorkflowValidationError"><tt class="xref py py-class docutils literal"><span class="pre">WorkflowValidationError</span></tt></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.workflows.Step">
+<em class="property">class </em><tt class="descclassname">horizon.workflows.</tt><tt class="descname">Step</tt><big>(</big><em>workflow</em><big>)</big><a class="headerlink" href="#horizon.workflows.Step" title="Permalink to this definition">¶</a></dt>
+<dd><p>A step is a wrapper around an action which defines its context in a
+workflow. It knows about details such as:</p>
+<ul class="simple">
+<li>The workflow&#8217;s context data (data passed from step to step).</li>
+<li>The data which must be present in the context to begin this step (the
+step&#8217;s dependencies).</li>
+<li>The keys which will be added to the context data upon completion of the
+step.</li>
+<li>The connections between this step&#8217;s fields and changes in the context
+data (e.g. if that piece of data changes, what needs to be updated in
+this step).</li>
+</ul>
+<p>A <tt class="docutils literal"><span class="pre">Step</span></tt> class has the following attributes:</p>
+<dl class="attribute">
+<dt id="horizon.workflows.Step.action_class">
+<tt class="descname">action_class</tt><a class="headerlink" href="#horizon.workflows.Step.action_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#horizon.workflows.Action" title="horizon.workflows.Action"><tt class="xref py py-class docutils literal"><span class="pre">Action</span></tt></a> class which this step wraps.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.depends_on">
+<tt class="descname">depends_on</tt><a class="headerlink" href="#horizon.workflows.Step.depends_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of context data keys which this step requires in order to
+begin interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.contributes">
+<tt class="descname">contributes</tt><a class="headerlink" href="#horizon.workflows.Step.contributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of keys which this step will contribute to the workflow&#8217;s
+context data. Optional keys should still be listed, even if their
+values may be set to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.connections">
+<tt class="descname">connections</tt><a class="headerlink" href="#horizon.workflows.Step.connections" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary which maps context data key names to lists of callbacks.
+The callbacks may be functions, dotted python paths to functions
+which may be imported, or dotted strings beginning with <tt class="docutils literal"><span class="pre">&quot;self&quot;</span></tt>
+to indicate methods on the current <tt class="docutils literal"><span class="pre">Step</span></tt> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.before">
+<tt class="descname">before</tt><a class="headerlink" href="#horizon.workflows.Step.before" title="Permalink to this definition">¶</a></dt>
+<dd><p>Another <tt class="docutils literal"><span class="pre">Step</span></tt> class. This optional attribute is used to provide
+control over workflow ordering when steps are dynamically added to
+workflows. The workflow mechanism will attempt to place the current
+step before the step specified in the attribute.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.after">
+<tt class="descname">after</tt><a class="headerlink" href="#horizon.workflows.Step.after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Another <tt class="docutils literal"><span class="pre">Step</span></tt> class. This attribute has the same purpose as
+<a class="reference internal" href="#horizon.workflows.Step.before" title="horizon.workflows.Step.before"><tt class="xref py py-meth docutils literal"><span class="pre">before()</span></tt></a> except that it will instead
+attempt to place the current step after the given step.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.help_text">
+<tt class="descname">help_text</tt><a class="headerlink" href="#horizon.workflows.Step.help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string of simple help text which will be prepended to the <tt class="docutils literal"><span class="pre">Action</span></tt>
+class&#8217; help text if desired.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.template_name">
+<tt class="descname">template_name</tt><a class="headerlink" href="#horizon.workflows.Step.template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A path to a template which will be used to render this step. In
+general the default common template should be used. Default:
+<tt class="docutils literal"><span class="pre">&quot;horizon/common/_workflow_step.html&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.has_errors">
+<tt class="descname">has_errors</tt><a class="headerlink" href="#horizon.workflows.Step.has_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean value which indicates whether or not this step has any
+errors on the action within it or in the scope of the workflow. This
+attribute will only accurately reflect this status after validation
+has occurred.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.slug">
+<tt class="descname">slug</tt><a class="headerlink" href="#horizon.workflows.Step.slug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherited from the <tt class="docutils literal"><span class="pre">Action</span></tt> class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.workflows.Step.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherited from the <tt class="docutils literal"><span class="pre">Action</span></tt> class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Step.permissions">
+<tt class="descname">permissions</tt><a class="headerlink" href="#horizon.workflows.Step.permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherited from the <tt class="docutils literal"><span class="pre">Action</span></tt> class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.add_step_error">
+<tt class="descname">add_step_error</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#horizon.workflows.Step.add_step_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an error to the Step based on API issues.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.contribute">
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="headerlink" href="#horizon.workflows.Step.contribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the data listed in <tt class="docutils literal"><span class="pre">contributes</span></tt> to the workflow&#8217;s shared
+context. By default, the context is simply updated with all the data
+returned by the action.</p>
+<p>Note that even if the value of one of the <tt class="docutils literal"><span class="pre">contributes</span></tt> keys is
+not present (e.g. optional) the key should still be added to the
+context with a value of <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.get_help_text">
+<tt class="descname">get_help_text</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Step.get_help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the help text for this step.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.get_id">
+<tt class="descname">get_id</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Step.get_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ID for this step. Suitable for use in HTML markup.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.has_required_fields">
+<tt class="descname">has_required_fields</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Step.has_required_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if action contains any required fields.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.prepare_action_context">
+<tt class="descname">prepare_action_context</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="headerlink" href="#horizon.workflows.Step.prepare_action_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows for customization of how the workflow context is passed to
+the action; this is the reverse of what &#8220;contribute&#8221; does to make the
+action outputs sane for the workflow. Changes to the context are not
+saved globally here. They are localized to the action.</p>
+<p>Simply returns the unaltered context by default.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Step.render">
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.Step.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the step.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="actions">
+<h2>Actions<a class="headerlink" href="#actions" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.workflows.Action">
+<em class="property">class </em><tt class="descclassname">horizon.workflows.</tt><tt class="descname">Action</tt><big>(</big><em>request</em>, <em>context</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.workflows.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>An <tt class="docutils literal"><span class="pre">Action</span></tt> represents an atomic logical interaction you can have with
+the system. This is easier to understand with a conceptual example: in the
+context of a &#8220;launch instance&#8221; workflow, actions would include &#8220;naming
+the instance&#8221;, &#8220;selecting an image&#8221;, and ultimately &#8220;launching the
+instance&#8221;.</p>
+<p>Because <tt class="docutils literal"><span class="pre">Actions</span></tt> are always interactive, they always provide form
+controls, and thus inherit from Django&#8217;s <tt class="docutils literal"><span class="pre">Form</span></tt> class. However, they
+have some additional intelligence added to them:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">Actions</span></tt> are aware of the permissions required to complete them.</li>
+<li><tt class="docutils literal"><span class="pre">Actions</span></tt> have a meta-level concept of &#8220;help text&#8221; which is meant to be
+displayed in such a way as to give context to the action regardless of
+where the action is presented in a site or workflow.</li>
+<li><tt class="docutils literal"><span class="pre">Actions</span></tt> understand how to handle their inputs and produce outputs,
+much like <tt class="xref py py-class docutils literal"><span class="pre">SelfHandlingForm</span></tt> does now.</li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">Action</span></tt> classes may define the following attributes in a <tt class="docutils literal"><span class="pre">Meta</span></tt>
+class within them:</p>
+<dl class="attribute">
+<dt id="horizon.workflows.Action.name">
+<tt class="descname">name</tt><a class="headerlink" href="#horizon.workflows.Action.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The verbose name for this action. Defaults to the name of the class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Action.slug">
+<tt class="descname">slug</tt><a class="headerlink" href="#horizon.workflows.Action.slug" title="Permalink to this definition">¶</a></dt>
+<dd><p>A semi-unique slug for this action. Defaults to the &#8220;slugified&#8221; name
+of the class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Action.permissions">
+<tt class="descname">permissions</tt><a class="headerlink" href="#horizon.workflows.Action.permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of permission names which this action requires in order to be
+completed. Defaults to an empty list (<tt class="docutils literal"><span class="pre">[]</span></tt>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Action.help_text">
+<tt class="descname">help_text</tt><a class="headerlink" href="#horizon.workflows.Action.help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string of simple help text to be displayed alongside the Action&#8217;s
+fields.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.Action.help_text_template">
+<tt class="descname">help_text_template</tt><a class="headerlink" href="#horizon.workflows.Action.help_text_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>A path to a template which contains more complex help text to be
+displayed alongside the Action&#8217;s fields. In conjunction with
+<a class="reference internal" href="#horizon.workflows.Action.get_help_text" title="horizon.workflows.Action.get_help_text"><tt class="xref py py-meth docutils literal"><span class="pre">get_help_text()</span></tt></a> method you can
+customize your help text template to display practically anything.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Action.add_action_error">
+<tt class="descname">add_action_error</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#horizon.workflows.Action.add_action_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an error to the Action&#8217;s Step based on API issues.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Action.get_help_text">
+<tt class="descname">get_help_text</tt><big>(</big><em>extra_context=None</em><big>)</big><a class="headerlink" href="#horizon.workflows.Action.get_help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the help text for this step.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.Action.handle">
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>context</em><big>)</big><a class="headerlink" href="#horizon.workflows.Action.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles any requisite processing for this action. The method should
+return either <tt class="docutils literal"><span class="pre">None</span></tt> or a dictionary of data to be passed to
+<a class="reference internal" href="#horizon.workflows.Step.contribute" title="horizon.workflows.Step.contribute"><tt class="xref py py-meth docutils literal"><span class="pre">contribute()</span></tt></a>.</p>
+<p>Returns <tt class="docutils literal"><span class="pre">None</span></tt> by default, effectively making it a no-op.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="workflowview">
+<h2>WorkflowView<a class="headerlink" href="#workflowview" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="horizon.workflows.WorkflowView">
+<em class="property">class </em><tt class="descclassname">horizon.workflows.</tt><tt class="descname">WorkflowView</tt><a class="headerlink" href="#horizon.workflows.WorkflowView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic class-based view which handles the intricacies of workflow
+processing with minimal user configuration.</p>
+<dl class="attribute">
+<dt id="horizon.workflows.WorkflowView.workflow_class">
+<tt class="descname">workflow_class</tt><a class="headerlink" href="#horizon.workflows.WorkflowView.workflow_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#horizon.workflows.Workflow" title="horizon.workflows.Workflow"><tt class="xref py py-class docutils literal"><span class="pre">Workflow</span></tt></a> class which this view handles.
+Required.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.WorkflowView.template_name">
+<tt class="descname">template_name</tt><a class="headerlink" href="#horizon.workflows.WorkflowView.template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The template to use when rendering this view via standard HTTP
+requests. Required.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.WorkflowView.ajax_template_name">
+<tt class="descname">ajax_template_name</tt><a class="headerlink" href="#horizon.workflows.WorkflowView.ajax_template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The template to use when rendering the workflow for AJAX requests.
+In general the default common template should be used. Defaults to
+<tt class="docutils literal"><span class="pre">&quot;horizon/common/_workflow.html&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="horizon.workflows.WorkflowView.context_object_name">
+<tt class="descname">context_object_name</tt><a class="headerlink" href="#horizon.workflows.WorkflowView.context_object_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The key which should be used for the workflow object in the template
+context. Defaults to <tt class="docutils literal"><span class="pre">&quot;workflow&quot;</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.get">
+<tt class="descname">get</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handler for HTTP GET requests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the template context, including the workflow class.</p>
+<p>This method should be overridden in subclasses to provide additional
+context data to the template.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.get_initial">
+<tt class="descname">get_initial</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.get_initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns initial data for the workflow. Defaults to using the GET
+parameters to allow pre-seeding of the workflow context values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.get_layout">
+<tt class="descname">get_layout</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.get_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns classes for the workflow element in template based on
+the workflow characteristics</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.get_template_names">
+<tt class="descname">get_template_names</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.get_template_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the template name to use for this request.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.get_workflow">
+<tt class="descname">get_workflow</tt><big>(</big><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.get_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the instantiated workflow class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.post">
+<tt class="descname">post</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handler for HTTP POST requests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.workflows.WorkflowView.validate_steps">
+<tt class="descname">validate_steps</tt><big>(</big><em>request</em>, <em>workflow</em>, <em>start</em>, <em>end</em><big>)</big><a class="headerlink" href="#horizon.workflows.WorkflowView.validate_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates the workflow steps from <tt class="docutils literal"><span class="pre">start</span></tt> to <tt class="docutils literal"><span class="pre">end</span></tt>, inclusive.</p>
+<p>Returns a dict describing the validation state of the workflow.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Horizon Workflows</a><ul>
+<li><a class="reference internal" href="#workflows">Workflows</a></li>
+<li><a class="reference internal" href="#steps">Steps</a></li>
+<li><a class="reference internal" href="#actions">Actions</a></li>
+<li><a class="reference internal" href="#workflowview">WorkflowView</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="horizon.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">horizon</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tables.html"
+                                  title="next chapter">Horizon DataTables</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/ref/workflows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tables.html" title="Horizon DataTables"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="horizon.html" title="The horizon Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

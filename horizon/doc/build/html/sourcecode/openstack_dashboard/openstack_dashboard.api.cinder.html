@@ -1,0 +1,566 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.api.cinder Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.api.network_base Module" href="openstack_dashboard.api.network_base.html" />
+    <link rel="prev" title="The openstack_dashboard.api.vpn Module" href="openstack_dashboard.api.vpn.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-api-cinder-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.api.cinder</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-api-cinder-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">BaseCinderAPIResourceWrapper</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#BaseCinderAPIResourceWrapper"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">description</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#BaseCinderAPIResourceWrapper.description"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#BaseCinderAPIResourceWrapper.name"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">QosSpec</tt><big>(</big><em>id</em>, <em>key</em>, <em>val</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#QosSpec"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">VolTypeExtraSpec</tt><big>(</big><em>type_id</em>, <em>key</em>, <em>val</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolTypeExtraSpec"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">Volume</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#Volume"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">is_bootable</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#Volume.is_bootable"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">VolumeBackup</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolumeBackup"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">volume</tt><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolumeBackup.volume"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">VolumePool</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolumePool"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">VolumeSnapshot</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolumeSnapshot"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">VolumeTransfer</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolumeTransfer"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.base.APIResourceWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">VolumeType</tt><big>(</big><em>apiresource</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#VolumeType"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.api.cinder.BaseCinderAPIResourceWrapper</span></tt></p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">availability_zone_list</tt><big>(</big><em>request</em>, <em>detailed=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#availability_zone_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">cinderclient</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#cinderclient"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">default_quota_get</tt><big>(</big><em>request</em>, <em>tenant_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#default_quota_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">default_quota_update</tt><big>(</big><em>request</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#default_quota_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">extension_supported</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#extension_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>This method will determine if Cinder supports a given extension name.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">list_extensions</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#list_extensions"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">pool_list</tt><big>(</big><em>request</em>, <em>detailed=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#pool_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_associate</tt><big>(</big><em>request</em>, <em>qos_specs</em>, <em>vol_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_associate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>specs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_delete</tt><big>(</big><em>request</em>, <em>qos_spec_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_disassociate</tt><big>(</big><em>request</em>, <em>qos_specs</em>, <em>vol_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_disassociate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_get</tt><big>(</big><em>request</em>, <em>qos_spec_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_get_associations</tt><big>(</big><em>request</em>, <em>qos_spec_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_get_associations"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_get_keys</tt><big>(</big><em>request</em>, <em>qos_spec_id</em>, <em>raw=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_get_keys"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_set_keys</tt><big>(</big><em>request</em>, <em>qos_spec_id</em>, <em>specs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_set_keys"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">qos_spec_unset_keys</tt><big>(</big><em>request</em>, <em>qos_spec_id</em>, <em>specs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#qos_spec_unset_keys"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">service_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#service_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">tenant_absolute_limits</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#tenant_absolute_limits"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">tenant_quota_get</tt><big>(</big><em>request</em>, <em>tenant_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#tenant_quota_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">tenant_quota_update</tt><big>(</big><em>request</em>, <em>tenant_id</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#tenant_quota_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">transfer_accept</tt><big>(</big><em>request</em>, <em>transfer_id</em>, <em>auth_key</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#transfer_accept"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">transfer_create</tt><big>(</big><em>request</em>, <em>transfer_id</em>, <em>name</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#transfer_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">transfer_delete</tt><big>(</big><em>request</em>, <em>transfer_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#transfer_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">transfer_get</tt><big>(</big><em>request</em>, <em>transfer_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#transfer_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">transfer_list</tt><big>(</big><em>request</em>, <em>detailed=True</em>, <em>search_opts=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#transfer_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>To see all volumes transfers as an admin pass in a special
+search option: {&#8216;all_tenants&#8217;: 1}</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">version_get</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#version_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_backup_create</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>container_name</em>, <em>name</em>, <em>description</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_backup_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_backup_delete</tt><big>(</big><em>request</em>, <em>backup_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_backup_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_backup_get</tt><big>(</big><em>request</em>, <em>backup_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_backup_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_backup_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_backup_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_backup_restore</tt><big>(</big><em>request</em>, <em>backup_id</em>, <em>volume_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_backup_restore"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_backup_supported</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_backup_supported"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>This method will determine if cinder supports backup.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_create</tt><big>(</big><em>request</em>, <em>size</em>, <em>name</em>, <em>description</em>, <em>volume_type</em>, <em>snapshot_id=None</em>, <em>metadata=None</em>, <em>image_id=None</em>, <em>availability_zone=None</em>, <em>source_volid=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_delete</tt><big>(</big><em>request</em>, <em>volume_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_encryption_type_create</tt><big>(</big><em>request</em>, <em>volume_type_id</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_encryption_type_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_encryption_type_delete</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_encryption_type_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_encryption_type_get</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_encryption_type_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_encryption_type_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_encryption_type_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_extend</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>new_size</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_extend"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_get</tt><big>(</big><em>request</em>, <em>volume_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_get_encryption_metadata</tt><big>(</big><em>request</em>, <em>volume_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_get_encryption_metadata"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_list</tt><big>(</big><em>request</em>, <em>search_opts=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>To see all volumes in the cloud as an admin you can pass in a special
+search option: {&#8216;all_tenants&#8217;: 1}</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_manage</tt><big>(</big><em>request</em>, <em>host</em>, <em>identifier</em>, <em>id_type</em>, <em>name</em>, <em>description</em>, <em>volume_type</em>, <em>availability_zone</em>, <em>metadata</em>, <em>bootable</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_manage"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_migrate</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>host</em>, <em>force_host_copy=False</em>, <em>lock_volume=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_migrate"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_reset_state</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>state</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_reset_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_retype</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>new_type</em>, <em>migration_policy</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_retype"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_set_bootable</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>bootable</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_set_bootable"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_snapshot_create</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>name</em>, <em>description=None</em>, <em>force=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_snapshot_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_snapshot_delete</tt><big>(</big><em>request</em>, <em>snapshot_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_snapshot_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_snapshot_get</tt><big>(</big><em>request</em>, <em>snapshot_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_snapshot_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_snapshot_list</tt><big>(</big><em>request</em>, <em>search_opts=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_snapshot_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_snapshot_reset_state</tt><big>(</big><em>request</em>, <em>snapshot_id</em>, <em>state</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_snapshot_reset_state"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_snapshot_update</tt><big>(</big><em>request</em>, <em>snapshot_id</em>, <em>name</em>, <em>description</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_snapshot_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_create</tt><big>(</big><em>request</em>, <em>name</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_create"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_default</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_default"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_delete</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_extra_delete</tt><big>(</big><em>request</em>, <em>type_id</em>, <em>keys</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_extra_delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_extra_get</tt><big>(</big><em>request</em>, <em>type_id</em>, <em>raw=False</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_extra_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_extra_set</tt><big>(</big><em>request</em>, <em>type_id</em>, <em>metadata</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_extra_set"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_get</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_get"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_get_with_qos_association</tt><big>(</big><em>request</em>, <em>volume_type_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_get_with_qos_association"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_list</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_list"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_list_with_qos_associations</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_list_with_qos_associations"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_type_update</tt><big>(</big><em>request</em>, <em>volume_type_id</em>, <em>name=None</em>, <em>description=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_type_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_unmanage</tt><big>(</big><em>request</em>, <em>volume_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_unmanage"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_update</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>name</em>, <em>description</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_update"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">openstack_dashboard.api.cinder.</tt><tt class="descname">volume_upload_to_image</tt><big>(</big><em>request</em>, <em>volume_id</em>, <em>force</em>, <em>image_name</em>, <em>container_format</em>, <em>disk_format</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/api/cinder.html#volume_upload_to_image"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.vpn.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.vpn</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.api.network_base.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.api.network_base</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.api.cinder.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.network_base.html" title="The openstack_dashboard.api.network_base Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.api.vpn.html" title="The openstack_dashboard.api.vpn Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

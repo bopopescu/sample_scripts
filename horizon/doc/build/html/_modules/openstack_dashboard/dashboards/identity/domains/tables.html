@@ -1,0 +1,419 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.identity.domains.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.identity.domains.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2013 Hewlett-Packard Development Company, L.P.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">defaultfilters</span> <span class="k">as</span> <span class="n">filters</span>
+<span class="kn">from</span> <span class="nn">django.utils.http</span> <span class="kn">import</span> <span class="n">urlencode</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">keystoneclient</span> <span class="kn">import</span> <span class="n">exceptions</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.identity.domains</span> <span class="kn">import</span> <span class="n">constants</span>
+
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="UpdateUsersLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UpdateUsersLink">[docs]</a><span class="k">class</span> <span class="nc">UpdateUsersLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;users&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Manage Members&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:identity:domains:update&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:list_users&quot;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:list_roles&quot;</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;identity&quot;</span><span class="p">,</span> <span class="s2">&quot;identity:list_role_assignments&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="UpdateUsersLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UpdateUsersLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="s1">&#39;update_user_members&#39;</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">({</span><span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
+        <span class="k">return</span> <span class="s2">&quot;?&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">base_url</span><span class="p">,</span> <span class="n">param</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateGroupsLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UpdateGroupsLink">[docs]</a><span class="k">class</span> <span class="nc">UpdateGroupsLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;groups&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Modify Groups&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:identity:domains:update&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+
+<div class="viewcode-block" id="UpdateGroupsLink.get_link_url"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UpdateGroupsLink.get_link_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_link_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="s1">&#39;update_group_members&#39;</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">domain</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">({</span><span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
+        <span class="k">return</span> <span class="s2">&quot;?&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">base_url</span><span class="p">,</span> <span class="n">param</span><span class="p">])</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateDomainLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.CreateDomainLink">[docs]</a><span class="k">class</span> <span class="nc">CreateDomainLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;create&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Create Domain&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">DOMAINS_CREATE_URL</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;plus&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;identity:create_domain&#39;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="CreateDomainLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.CreateDomainLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_domain</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="EditDomainLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EditDomainLink">[docs]</a><span class="k">class</span> <span class="nc">EditDomainLink</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;edit&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Edit&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">DOMAINS_UPDATE_URL</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,)</span>
+    <span class="n">icon</span> <span class="o">=</span> <span class="s2">&quot;pencil&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;identity:update_domain&#39;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="EditDomainLink.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EditDomainLink.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_domain</span><span class="p">()</span>
+
+</div></div>
+<div class="viewcode-block" id="DeleteDomainsAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DeleteDomainsAction">[docs]</a><span class="k">class</span> <span class="nc">DeleteDomainsAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DeleteAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteDomainsAction.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DeleteDomainsAction.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Delete Domain&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Delete Domains&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DeleteDomainsAction.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DeleteDomainsAction.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Deleted Domain&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Deleted Domains&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;delete&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;identity:delete_domain&#39;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="DeleteDomainsAction.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DeleteDomainsAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_domain</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="DeleteDomainsAction.delete"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DeleteDomainsAction.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">domain</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Domain &quot;</span><span class="si">%s</span><span class="s1">&quot; must be disabled before it can be deleted.&#39;</span><span class="p">)</span> \
+                <span class="o">%</span> <span class="n">domain</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">exceptions</span><span class="o">.</span><span class="n">ClientException</span><span class="p">(</span><span class="mi">409</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Deleting domain &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="DisableDomainsAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DisableDomainsAction">[docs]</a><span class="k">class</span> <span class="nc">DisableDomainsAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DisableDomainsAction.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DisableDomainsAction.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Disable Domain&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Disable Domains&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="DisableDomainsAction.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DisableDomainsAction.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Disabled Domain&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Disabled Domains&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;disable&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;identity:update_domain&#39;</span><span class="p">),)</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Disable Domains&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DisableDomainsAction.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DisableDomainsAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_domain</span><span class="p">()</span> \
+            <span class="ow">and</span> <span class="p">(</span><span class="n">datum</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">datum</span><span class="o">.</span><span class="n">enabled</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DisableDomainsAction.action"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DisableDomainsAction.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">domain</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Disabling domain &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                           <span class="n">domain_id</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                           <span class="n">name</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                           <span class="n">description</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                                           <span class="n">enabled</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="EnableDomainsAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EnableDomainsAction">[docs]</a><span class="k">class</span> <span class="nc">EnableDomainsAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="EnableDomainsAction.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EnableDomainsAction.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Enable Domain&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Enable Domains&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="EnableDomainsAction.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EnableDomainsAction.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Enabled Domain&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Enabled Domains&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;enable&quot;</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;identity:update_domain&#39;</span><span class="p">),)</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Enable Domains&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EnableDomainsAction.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EnableDomainsAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">keystone_can_edit_domain</span><span class="p">()</span> \
+            <span class="ow">and</span> <span class="p">(</span><span class="n">datum</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">datum</span><span class="o">.</span><span class="n">enabled</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="EnableDomainsAction.action"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.EnableDomainsAction.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_object_by_id</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">domain</span><span class="o">.</span><span class="n">enabled</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Enabling domain &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span> <span class="o">%</span> <span class="n">obj_id</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                           <span class="n">domain_id</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                           <span class="n">name</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                           <span class="n">description</span><span class="o">=</span><span class="n">domain</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                                           <span class="n">enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="DomainFilterAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DomainFilterAction">[docs]</a><span class="k">class</span> <span class="nc">DomainFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+<div class="viewcode-block" id="DomainFilterAction.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DomainFilterAction.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">multidomain_support</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                      <span class="s1">&#39;OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT&#39;</span><span class="p">,</span>
+                                      <span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">multidomain_support</span>
+</div>
+<div class="viewcode-block" id="DomainFilterAction.filter"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DomainFilterAction.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">domains</span><span class="p">,</span> <span class="n">filter_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Naive case-insensitive search.&quot;&quot;&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">filter_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">comp</span><span class="p">(</span><span class="n">domain</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">domain</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="nb">filter</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="n">domains</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="SetDomainContext"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.SetDomainContext">[docs]</a><span class="k">class</span> <span class="nc">SetDomainContext</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;set_domain_context&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Set Domain Context&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">DOMAINS_INDEX_URL</span>
+    <span class="n">preempt</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;admin_required&#39;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="SetDomainContext.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.SetDomainContext.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">multidomain_support</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span>
+                                      <span class="s1">&#39;OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT&#39;</span><span class="p">,</span>
+                                      <span class="bp">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">multidomain_support</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;domain_context&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ctx</span> <span class="ow">and</span> <span class="n">datum</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">ctx</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="SetDomainContext.single"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.SetDomainContext.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;domain_context&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span> <span class="ow">or</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;domain_context&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">obj_id</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">domain</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">domain_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;domain_context&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj_id</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;domain_context_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                 <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Domain Context updated to Domain </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">)</span> <span class="o">%</span>
+                                 <span class="n">domain</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                               <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to set Domain Context.&#39;</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="UnsetDomainContext"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UnsetDomainContext">[docs]</a><span class="k">class</span> <span class="nc">UnsetDomainContext</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;clear_domain_context&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Clear Domain Context&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">constants</span><span class="o">.</span><span class="n">DOMAINS_INDEX_URL</span>
+    <span class="n">preempt</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">requires_input</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="s1">&#39;admin_required&#39;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="UnsetDomainContext.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UnsetDomainContext.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">datum</span><span class="p">):</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;domain_context&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ctx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="UnsetDomainContext.single"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.UnsetDomainContext.single">[docs]</a>    <span class="k">def</span> <span class="nf">single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;domain_context&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;domain_context&quot;</span><span class="p">)</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;domain_context_name&quot;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Domain Context cleared.&#39;</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="DomainsTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DomainsTable">[docs]</a><span class="k">class</span> <span class="nc">DomainsTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Name&#39;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+                                <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Description&#39;</span><span class="p">))</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Domain ID&#39;</span><span class="p">))</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Enabled&#39;</span><span class="p">),</span> <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">yesno</span><span class="p">,</span> <span class="n">filters</span><span class="o">.</span><span class="n">capfirst</span><span class="p">))</span>
+
+<div class="viewcode-block" id="DomainsTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.domains.tables.html#openstack_dashboard.dashboards.identity.domains.tables.DomainsTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;domains&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Domains&quot;</span><span class="p">)</span>
+        <span class="n">table_actions_menu</span> <span class="o">=</span> <span class="p">(</span><span class="n">EnableDomainsAction</span><span class="p">,</span> <span class="n">DisableDomainsAction</span><span class="p">)</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">SetDomainContext</span><span class="p">,</span> <span class="n">UpdateUsersLink</span><span class="p">,</span> <span class="n">UpdateGroupsLink</span><span class="p">,</span>
+                       <span class="n">EditDomainLink</span><span class="p">,</span> <span class="n">EnableDomainsAction</span><span class="p">,</span>
+                       <span class="n">DisableDomainsAction</span><span class="p">,</span> <span class="n">DeleteDomainsAction</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">DomainFilterAction</span><span class="p">,</span> <span class="n">CreateDomainLink</span><span class="p">,</span>
+                         <span class="n">DeleteDomainsAction</span><span class="p">,</span> <span class="n">UnsetDomainContext</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

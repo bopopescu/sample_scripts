@@ -1,0 +1,735 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial: Building a Dashboard using Horizon &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Contributing Guide" href="../contributing.html" />
+    <link rel="prev" title="Quickstart" href="../quickstart.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-building-a-dashboard-using-horizon">
+<h1>Tutorial: Building a Dashboard using Horizon<a class="headerlink" href="#tutorial-building-a-dashboard-using-horizon" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial covers how to use the various components in horizon to build
+an example dashboard and a panel with a tab which has a table containing data
+from the back end.</p>
+<p>As an example, we&#8217;ll create a new <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Dashboard</span></tt> dashboard with a <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt>
+panel that has an <tt class="docutils literal"><span class="pre">Instances</span> <span class="pre">Tab</span></tt> tab. The tab has a table which contains the
+data pulled by the Nova instances API.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This tutorial assumes you have either a <tt class="docutils literal"><span class="pre">devstack</span></tt> or <tt class="docutils literal"><span class="pre">openstack</span></tt>
+environment up and running.
+There are a variety of other resources which may be helpful to read first.
+For example, you may want to start
+with the <a class="reference internal" href="../quickstart.html"><em>Horizon quickstart guide</em></a> or the
+<a class="reference external" href="https://docs.djangoproject.com/en/1.6/intro/tutorial01/">Django tutorial</a>.</p>
+</div>
+<div class="section" id="creating-a-dashboard">
+<h2>Creating a dashboard<a class="headerlink" href="#creating-a-dashboard" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="the-quick-version">
+<h3>The quick version<a class="headerlink" href="#the-quick-version" title="Permalink to this headline">¶</a></h3>
+<p>Horizon provides a custom management command to create a typical base
+dashboard structure for you. Run the following commands at the same location
+where the <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> file resides. It generates most of the boilerplate
+code you need:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>mkdir openstack_dashboard/dashboards/mydashboard
+
+./run_tests.sh -m startdash mydashboard \
+              --target openstack_dashboard/dashboards/mydashboard
+
+mkdir openstack_dashboard/dashboards/mydashboard/mypanel
+
+./run_tests.sh -m startpanel mypanel \
+               --dashboard=openstack_dashboard.dashboards.mydashboard \
+               --target=openstack_dashboard/dashboards/mydashboard/mypanel
+</pre></div>
+</div>
+<p>You will notice that the directory <tt class="docutils literal"><span class="pre">mydashboard</span></tt> gets automatically
+populated with the files related to a dashboard and the <tt class="docutils literal"><span class="pre">mypanel</span></tt> directory
+gets automatically populated with the files related to a panel.</p>
+</div>
+<div class="section" id="structure">
+<h3>Structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h3>
+<p>If you use the <tt class="docutils literal"><span class="pre">tree</span> <span class="pre">mydashboard</span></tt> command to list the <tt class="docutils literal"><span class="pre">mydashboard</span></tt>
+directory in <tt class="docutils literal"><span class="pre">openstack_dashboard/dashboards</span></tt> , you will see a directory
+structure that looks like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>mydashboard
+├── dashboard.py
+├── dashboard.pyc
+├── __init__.py
+├── __init__.pyc
+├── models.py
+├── mypanel
+│   ├── __init__.py
+│   ├── models.py
+│   ├── panel.py
+│   ├── templates
+│   │   └── mypanel
+│   │       └── index.html
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── static
+│   └── mydashboard
+│       ├── css
+│       │   └── mydashboard.css
+│       └── js
+│           └── mydashboard.js
+└── templates
+    └── mydashboard
+        └── base.html
+</pre></div>
+</div>
+<p>For this tutorial, we will not deal with the static directory, the <tt class="docutils literal"><span class="pre">models.py</span></tt>
+file and tests.py file. Leave them as they are.</p>
+<p>With the rest of the files and directories in place, we can move on to add our
+own dashboard.</p>
+</div>
+<div class="section" id="defining-a-dashboard">
+<h3>Defining a dashboard<a class="headerlink" href="#defining-a-dashboard" title="Permalink to this headline">¶</a></h3>
+<p>Open the <tt class="docutils literal"><span class="pre">dashboard.py</span></tt> file. You will notice the following code has been
+automatically generated:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">import</span> <span class="nn">horizon</span>
+
+
+<span class="k">class</span> <span class="nc">Mydashboard</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Dashboard</span><span class="p">):</span>
+   <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Mydashboard&quot;</span><span class="p">)</span>
+   <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mydashboard&quot;</span>
+   <span class="n">panels</span> <span class="o">=</span> <span class="p">()</span>           <span class="c1"># Add your panels here.</span>
+   <span class="n">default_panel</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1"># Specify the slug of the dashboard&#39;s default panel.</span>
+
+
+<span class="n">horizon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Mydashboard</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want the dashboard name to be something else, you can change the <tt class="docutils literal"><span class="pre">name</span></tt>
+attribute in the <tt class="docutils literal"><span class="pre">dashboard.py</span></tt> file . For example, you can change it
+to be <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Dashboard</span></tt></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;My Dashboard&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A dashboard class will usually contain a <tt class="docutils literal"><span class="pre">name</span></tt> attribute (the display name of
+the dashboard), a <tt class="docutils literal"><span class="pre">slug</span></tt> attribute (the internal name that could be referenced
+by other components), a list of panels, default panel, etc. We will cover how
+to add a panel in the next section.</p>
+</div>
+</div>
+<div class="section" id="creating-a-panel">
+<h2>Creating a panel<a class="headerlink" href="#creating-a-panel" title="Permalink to this headline">¶</a></h2>
+<p>We&#8217;ll create a panel and call it <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt>.</p>
+<div class="section" id="id1">
+<h3>Structure<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>As described above, the <tt class="docutils literal"><span class="pre">mypanel</span></tt> directory under
+<tt class="docutils literal"><span class="pre">openstack_dashboard/dashboards/mydashboard</span></tt> should look like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>mypanel
+ ├── __init__.py
+ ├── models.py
+ ├── panel.py
+ ├── templates
+ │   └── mypanel
+ │     └── index.html
+ ├── tests.py
+ ├── urls.py
+ └── views.py
+</pre></div>
+</div>
+</div>
+<div class="section" id="defining-a-panel">
+<h3>Defining a panel<a class="headerlink" href="#defining-a-panel" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="docutils literal"><span class="pre">panel.py</span></tt> file referenced above has a special meaning. Within a dashboard,
+any module name listed in the <tt class="docutils literal"><span class="pre">panels</span></tt> attribute on the dashboard class will
+be auto-discovered by looking for the <tt class="docutils literal"><span class="pre">panel.py</span></tt> file in a corresponding
+directory (the details are a bit magical, but have been thoroughly vetted in
+Django&#8217;s admin codebase).</p>
+<p>Open the <tt class="docutils literal"><span class="pre">panel.py</span></tt> file, you will have the following auto-generated code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">import</span> <span class="nn">horizon</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.mydashboard</span> <span class="kn">import</span> <span class="n">dashboard</span>
+
+
+<span class="k">class</span> <span class="nc">Mypanel</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Mypanel&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mypanel&quot;</span>
+
+
+<span class="n">dashboard</span><span class="o">.</span><span class="n">Mydashboard</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Mypanel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want the panel name to be something else, you can change the <tt class="docutils literal"><span class="pre">name</span></tt>
+attribute in the <tt class="docutils literal"><span class="pre">panel.py</span></tt> file . For example, you can change it to be
+<tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;My Panel&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Open the <tt class="docutils literal"><span class="pre">dashboard.py</span></tt> file again, insert the following code above the
+<tt class="docutils literal"><span class="pre">Mydashboard</span></tt> class. This code defines the <tt class="docutils literal"><span class="pre">Mygroup</span></tt> class and adds a panel
+called <tt class="docutils literal"><span class="pre">mypanel</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mygroup</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">PanelGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mygroup&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;My Group&quot;</span><span class="p">)</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;mypanel&#39;</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>Modify the <tt class="docutils literal"><span class="pre">Mydashboard</span></tt> class to include <tt class="docutils literal"><span class="pre">Mygroup</span></tt> and add <tt class="docutils literal"><span class="pre">mypanel</span></tt> as
+the default panel:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mydashboard</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Dashboard</span><span class="p">):</span>
+   <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;My Dashboard&quot;</span><span class="p">)</span>
+   <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mydashboard&quot;</span>
+   <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="n">Mygroup</span><span class="p">,)</span>  <span class="c1"># Add your panels here.</span>
+   <span class="n">default_panel</span> <span class="o">=</span> <span class="s1">&#39;mypanel&#39;</span>  <span class="c1"># Specify the slug of the default panel.</span>
+</pre></div>
+</div>
+<p>The completed <tt class="docutils literal"><span class="pre">dashboard.py</span></tt> file should look like
+the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">import</span> <span class="nn">horizon</span>
+
+
+<span class="k">class</span> <span class="nc">Mygroup</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">PanelGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mygroup&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;My Group&quot;</span><span class="p">)</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;mypanel&#39;</span><span class="p">,)</span>
+
+
+<span class="k">class</span> <span class="nc">Mydashboard</span><span class="p">(</span><span class="n">horizon</span><span class="o">.</span><span class="n">Dashboard</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;My Dashboard&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mydashboard&quot;</span>
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">(</span><span class="n">Mygroup</span><span class="p">,)</span>  <span class="c1"># Add your panels here.</span>
+    <span class="n">default_panel</span> <span class="o">=</span> <span class="s1">&#39;mypanel&#39;</span>  <span class="c1"># Specify the slug of the default panel.</span>
+
+
+<span class="n">horizon</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Mydashboard</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tables-tabs-and-views">
+<h3>Tables, Tabs, and Views<a class="headerlink" href="#tables-tabs-and-views" title="Permalink to this headline">¶</a></h3>
+<p>We&#8217;ll start with the table, combine that with the tabs, and then build our
+view from the pieces.</p>
+<div class="section" id="defining-a-table">
+<h4>Defining a table<a class="headerlink" href="#defining-a-table" title="Permalink to this headline">¶</a></h4>
+<p>Horizon provides a <tt class="xref py py-class docutils literal"><span class="pre">SelfHandlingForm</span></tt>  <a class="reference internal" href="../ref/tables.html#horizon.tables.DataTable" title="horizon.tables.DataTable"><tt class="xref py py-class docutils literal"><span class="pre">DataTable</span></tt></a> class which simplifies
+the vast majority of displaying data to an end-user. We&#8217;re just going to skim
+the surface here, but it has a tremendous number of capabilities.</p>
+<p>Create a <tt class="docutils literal"><span class="pre">tables.py</span></tt> file under the <tt class="docutils literal"><span class="pre">mypanel</span></tt> directory and add the
+following code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+
+
+<span class="k">class</span> <span class="nc">InstancesTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">))</span>
+    <span class="n">zone</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">,</span>
+                          <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Availability Zone&quot;</span><span class="p">))</span>
+    <span class="n">image_name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;image_name&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image Name&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;instances&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are several things going on here... we created a table subclass,
+and defined four columns that we want to retrieve data and display.
+Each of those columns defines what attribute it accesses on the instance object
+as the first argument, and since we like to make everything translatable,
+we give each column a <tt class="docutils literal"><span class="pre">verbose_name</span></tt> that&#8217;s marked for translation.</p>
+<p>Lastly, we added a <tt class="docutils literal"><span class="pre">Meta</span></tt> class which indicates the meta object that describes
+the <tt class="docutils literal"><span class="pre">instances</span></tt> table.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is a slight simplification from the reality of how the instance
+object is actually structured. In reality, accessing other attributes
+requires an additional step.</p>
+</div>
+</div>
+<div class="section" id="adding-actions-to-a-table">
+<h4>Adding actions to a table<a class="headerlink" href="#adding-actions-to-a-table" title="Permalink to this headline">¶</a></h4>
+<p>Horizon provides three types of basic action classes which can be taken
+on a table&#8217;s data:</p>
+<ul class="simple">
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.Action" title="horizon.tables.Action"><tt class="xref py py-class docutils literal"><span class="pre">Action</span></tt></a></li>
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.LinkAction" title="horizon.tables.LinkAction"><tt class="xref py py-class docutils literal"><span class="pre">LinkAction</span></tt></a></li>
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.FilterAction" title="horizon.tables.FilterAction"><tt class="xref py py-class docutils literal"><span class="pre">FilterAction</span></tt></a></li>
+</ul>
+<p>There are also additional actions which are extensions of the basic Action classes:</p>
+<ul class="simple">
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.BatchAction" title="horizon.tables.BatchAction"><tt class="xref py py-class docutils literal"><span class="pre">BatchAction</span></tt></a></li>
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.DeleteAction" title="horizon.tables.DeleteAction"><tt class="xref py py-class docutils literal"><span class="pre">DeleteAction</span></tt></a></li>
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.UpdateAction" title="horizon.tables.UpdateAction"><tt class="xref py py-class docutils literal"><span class="pre">UpdateAction</span></tt></a></li>
+<li><a class="reference internal" href="../ref/tables.html#horizon.tables.FixedFilterAction" title="horizon.tables.FixedFilterAction"><tt class="xref py py-class docutils literal"><span class="pre">FixedFilterAction</span></tt></a></li>
+</ul>
+<p>Now let&#8217;s create and add a filter action to the table. To do so, we will need
+to edit the <tt class="docutils literal"><span class="pre">tables.py</span></tt> file used above. To add a filter action which will
+only show rows which contain the string entered in the filter field, we
+must first define the action:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;myfilter&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The action specified above will default the <tt class="docutils literal"><span class="pre">filter_type</span></tt> to be <tt class="docutils literal"><span class="pre">&quot;query&quot;</span></tt>.
+This means that the filter will use the client side table sorter.</p>
+</div>
+<p>Then, we add that action to the table actions for our table.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">InstancesTable</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">MyFilterAction</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>The completed <tt class="docutils literal"><span class="pre">tables.py</span></tt> file should look like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+
+
+<span class="k">class</span> <span class="nc">MyFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;myfilter&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">InstancesTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> \
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> \
+                           <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">))</span>
+    <span class="n">zone</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">,</span> \
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Availability Zone&quot;</span><span class="p">))</span>
+    <span class="n">image_name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s1">&#39;image_name&#39;</span><span class="p">,</span> \
+                               <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image Name&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;instances&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances&quot;</span><span class="p">)</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">MyFilterAction</span><span class="p">,)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="defining-tabs">
+<h4>Defining tabs<a class="headerlink" href="#defining-tabs" title="Permalink to this headline">¶</a></h4>
+<p>So we have a table, ready to receive our data. We could go straight to a view
+from here, but in this case we&#8217;re also going to use horizon&#8217;s
+<a class="reference internal" href="../ref/tabs.html#horizon.tabs.TabGroup" title="horizon.tabs.TabGroup"><tt class="xref py py-class docutils literal"><span class="pre">TabGroup</span></tt></a> class.</p>
+<p>Create a <tt class="docutils literal"><span class="pre">tabs.py</span></tt> file under the <tt class="docutils literal"><span class="pre">mypanel</span></tt> directory. Let&#8217;s make a tab
+group which has one tab. The completed code should look like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.mydashboard.mypanel</span> <span class="kn">import</span> <span class="n">tables</span>
+
+
+<span class="k">class</span> <span class="nc">InstanceTab</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TableTab</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances Tab&quot;</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;instances_tab&quot;</span>
+    <span class="n">table_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">InstancesTable</span><span class="p">,)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;horizon/common/_detail_table.html&quot;</span><span class="p">)</span>
+    <span class="n">preload</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">has_more_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_more</span>
+
+    <span class="k">def</span> <span class="nf">get_instances_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="n">tables</span><span class="o">.</span><span class="n">InstancesTable</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">pagination_param</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+            <span class="n">instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_more</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_list</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                <span class="n">search_opts</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;marker&#39;</span><span class="p">:</span> <span class="n">marker</span><span class="p">,</span> <span class="s1">&#39;paginate&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
+
+            <span class="k">return</span> <span class="n">instances</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_has_more</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to get instances&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">error_message</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">[]</span>
+
+<span class="k">class</span> <span class="nc">MypanelTabs</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabGroup</span><span class="p">):</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="s2">&quot;mypanel_tabs&quot;</span>
+    <span class="n">tabs</span> <span class="o">=</span> <span class="p">(</span><span class="n">InstanceTab</span><span class="p">,)</span>
+    <span class="n">sticky</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>This tab gets a little more complicated. The tab handles data tables (and
+all their associated features), and it also uses the <tt class="docutils literal"><span class="pre">preload</span></tt> attribute to
+specify that this tab shouldn&#8217;t be loaded by default. It will instead be loaded
+via AJAX when someone clicks on it, saving us on API calls in the vast majority
+of cases.</p>
+<p>Additionally, the displaying of the table is handled by a reusable template,
+<tt class="docutils literal"><span class="pre">horizon/common/_detail_table.html</span></tt>. Some simple pagination code was added
+to handle large instance lists.</p>
+<p>Lastly, this code introduces the concept of error handling in horizon.
+The <a class="reference internal" href="../ref/exceptions.html#horizon.exceptions.handle" title="horizon.exceptions.handle"><tt class="xref py py-func docutils literal"><span class="pre">horizon.exceptions.handle()</span></tt></a> function is a centralized error
+handling mechanism that takes all the guess-work and inconsistency out of
+dealing with exceptions from the API. Use it everywhere.</p>
+</div>
+<div class="section" id="tying-it-together-in-a-view">
+<h4>Tying it together in a view<a class="headerlink" href="#tying-it-together-in-a-view" title="Permalink to this headline">¶</a></h4>
+<p>There are lots of pre-built class-based views in horizon. We try to provide
+the starting points for all the common combinations of components.</p>
+<p>Open the <tt class="docutils literal"><span class="pre">views.py</span></tt> file, the auto-generated code is like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">views</span>
+
+
+<span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">views</span><span class="o">.</span><span class="n">APIView</span><span class="p">):</span>
+    <span class="c1"># A very simple class-based view...</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;mydashboard/mypanel/index.html&#39;</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Add data to the context here...</span>
+        <span class="k">return</span> <span class="n">context</span>
+</pre></div>
+</div>
+<p>In this case we want a starting view type that works with both tabs and
+tables... that&#8217;d be the <a class="reference internal" href="../ref/tabs.html#horizon.tabs.TabbedTableView" title="horizon.tabs.TabbedTableView"><tt class="xref py py-class docutils literal"><span class="pre">TabbedTableView</span></tt></a> class. It takes
+the best of the dynamic delayed-loading capabilities tab groups provide and
+mixes in the actions and AJAX-updating that tables are capable of with almost
+no work on the user&#8217;s end. Change <tt class="docutils literal"><span class="pre">views.APIView</span></tt> to be
+<tt class="docutils literal"><span class="pre">tabs.TabbedTableView</span></tt> and add <tt class="docutils literal"><span class="pre">MypanelTabs</span></tt> as the tab group class in the
+<tt class="docutils literal"><span class="pre">IndexView</span></tt> class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabbedTableView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">mydashboard_tabs</span><span class="o">.</span><span class="n">MypanelTabs</span>
+</pre></div>
+</div>
+<p>After importing the proper package, the completed <tt class="docutils literal"><span class="pre">views.py</span></tt> file  now looks like
+the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tabs</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.mydashboard.mypanel</span> \
+    <span class="kn">import</span> <span class="n">tabs</span> <span class="k">as</span> <span class="n">mydashboard_tabs</span>
+
+
+<span class="k">class</span> <span class="nc">IndexView</span><span class="p">(</span><span class="n">tabs</span><span class="o">.</span><span class="n">TabbedTableView</span><span class="p">):</span>
+    <span class="n">tab_group_class</span> <span class="o">=</span> <span class="n">mydashboard_tabs</span><span class="o">.</span><span class="n">MypanelTabs</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s1">&#39;mydashboard/mypanel/index.html&#39;</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Add data to the context here...</span>
+        <span class="k">return</span> <span class="n">context</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="urls">
+<h3>URLs<a class="headerlink" href="#urls" title="Permalink to this headline">¶</a></h3>
+<p>The auto-generated <tt class="docutils literal"><span class="pre">urls.py</span></tt> file is like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">patterns</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.mydashboard.mypanel.views</span> \
+    <span class="kn">import</span> <span class="n">IndexView</span>
+
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span>
+    <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^$&#39;</span><span class="p">,</span> <span class="n">IndexView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Adjust the import of <tt class="docutils literal"><span class="pre">IndexView</span></tt> to make the code readable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.mydashboard.mypanel</span> <span class="kn">import</span> <span class="n">views</span>
+</pre></div>
+</div>
+<p>Replace the existing <tt class="docutils literal"><span class="pre">url</span></tt> pattern with the following line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^$&#39;</span><span class="p">,</span>
+    <span class="n">views</span><span class="o">.</span><span class="n">IndexView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>The completed <tt class="docutils literal"><span class="pre">urls.py</span></tt> file should look like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">patterns</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.mydashboard.mypanel</span> <span class="kn">import</span> <span class="n">views</span>
+
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">(</span><span class="s1">r&#39;^$&#39;</span><span class="p">,</span>
+        <span class="n">views</span><span class="o">.</span><span class="n">IndexView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="the-template">
+<h4>The template<a class="headerlink" href="#the-template" title="Permalink to this headline">¶</a></h4>
+<p>Open the <tt class="docutils literal"><span class="pre">index.html</span></tt> file in the <tt class="docutils literal"><span class="pre">mydashboard/mypanel/templates/mypanel</span></tt>
+directory, the auto-generated code is like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% extends &#39;base.html&#39; %}
+{% load i18n %}
+{% block title %}{% trans &quot;Mypanel&quot; %}{% endblock %}
+
+{% block page_header %}
+    {% include &quot;horizon/common/_page_header.html&quot; with title=_(&quot;Mypanel&quot;) %}
+{% endblock page_header %}
+
+{% block main %}
+{% endblock %}
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">main</span></tt> block must be modified to insert the following code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;div class=&quot;row&quot;&gt;
+   &lt;div class=&quot;col-sm-12&quot;&gt;
+   {{ tab_group.render }}
+   &lt;/div&gt;
+&lt;/div&gt;
+</pre></div>
+</div>
+<p>If you want to change the title of the <tt class="docutils literal"><span class="pre">index.html</span></tt> file to be something else,
+you can change it. For example, change it to be <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt> in the
+<tt class="docutils literal"><span class="pre">block</span> <span class="pre">title</span></tt> section.  If you want the <tt class="docutils literal"><span class="pre">title</span></tt> in the <tt class="docutils literal"><span class="pre">block</span> <span class="pre">page_header</span></tt>
+section to be something else, you can change it. For example, change it to be
+<tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt>. The updated code could be like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>{% extends &#39;base.html&#39; %}
+{% load i18n %}
+{% block title %}{% trans &quot;My Panel&quot; %}{% endblock %}
+
+{% block page_header %}
+   {% include &quot;horizon/common/_page_header.html&quot; with title=_(&quot;My Panel&quot;) %}
+{% endblock page_header %}
+
+{% block main %}
+&lt;div class=&quot;row&quot;&gt;
+   &lt;div class=&quot;col-sm-12&quot;&gt;
+   {{ tab_group.render }}
+   &lt;/div&gt;
+&lt;/div&gt;
+{% endblock %}
+</pre></div>
+</div>
+<p>This gives us a custom page title, a header, and renders our tab group provided
+by the view.</p>
+<p>With all our code in place, the only thing left to do is to integrate it into
+our OpenStack Dashboard site.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For more information about Django views, URLs and templates, please refer
+to the <a class="reference external" href="https://docs.djangoproject.com/en/1.6/">Django documentation</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="enable-and-show-the-dashboard">
+<h2>Enable and show the dashboard<a class="headerlink" href="#enable-and-show-the-dashboard" title="Permalink to this headline">¶</a></h2>
+<p>In order to make <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Dashboard</span></tt> show up along with the existing dashboards
+like <tt class="docutils literal"><span class="pre">Project</span></tt> or <tt class="docutils literal"><span class="pre">Admin</span></tt> on horizon, you need to create a file called
+<tt class="docutils literal"><span class="pre">_50_mydashboard.py</span></tt> under <tt class="docutils literal"><span class="pre">openstack_dashboard/enabled</span></tt> and add the
+following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># The name of the dashboard to be added to HORIZON[&#39;dashboards&#39;]. Required.</span>
+<span class="n">DASHBOARD</span> <span class="o">=</span> <span class="s1">&#39;mydashboard&#39;</span>
+
+<span class="c1"># If set to True, this dashboard will not be added to the settings.</span>
+<span class="n">DISABLED</span> <span class="o">=</span> <span class="bp">False</span>
+
+<span class="c1"># A list of applications to be added to INSTALLED_APPS.</span>
+<span class="n">ADD_INSTALLED_APPS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;openstack_dashboard.dashboards.mydashboard&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-and-check-the-dashboard">
+<h2>Run and check the dashboard<a class="headerlink" href="#run-and-check-the-dashboard" title="Permalink to this headline">¶</a></h2>
+<p>Everything is in place, now run <tt class="docutils literal"><span class="pre">Horizon</span></tt> on the different port:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --runserver 0.0.0.0:8877
+</pre></div>
+</div>
+<p>Go to <tt class="docutils literal"><span class="pre">http://&lt;your</span> <span class="pre">server&gt;:8877</span></tt> using a browser. After login as an admin
+you should be able see <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Dashboard</span></tt> shows up at the left side on horizon.
+Click it, <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Group</span></tt> will expand with <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt>. Click on <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Panel</span></tt>,
+the right side panel will display an <tt class="docutils literal"><span class="pre">Instances</span> <span class="pre">Tab</span></tt> which has an
+<tt class="docutils literal"><span class="pre">Instances</span></tt> table.</p>
+<p>If you don&#8217;t see any instance data, you haven&#8217;t created any instances yet.  Go to
+dashboard <tt class="docutils literal"><span class="pre">Project</span></tt> -&gt; <tt class="docutils literal"><span class="pre">Images</span></tt>, select a small image, for example,
+<tt class="docutils literal"><span class="pre">crioos-0.3.1-x86_64-uec</span></tt> , click <tt class="docutils literal"><span class="pre">Launch</span></tt> and enter an <tt class="docutils literal"><span class="pre">Instance</span> <span class="pre">Name</span></tt>,
+click the button <tt class="docutils literal"><span class="pre">Launch</span></tt>. It should create an instance if the OpenStack or
+devstack is correctly set up. Once the creation of an instance is successful, go
+to <tt class="docutils literal"><span class="pre">My</span> <span class="pre">Dashboard</span></tt> again to check the data.</p>
+</div>
+<div class="section" id="adding-a-complex-action-to-a-table">
+<h2>Adding a complex action to a table<a class="headerlink" href="#adding-a-complex-action-to-a-table" title="Permalink to this headline">¶</a></h2>
+<p>For a more detailed look into adding a table action, one that requires forms for
+gathering data, you can walk through <a class="reference internal" href="table_actions.html"><em>Adding a complex action to a table</em></a> tutorial.</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>What you&#8217;ve learned here is the fundamentals of how to write interfaces for
+your own project based on the components horizon provides.</p>
+<p>If you have feedback on how this tutorial could be improved, please feel free
+to submit a bug against <tt class="docutils literal"><span class="pre">Horizon</span></tt> in <a class="reference external" href="https://bugs.launchpad.net/horizon">launchpad</a>.</p>
+<blockquote>
+<div></div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Tutorial: Building a Dashboard using Horizon</a><ul>
+<li><a class="reference internal" href="#creating-a-dashboard">Creating a dashboard</a><ul>
+<li><a class="reference internal" href="#the-quick-version">The quick version</a></li>
+<li><a class="reference internal" href="#structure">Structure</a></li>
+<li><a class="reference internal" href="#defining-a-dashboard">Defining a dashboard</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#creating-a-panel">Creating a panel</a><ul>
+<li><a class="reference internal" href="#id1">Structure</a></li>
+<li><a class="reference internal" href="#defining-a-panel">Defining a panel</a></li>
+<li><a class="reference internal" href="#tables-tabs-and-views">Tables, Tabs, and Views</a><ul>
+<li><a class="reference internal" href="#defining-a-table">Defining a table</a></li>
+<li><a class="reference internal" href="#adding-actions-to-a-table">Adding actions to a table</a></li>
+<li><a class="reference internal" href="#defining-tabs">Defining tabs</a></li>
+<li><a class="reference internal" href="#tying-it-together-in-a-view">Tying it together in a view</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#urls">URLs</a><ul>
+<li><a class="reference internal" href="#the-template">The template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#enable-and-show-the-dashboard">Enable and show the dashboard</a></li>
+<li><a class="reference internal" href="#run-and-check-the-dashboard">Run and check the dashboard</a></li>
+<li><a class="reference internal" href="#adding-a-complex-action-to-a-table">Adding a complex action to a table</a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../quickstart.html"
+                                  title="previous chapter">Quickstart</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../contributing.html"
+                                  title="next chapter">Contributing Guide</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/tutorial.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../contributing.html" title="Contributing Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../quickstart.html" title="Quickstart"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

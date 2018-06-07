@@ -1,0 +1,803 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.identity.projects.workflows Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.identity.projects.panel Module" href="openstack_dashboard.dashboards.identity.projects.panel.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.identity.projects.tables Module" href="openstack_dashboard.dashboards.identity.projects.tables.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-identity-projects-workflows-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.workflows</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-identity-projects-workflows-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">CommonQuotaWorkflow</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CommonQuotaWorkflow"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Workflow</span></tt></p>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">CreateProject</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProject"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.workflows.CommonQuotaWorkflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.identity.projects.workflows.CreateProjectInfo'&gt;, &lt;class 'openstack_dashboard.dashboards.identity.projects.workflows.UpdateProjectMembers'&gt;, &lt;class 'openstack_dashboard.dashboards.identity.projects.workflows.CreateProjectQuota'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090e50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090dd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProject.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProject.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090d90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'create_project'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090e10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:identity:projects:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">CreateProjectInfo</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProjectInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">CreateProjectInfoAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('domain_id', 'domain_name', 'project_id', 'name', 'description', 'enabled')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'identity/projects/_common_horizontal_form.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">CreateProjectInfoAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProjectInfoAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('domain_id', &lt;django.forms.fields.CharField object at 0x7ff3b80c8e10&gt;), ('domain_name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8f10&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8fd0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b80901d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b8090290&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('domain_id', &lt;django.forms.fields.CharField object at 0x7ff3b80c8e10&gt;), ('domain_name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8f10&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8fd0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b80901d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b8090290&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090350&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090310&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80905d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'createprojectinfoaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">CreateProjectQuota</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProjectQuota"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">CreateProjectQuotaAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('metadata_items', 'cores', 'instances', 'injected_files', 'injected_file_content_bytes', 'ram', 'floating_ips', 'fixed_ips', 'security_groups', 'security_group_rules', 'volumes', 'snapshots', 'gigabytes', 'network', 'subnet', 'port', 'router', 'floatingip', 'security_group', 'security_group_rule')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">depends_on</tt><em class="property"> = ('project_id',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'identity/projects/_common_horizontal_form.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">CreateProjectQuotaAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#CreateProjectQuotaAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.workflows.ProjectQuotaAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3b7fe3610&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3b82c96d0&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa10&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa50&gt;), ('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b87324d0&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3b865c290&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3b8655a10&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b86552d0&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb810&gt;), ('fixed_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb950&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3b8002490&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9b90&gt;), ('security_group', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9d10&gt;), ('security_group_rule', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9e90&gt;), ('floatingip', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8050&gt;), ('network', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c81d0&gt;), ('port', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8350&gt;), ('router', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c84d0&gt;), ('subnet', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3b7fe3610&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3b82c96d0&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa10&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa50&gt;), ('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b87324d0&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3b865c290&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3b8655a10&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b86552d0&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb810&gt;), ('fixed_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb950&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3b8002490&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9b90&gt;), ('security_group', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9d10&gt;), ('security_group_rule', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9e90&gt;), ('floatingip', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8050&gt;), ('network', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c81d0&gt;), ('port', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8350&gt;), ('router', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c84d0&gt;), ('subnet', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c8b90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c8b50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c8d50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'create_quotas'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">ProjectQuotaAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#ProjectQuotaAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Action</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3b7fe3610&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3b82c96d0&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa10&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa50&gt;), ('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b87324d0&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3b865c290&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3b8655a10&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b86552d0&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb810&gt;), ('fixed_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb950&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3b8002490&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9b90&gt;), ('security_group', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9d10&gt;), ('security_group_rule', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9e90&gt;), ('floatingip', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8050&gt;), ('network', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c81d0&gt;), ('port', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8350&gt;), ('router', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c84d0&gt;), ('subnet', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3b7fe3610&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3b82c96d0&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa10&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa50&gt;), ('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b87324d0&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3b865c290&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3b8655a10&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b86552d0&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb810&gt;), ('fixed_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb950&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3b8002490&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9b90&gt;), ('security_group', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9d10&gt;), ('security_group_rule', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9e90&gt;), ('floatingip', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8050&gt;), ('network', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c81d0&gt;), ('port', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8350&gt;), ('router', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c84d0&gt;), ('subnet', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">ifcb_label</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8317f10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'ProjectQuotaAction'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c88d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = u'projectquotaaction'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProject</tt><big>(</big><em>request=None</em>, <em>context_seed=None</em>, <em>entry_point=None</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProject"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.workflows.CommonQuotaWorkflow</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">default_steps</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.identity.projects.workflows.UpdateProjectInfo'&gt;, &lt;class 'openstack_dashboard.dashboards.identity.projects.workflows.UpdateProjectMembers'&gt;, &lt;class 'openstack_dashboard.dashboards.identity.projects.workflows.UpdateProjectQuota'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">failure_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80923d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">finalize_button_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8092350&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">format_status_message</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProject.format_status_message"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">handle</tt><big>(</big><em>request</em>, <em>data</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProject.handle"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8092310&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_project'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8092390&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">success_url</tt><em class="property"> = 'horizon:identity:projects:index'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectGroups</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectGroups"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.UpdateMembersStep</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateProjectGroupsAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">available_list_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090c10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectGroups.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">members_list_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090c50&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">no_available_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090c90&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">no_members_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090cd0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectGroupsAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectGroupsAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.MembershipAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090990&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090bd0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_group_members'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectInfo</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectInfo"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateProjectInfoAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('domain_id', 'domain_name', 'name', 'description', 'enabled')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">depends_on</tt><em class="property"> = ('project_id',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'identity/projects/_common_horizontal_form.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectInfoAction</tt><big>(</big><em>request</em>, <em>initial</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectInfoAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.workflows.CreateProjectInfoAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('domain_id', &lt;django.forms.fields.CharField object at 0x7ff3b80c8e10&gt;), ('domain_name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8f10&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8fd0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b80901d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b8090f50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectInfoAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('domain_id', &lt;django.forms.fields.CharField object at 0x7ff3b80c8e10&gt;), ('domain_name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8f10&gt;), ('name', &lt;django.forms.fields.CharField object at 0x7ff3b80c8fd0&gt;), ('description', &lt;django.forms.fields.CharField object at 0x7ff3b80901d0&gt;), ('enabled', &lt;django.forms.fields.BooleanField object at 0x7ff3b8090f50&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8092090&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8092050&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80922d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_info'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectMembers</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectMembers"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.UpdateMembersStep</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateProjectMembersAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">available_list_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090810&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">contribute</tt><big>(</big><em>data</em>, <em>context</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectMembers.contribute"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">members_list_title</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090850&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">no_available_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090890&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">no_members_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80908d0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectMembersAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectMembersAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.MembershipAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = ''</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b8090610&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80907d0&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_members'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectQuota</tt><big>(</big><em>workflow</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectQuota"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.workflows.base.Step</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">action_class</tt></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">UpdateProjectQuotaAction</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">contributes</tt><em class="property"> = ('metadata_items', 'cores', 'instances', 'injected_files', 'injected_file_content_bytes', 'ram', 'floating_ips', 'fixed_ips', 'security_groups', 'security_group_rules', 'volumes', 'snapshots', 'gigabytes', 'network', 'subnet', 'port', 'router', 'floatingip', 'security_group', 'security_group_rule')</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">depends_on</tt><em class="property"> = ('project_id',)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">template_name</tt><em class="property"> = 'identity/projects/_common_horizontal_form.html'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.identity.projects.workflows.</tt><tt class="descname">UpdateProjectQuotaAction</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectQuotaAction"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.workflows.ProjectQuotaAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_fields</tt><em class="property"> = OrderedDict([('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3b7fe3610&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3b82c96d0&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa10&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa50&gt;), ('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b87324d0&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3b865c290&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3b8655a10&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b86552d0&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb810&gt;), ('fixed_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb950&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3b8002490&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9b90&gt;), ('security_group', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9d10&gt;), ('security_group_rule', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9e90&gt;), ('floatingip', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8050&gt;), ('network', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c81d0&gt;), ('port', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8350&gt;), ('router', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c84d0&gt;), ('subnet', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">clean</tt><big>(</big><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/identity/projects/workflows.html#UpdateProjectQuotaAction.clean"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">declared_fields</tt><em class="property"> = OrderedDict([('metadata_items', &lt;django.forms.fields.IntegerField object at 0x7ff3b7fe3610&gt;), ('cores', &lt;django.forms.fields.IntegerField object at 0x7ff3b82c96d0&gt;), ('instances', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa10&gt;), ('injected_files', &lt;django.forms.fields.IntegerField object at 0x7ff3b82faa50&gt;), ('injected_file_content_bytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b87324d0&gt;), ('volumes', &lt;django.forms.fields.IntegerField object at 0x7ff3b865c290&gt;), ('snapshots', &lt;django.forms.fields.IntegerField object at 0x7ff3b8655a10&gt;), ('gigabytes', &lt;django.forms.fields.IntegerField object at 0x7ff3b86552d0&gt;), ('ram', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb190&gt;), ('floating_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb810&gt;), ('fixed_ips', &lt;django.forms.fields.IntegerField object at 0x7ff3b7feb950&gt;), ('security_groups', &lt;django.forms.fields.IntegerField object at 0x7ff3b8002490&gt;), ('security_group_rules', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9b90&gt;), ('security_group', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9d10&gt;), ('security_group_rule', &lt;django.forms.fields.IntegerField object at 0x7ff3b80f9e90&gt;), ('floatingip', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8050&gt;), ('network', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c81d0&gt;), ('port', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8350&gt;), ('router', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c84d0&gt;), ('subnet', &lt;django.forms.fields.IntegerField object at 0x7ff3b80c8650&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c8950&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">help_text_template</tt><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">media</tt></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c8910&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">permissions</tt><em class="property"> = ()</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">progress_message</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b80c8b10&gt;</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">slug</tt><em class="property"> = 'update_quotas'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.identity.projects.tables.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.tables</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.identity.projects.panel.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.identity.projects.panel</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.identity.projects.workflows.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.identity.projects.panel.html" title="The openstack_dashboard.dashboards.identity.projects.panel Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.identity.projects.tables.html" title="The openstack_dashboard.dashboards.identity.projects.tables Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

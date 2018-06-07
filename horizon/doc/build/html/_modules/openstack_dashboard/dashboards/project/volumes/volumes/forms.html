@@ -1,0 +1,930 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.project.volumes.volumes.forms &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.project.volumes.volumes.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1"># All rights reserved.</span>
+
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1"># not use this file except in compliance with the License. You may obtain</span>
+<span class="c1"># a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1"># WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1"># License for the specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Views for managing volumes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">oslo_utils</span> <span class="kn">import</span> <span class="n">units</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">ValidationError</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">filesizeformat</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">pgettext_lazy</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">functions</span>
+<span class="kn">from</span> <span class="nn">horizon.utils.memoized</span> <span class="kn">import</span> <span class="n">memoized</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">cinder</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">glance</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">nova</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.images</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.usage</span> <span class="kn">import</span> <span class="n">quotas</span>
+
+<span class="n">IMAGE_BACKEND_SETTINGS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;OPENSTACK_IMAGE_BACKEND&#39;</span><span class="p">,</span> <span class="p">{})</span>
+<span class="n">IMAGE_FORMAT_CHOICES</span> <span class="o">=</span> <span class="n">IMAGE_BACKEND_SETTINGS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_formats&#39;</span><span class="p">,</span> <span class="p">[])</span>
+<span class="n">VALID_DISK_FORMATS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;raw&#39;</span><span class="p">,</span> <span class="s1">&#39;vmdk&#39;</span><span class="p">,</span> <span class="s1">&#39;vdi&#39;</span><span class="p">,</span> <span class="s1">&#39;qcow2&#39;</span><span class="p">)</span>
+<span class="n">DEFAULT_CONTAINER_FORMAT</span> <span class="o">=</span> <span class="s1">&#39;bare&#39;</span>
+
+
+<span class="c1"># Determine whether the extension for Cinder AZs is enabled</span>
+<div class="viewcode-block" id="cinder_az_supported"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.cinder_az_supported">[docs]</a><span class="k">def</span> <span class="nf">cinder_az_supported</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cinder</span><span class="o">.</span><span class="n">extension_supported</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;AvailabilityZones&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to determine if availability &#39;</span>
+                                     <span class="s1">&#39;zones extension is supported.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div>
+<div class="viewcode-block" id="availability_zones"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.availability_zones">[docs]</a><span class="k">def</span> <span class="nf">availability_zones</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">zone_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">cinder_az_supported</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zones</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">availability_zone_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">zone_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">zone</span><span class="o">.</span><span class="n">zoneName</span><span class="p">,</span> <span class="n">zone</span><span class="o">.</span><span class="n">zoneName</span><span class="p">)</span>
+                         <span class="k">for</span> <span class="n">zone</span> <span class="ow">in</span> <span class="n">zones</span> <span class="k">if</span> <span class="n">zone</span><span class="o">.</span><span class="n">zoneState</span><span class="p">[</span><span class="s1">&#39;available&#39;</span><span class="p">]]</span>
+            <span class="n">zone_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve availability &#39;</span>
+                                         <span class="s1">&#39;zones.&#39;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">zone_list</span><span class="p">:</span>
+        <span class="n">zone_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No availability zones found&quot;</span><span class="p">)))</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">zone_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">zone_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Any Availability Zone&quot;</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">zone_list</span>
+
+</div>
+<div class="viewcode-block" id="CreateForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm">[docs]</a><span class="k">class</span> <span class="nc">CreateForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Name&quot;</span><span class="p">),</span>
+                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span>
+        <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">volume_source_type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Source&quot;</span><span class="p">),</span>
+                                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+                                               <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switchable&#39;</span><span class="p">,</span>
+                                               <span class="s1">&#39;data-slug&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">}))</span>
+    <span class="n">snapshot_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Use snapshot as a source&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;snapshot-selector&#39;</span><span class="p">},</span>
+            <span class="n">data_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">),</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">GB)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">image_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Use image as a source&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;image-selector&#39;</span><span class="p">},</span>
+            <span class="n">data_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;min_disk&#39;</span><span class="p">),</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">filesizeformat</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">bytes</span><span class="p">))),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">volume_source</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Use a volume as source&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">SelectWidget</span><span class="p">(</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;image-selector&#39;</span><span class="p">},</span>
+            <span class="n">data_attrs</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">),</span>
+            <span class="n">transform</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">filesizeformat</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">Gi</span><span class="p">))),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Type&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;data-source-no_source_type&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Type&#39;</span><span class="p">),</span>
+                   <span class="s1">&#39;data-source-image_source&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Type&#39;</span><span class="p">)}))</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size (GB)&quot;</span><span class="p">))</span>
+    <span class="n">availability_zone</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Availability Zone&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span>
+            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="s1">&#39;switched&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;data-switch-on&#39;</span><span class="p">:</span> <span class="s1">&#39;source&#39;</span><span class="p">,</span>
+                   <span class="s1">&#39;data-source-no_source_type&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Availability Zone&#39;</span><span class="p">),</span>
+                   <span class="s1">&#39;data-source-image_source&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Availability Zone&#39;</span><span class="p">)}))</span>
+
+<div class="viewcode-block" id="CreateForm.prepare_source_fields_if_snapshot_specified"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.prepare_source_fields_if_snapshot_specified">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_source_fields_if_snapshot_specified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_snapshot</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                         <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">[</span><span class="s2">&quot;snapshot_id&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">((</span><span class="n">snapshot</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                                       <span class="n">snapshot</span><span class="p">),)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Set the volume type from the original volume</span>
+                <span class="n">orig_volume</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                <span class="n">snapshot</span><span class="o">.</span><span class="n">volume_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">orig_volume</span><span class="o">.</span><span class="n">volume_type</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume size must be equal to or greater than the &#39;</span>
+                  <span class="s1">&#39;snapshot size (</span><span class="si">%s</span><span class="s1">GB)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_source&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to load the specified snapshot.&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="CreateForm.prepare_source_fields_if_image_specified"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.prepare_source_fields_if_image_specified">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_source_fields_if_image_specified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> \
+            <span class="n">availability_zones</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                   <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">[</span><span class="s2">&quot;image_id&quot;</span><span class="p">])</span>
+            <span class="n">image</span><span class="o">.</span><span class="n">bytes</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">min_vol_size</span> <span class="o">=</span> <span class="n">functions</span><span class="o">.</span><span class="n">bytes_to_gigabytes</span><span class="p">(</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="n">size_help_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume size must be equal to or greater &#39;</span>
+                                <span class="s1">&#39;than the image size (</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span>
+                              <span class="o">%</span> <span class="n">filesizeformat</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">min_disk_size</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;min_disk&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span>
+                             <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;min_disk&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">min_disk_size</span> <span class="o">&gt;</span> <span class="n">min_vol_size</span><span class="p">):</span>
+                <span class="n">min_vol_size</span> <span class="o">=</span> <span class="n">min_disk_size</span>
+                <span class="n">size_help_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume size must be equal to or &#39;</span>
+                                    <span class="s1">&#39;greater than the image minimum &#39;</span>
+                                    <span class="s1">&#39;disk size (</span><span class="si">%s</span><span class="s1">GB)&#39;</span><span class="p">)</span>
+                                  <span class="o">%</span> <span class="n">min_disk_size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">min_vol_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="n">size_help_text</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image</span><span class="p">),)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to load the specified image. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">[</span><span class="s1">&#39;image_id&#39;</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="CreateForm.prepare_source_fields_if_volume_specified"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.prepare_source_fields_if_volume_specified">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_source_fields_if_volume_specified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> \
+            <span class="n">availability_zones</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">[</span><span class="s2">&quot;volume_id&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to load the specified volume. </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span> <span class="o">%</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">volume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">description</span>
+            <span class="n">min_vol_size</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">size_help_text</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume size must be equal to or greater &#39;</span>
+                                <span class="s1">&#39;than the origin volume size (</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span>
+                              <span class="o">%</span> <span class="n">filesizeformat</span><span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">min_vol_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">help_text</span> <span class="o">=</span> <span class="n">size_help_text</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">((</span><span class="n">volume</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">volume</span><span class="p">),)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">type</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_source&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="CreateForm.prepare_source_fields_default"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.prepare_source_fields_default">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_source_fields_default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">source_type_choices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> \
+            <span class="n">availability_zones</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">available</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">VOLUME_STATE_AVAILABLE</span>
+            <span class="n">snapshots</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_snapshot_list</span><span class="p">(</span>
+                <span class="n">request</span><span class="p">,</span> <span class="n">search_opts</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">available</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">snapshots</span><span class="p">:</span>
+                <span class="n">source_type_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;snapshot_source&quot;</span><span class="p">,</span>
+                                            <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Snapshot&quot;</span><span class="p">)))</span>
+                <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose a snapshot&quot;</span><span class="p">))]</span> <span class="o">+</span> \
+                          <span class="p">[(</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">snapshots</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to retrieve volume snapshots.&quot;</span><span class="p">))</span>
+
+        <span class="n">images</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_available_images</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                            <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">images</span><span class="p">:</span>
+            <span class="n">source_type_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;image_source&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image&quot;</span><span class="p">)))</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose an image&quot;</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">bytes</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">functions</span><span class="o">.</span><span class="n">bytes_to_gigabytes</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
+                <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">image</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">image</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;image_source&#39;</span><span class="p">]</span>
+
+        <span class="n">volumes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_volumes</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volumes</span><span class="p">:</span>
+            <span class="n">source_type_choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;volume_source&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume&quot;</span><span class="p">)))</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose a volume&quot;</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">volume</span> <span class="ow">in</span> <span class="n">volumes</span><span class="p">:</span>
+                <span class="n">choices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">volume</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">volume</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">source_type_choices</span><span class="p">:</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="p">([(</span><span class="s1">&#39;no_source_type&#39;</span><span class="p">,</span>
+                         <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No source, empty volume&quot;</span><span class="p">))]</span> <span class="o">+</span>
+                       <span class="n">source_type_choices</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">choices</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">]</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">volume_types</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_type_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;no_type&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No volume type&quot;</span><span class="p">))]</span> <span class="o">+</span> \
+                                      <span class="p">[(</span><span class="nb">type</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                                       <span class="k">for</span> <span class="nb">type</span> <span class="ow">in</span> <span class="n">volume_types</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;snapshot_id&quot;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_source_fields_if_snapshot_specified</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;image_id&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_source_fields_if_image_specified</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;volume_id&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_source_fields_if_volume_specified</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepare_source_fields_default</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateForm.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CreateForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="n">source_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">source_type</span> <span class="o">==</span> <span class="s1">&#39;image_source&#39;</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;image_source&#39;</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image source must be specified&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;image_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">source_type</span> <span class="o">==</span> <span class="s1">&#39;snapshot_source&#39;</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Snapshot source must be specified&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;snapshot_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">source_type</span> <span class="o">==</span> <span class="s1">&#39;volume_source&#39;</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_source&#39;</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume source must be specified&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;volume_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+<div class="viewcode-block" id="CreateForm.get_volumes"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.get_volumes">[docs]</a>    <span class="k">def</span> <span class="nf">get_volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">volumes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">available</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">cinder</span><span class="o">.</span><span class="n">VOLUME_STATE_AVAILABLE</span>
+            <span class="n">volumes</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span>
+                                         <span class="n">search_opts</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">available</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve list of volumes.&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">volumes</span>
+</div>
+<div class="viewcode-block" id="CreateForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">usages</span> <span class="o">=</span> <span class="n">quotas</span><span class="o">.</span><span class="n">tenant_limit_usages</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">availableGB</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;maxTotalVolumeGigabytes&#39;</span><span class="p">]</span> <span class="o">-</span> \
+                <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;gigabytesUsed&#39;</span><span class="p">]</span>
+            <span class="n">availableVol</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;maxTotalVolumes&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;volumesUsed&#39;</span><span class="p">]</span>
+
+            <span class="n">snapshot_id</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">image_id</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">source_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_source_type&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">az</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;availability_zone&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapshot_source&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span>
+                    <span class="n">source_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;snapshot_source&#39;</span><span class="p">]):</span>
+                <span class="c1"># Create from Snapshot</span>
+                <span class="n">snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_snapshot</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                             <span class="n">data</span><span class="p">[</span><span class="s2">&quot;snapshot_source&quot;</span><span class="p">])</span>
+                <span class="n">snapshot_id</span> <span class="o">=</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">id</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                    <span class="n">error_message</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The volume size cannot be less than &#39;</span>
+                                       <span class="s1">&#39;the snapshot size (</span><span class="si">%s</span><span class="s1">GB)&#39;</span><span class="p">)</span>
+                                     <span class="o">%</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+                <span class="n">az</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;image_source&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span>
+                  <span class="n">source_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;image_source&#39;</span><span class="p">]):</span>
+                <span class="c1"># Create from Snapshot</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_image</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                       <span class="n">data</span><span class="p">[</span><span class="s2">&quot;image_source&quot;</span><span class="p">])</span>
+                <span class="n">image_id</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">id</span>
+                <span class="n">image_size</span> <span class="o">=</span> <span class="n">functions</span><span class="o">.</span><span class="n">bytes_to_gigabytes</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">image_size</span><span class="p">):</span>
+                    <span class="n">error_message</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The volume size cannot be less than &#39;</span>
+                                       <span class="s1">&#39;the image size (</span><span class="si">%s</span><span class="s1">)&#39;</span><span class="p">)</span>
+                                     <span class="o">%</span> <span class="n">filesizeformat</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+                <span class="n">properties</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">min_disk_size</span> <span class="o">=</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s1">&#39;min_disk&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span>
+                                 <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;min_disk&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">min_disk_size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_disk_size</span><span class="p">):</span>
+                    <span class="n">error_message</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The volume size cannot be less than &#39;</span>
+                                       <span class="s1">&#39;the image minimum disk size (</span><span class="si">%s</span><span class="s1">GB)&#39;</span><span class="p">)</span>
+                                     <span class="o">%</span> <span class="n">min_disk_size</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;volume_source&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span>
+                  <span class="n">source_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;volume_source&#39;</span><span class="p">]):</span>
+                <span class="c1"># Create from volume</span>
+                <span class="n">volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;volume_source&quot;</span><span class="p">])</span>
+                <span class="n">volume_id</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">id</span>
+
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">volume</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                    <span class="n">error_message</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;The volume size cannot be less than &#39;</span>
+                                       <span class="s1">&#39;the source volume size (</span><span class="si">%s</span><span class="s1">GB)&#39;</span><span class="p">)</span>
+                                     <span class="o">%</span> <span class="n">volume</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">availableGB</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]:</span>
+                <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;A volume of </span><span class="si">%(req)i</span><span class="s1">GB cannot be created as &#39;</span>
+                                  <span class="s1">&#39;you only have </span><span class="si">%(avail)i</span><span class="s1">GB of your quota &#39;</span>
+                                  <span class="s1">&#39;available.&#39;</span><span class="p">)</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;req&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">],</span>
+                          <span class="s1">&#39;avail&#39;</span><span class="p">:</span> <span class="n">availableGB</span><span class="p">}</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span> <span class="o">%</span> <span class="n">params</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">availableVol</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;You are already using all of your available&#39;</span>
+                                  <span class="s1">&#39; volumes.&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">error_message</span><span class="p">)</span>
+
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;no_type&#39;</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">],</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">],</span>
+                                          <span class="n">snapshot_id</span><span class="o">=</span><span class="n">snapshot_id</span><span class="p">,</span>
+                                          <span class="n">image_id</span><span class="o">=</span><span class="n">image_id</span><span class="p">,</span>
+                                          <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+                                          <span class="n">availability_zone</span><span class="o">=</span><span class="n">az</span><span class="p">,</span>
+                                          <span class="n">source_volid</span><span class="o">=</span><span class="n">volume_id</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Creating volume &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">volume</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">api_error</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to create volume.&quot;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+</div>
+    <span class="nd">@memoized</span>
+<div class="viewcode-block" id="CreateForm.get_snapshot"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.get_snapshot">[docs]</a>    <span class="k">def</span> <span class="nf">get_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_snapshot_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</div>
+    <span class="nd">@memoized</span>
+<div class="viewcode-block" id="CreateForm.get_image"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.get_image">[docs]</a>    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">glance</span><span class="o">.</span><span class="n">image_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+</div>
+    <span class="nd">@memoized</span>
+<div class="viewcode-block" id="CreateForm.get_volume"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateForm.get_volume">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="AttachForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.AttachForm">[docs]</a><span class="k">class</span> <span class="nc">AttachForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">instance</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Attach to Instance&quot;</span><span class="p">),</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select an instance to &quot;</span>
+                                             <span class="s2">&quot;attach to.&quot;</span><span class="p">))</span>
+
+    <span class="n">device</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Device Name&quot;</span><span class="p">),</span>
+                             <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;placeholder&#39;</span><span class="p">:</span>
+                                                           <span class="s1">&#39;/dev/vdc&#39;</span><span class="p">}),</span>
+                             <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                             <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Actual device name may differ due &quot;</span>
+                                         <span class="s2">&quot;to hypervisor settings. If not &quot;</span>
+                                         <span class="s2">&quot;specified, then hypervisor will &quot;</span>
+                                         <span class="s2">&quot;select a device name.&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AttachForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Hide the device field if the hypervisor doesn&#39;t support it.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nova</span><span class="o">.</span><span class="n">can_set_mount_point</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;device&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+
+        <span class="c1"># populate volume_id</span>
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">volume</span><span class="p">:</span>
+            <span class="n">volume_id</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+                                                   <span class="n">initial</span><span class="o">=</span><span class="n">volume_id</span><span class="p">)</span>
+
+        <span class="c1"># Populate instance choices</span>
+        <span class="n">instance_list</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instances&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">instance_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">VOLUME_ATTACH_READY_STATES</span> <span class="ow">and</span> \
+                    <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">att</span><span class="p">[</span><span class="s2">&quot;server_id&quot;</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">att</span> <span class="ow">in</span> <span class="n">volume</span><span class="o">.</span><span class="n">attachments</span><span class="p">):</span>
+                <span class="n">instances</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                            <span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">instances</span><span class="p">:</span>
+            <span class="n">instances</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select an instance&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">instances</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No instances available&quot;</span><span class="p">)),)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">instances</span>
+
+<div class="viewcode-block" id="AttachForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.AttachForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">instance_choices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span><span class="p">)</span>
+        <span class="n">instance_name</span> <span class="o">=</span> <span class="n">instance_choices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">],</span>
+                                             <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unknown instance (None)&quot;</span><span class="p">))</span>
+        <span class="c1"># The name of the instance in the choices list has the ID appended to</span>
+        <span class="c1"># it, so let&#39;s slice that off...</span>
+        <span class="n">instance_name</span> <span class="o">=</span> <span class="n">instance_name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot; (&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># api requires non-empty device name or None</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;device&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">attach</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">instance_volume_attach</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">],</span>
+                                                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;instance&#39;</span><span class="p">],</span>
+                                                     <span class="n">device</span><span class="p">)</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">])</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Attaching volume </span><span class="si">%(vol)s</span><span class="s1"> to instance &#39;</span>
+                        <span class="s1">&#39;</span><span class="si">%(inst)s</span><span class="s1"> on </span><span class="si">%(dev)s</span><span class="s1">.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;vol&quot;</span><span class="p">:</span> <span class="n">volume</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                   <span class="s2">&quot;inst&quot;</span><span class="p">:</span> <span class="n">instance_name</span><span class="p">,</span>
+                                                   <span class="s2">&quot;dev&quot;</span><span class="p">:</span> <span class="n">attach</span><span class="o">.</span><span class="n">device</span><span class="p">}</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to attach volume.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateSnapshotForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateSnapshotForm">[docs]</a><span class="k">class</span> <span class="nc">CreateSnapshotForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Snapshot Name&quot;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+                                  <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CreateSnapshotForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># populate volume_id</span>
+        <span class="n">volume_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume_id&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">(),</span>
+                                                   <span class="n">initial</span><span class="o">=</span><span class="n">volume_id</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateSnapshotForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateSnapshotForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                       <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">])</span>
+            <span class="n">force</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Creating volume snapshot &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">volume</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;in-use&#39;</span><span class="p">:</span>
+                <span class="n">force</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Forcing to create snapshot &quot;</span><span class="si">%s</span><span class="s1">&quot; &#39;</span>
+                            <span class="s1">&#39;from attached volume.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">snapshot</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_snapshot_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">],</span>
+                                                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                                     <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
+                                                     <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">snapshot</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create volume snapshot.&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">413</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Requested snapshot would exceed the allowed quota.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">msg</span><span class="p">,</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CreateTransferForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateTransferForm">[docs]</a><span class="k">class</span> <span class="nc">CreateTransferForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Transfer Name&quot;</span><span class="p">),</span>
+                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CreateTransferForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.CreateTransferForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">]</span>
+            <span class="n">transfer</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">transfer_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Created volume transfer: &quot;</span><span class="si">%s</span><span class="s1">&quot;.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Created volume transfer.&#39;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponseRedirect</span><span class="p">(</span>
+                <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:volumes:show_transfer&quot;</span><span class="p">,</span>
+                        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">transfer</span><span class="o">.</span><span class="n">auth_key</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to create volume transfer.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="AcceptTransferForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.AcceptTransferForm">[docs]</a><span class="k">class</span> <span class="nc">AcceptTransferForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="c1"># These max lengths correspond to the sizes in cinder</span>
+    <span class="n">transfer_id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Transfer ID&quot;</span><span class="p">))</span>
+    <span class="n">auth_key</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Authorization Key&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AcceptTransferForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.AcceptTransferForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">transfer</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">transfer_accept</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                              <span class="n">data</span><span class="p">[</span><span class="s1">&#39;transfer_id&#39;</span><span class="p">],</span>
+                                              <span class="n">data</span><span class="p">[</span><span class="s1">&#39;auth_key&#39;</span><span class="p">])</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Successfully accepted volume transfer: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+                   <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;transfer_id&#39;</span><span class="p">])</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">transfer</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to accept volume transfer.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ShowTransferForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.ShowTransferForm">[docs]</a><span class="k">class</span> <span class="nc">ShowTransferForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Transfer Name&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Transfer ID&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">auth_key</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Authorization Key&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ShowTransferForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.ShowTransferForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+</div></div>
+<div class="viewcode-block" id="UpdateForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.UpdateForm">[docs]</a><span class="k">class</span> <span class="nc">UpdateForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Name&quot;</span><span class="p">),</span>
+                           <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+                                  <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rows&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+                                  <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">bootable</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Bootable&quot;</span><span class="p">),</span>
+                                  <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                  <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Specifies that the volume can &quot;</span>
+                                              <span class="s2">&quot;be used to launch an instance&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="UpdateForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.UpdateForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;volume_id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">volume_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to update volume.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+        <span class="c1"># only update bootable flag if modified</span>
+        <span class="n">make_bootable</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;bootable&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">make_bootable</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;bootable&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cinder</span><span class="o">.</span><span class="n">volume_set_bootable</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">volume_id</span><span class="p">,</span> <span class="n">make_bootable</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+                <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                  <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to set bootable flag on volume.&#39;</span><span class="p">),</span>
+                                  <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Updating volume &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="UploadToImageForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.UploadToImageForm">[docs]</a><span class="k">class</span> <span class="nc">UploadToImageForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume Name&#39;</span><span class="p">),</span>
+                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+                               <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+    <span class="n">image_name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Image Name&#39;</span><span class="p">))</span>
+    <span class="n">disk_format</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Disk Format&#39;</span><span class="p">),</span>
+                                    <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(),</span>
+                                    <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">force</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">pgettext_lazy</span><span class="p">(</span><span class="s2">&quot;Force upload volume in in-use status to image&quot;</span><span class="p">,</span>
+                            <span class="s2">u&quot;Force&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">CheckboxInput</span><span class="p">(),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UploadToImageForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># &#39;vhd&#39;,&#39;iso&#39;,&#39;aki&#39;,&#39;ari&#39; and &#39;ami&#39; disk formats are supported by</span>
+        <span class="c1"># glance, but not by qemu-img. qemu-img supports &#39;vpc&#39;, &#39;cloop&#39;, &#39;cow&#39;</span>
+        <span class="c1"># and &#39;qcow&#39; which are not supported by glance.</span>
+        <span class="c1"># I can only use &#39;raw&#39;, &#39;vmdk&#39;, &#39;vdi&#39; or &#39;qcow2&#39; so qemu-img will not</span>
+        <span class="c1"># have issues when processes image request from cinder.</span>
+        <span class="n">disk_format_choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span>
+                               <span class="ow">in</span> <span class="n">IMAGE_FORMAT_CHOICES</span>
+                               <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">VALID_DISK_FORMATS</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">disk_format_choices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="s1">&#39;raw&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;in-use&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;force&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+
+<div class="viewcode-block" id="UploadToImageForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.UploadToImageForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># &#39;aki&#39;,&#39;ari&#39;,&#39;ami&#39; container formats are supported by glance,</span>
+            <span class="c1"># but they need matching disk format to use.</span>
+            <span class="c1"># Glance usually uses &#39;bare&#39; for other disk formats except</span>
+            <span class="c1"># amazon&#39;s. Please check the comment in CreateImageForm class</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">volume_upload_to_image</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                          <span class="n">volume_id</span><span class="p">,</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;force&#39;</span><span class="p">],</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;image_name&#39;</span><span class="p">],</span>
+                                          <span class="n">DEFAULT_CONTAINER_FORMAT</span><span class="p">,</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;disk_format&#39;</span><span class="p">])</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s1">&#39;Successfully sent the request to upload volume to image &#39;</span>
+                <span class="s1">&#39;for volume: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to upload volume to image for volume: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> \
+                <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">error_message</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="ExtendForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.ExtendForm">[docs]</a><span class="k">class</span> <span class="nc">ExtendForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Volume Name&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">orig_size</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Current Size (GB)&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}),</span>
+        <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">new_size</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;New Size (GB)&quot;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ExtendForm.clean"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.ExtendForm.clean">[docs]</a>    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ExtendForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+        <span class="n">new_size</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;new_size&#39;</span><span class="p">)</span>
+        <span class="n">orig_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;orig_size&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">new_size</span> <span class="o">&lt;=</span> <span class="n">orig_size</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;New size must be greater than current size.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s1">&#39;new_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">error_msg</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">cleaned_data</span>
+
+        <span class="n">usages</span> <span class="o">=</span> <span class="n">quotas</span><span class="o">.</span><span class="n">tenant_limit_usages</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">availableGB</span> <span class="o">=</span> <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;maxTotalVolumeGigabytes&#39;</span><span class="p">]</span> <span class="o">-</span> \
+            <span class="n">usages</span><span class="p">[</span><span class="s1">&#39;gigabytesUsed&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">availableGB</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">new_size</span> <span class="o">-</span> <span class="n">orig_size</span><span class="p">):</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume cannot be extended to </span><span class="si">%(req)i</span><span class="s1">GB as &#39;</span>
+                        <span class="s1">&#39;you only have </span><span class="si">%(avail)i</span><span class="s1">GB of your quota &#39;</span>
+                        <span class="s1">&#39;available.&#39;</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;req&#39;</span><span class="p">:</span> <span class="n">new_size</span><span class="p">,</span> <span class="s1">&#39;avail&#39;</span><span class="p">:</span> <span class="n">availableGB</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">[</span><span class="s2">&quot;new_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">message</span> <span class="o">%</span> <span class="n">params</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span>
+</div>
+<div class="viewcode-block" id="ExtendForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.ExtendForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_extend</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                          <span class="n">volume_id</span><span class="p">,</span>
+                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;new_size&#39;</span><span class="p">])</span>
+
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Extending volume: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">volume</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                              <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to extend volume.&#39;</span><span class="p">),</span>
+                              <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="RetypeForm"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.RetypeForm">[docs]</a><span class="k">class</span> <span class="nc">RetypeForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">SelfHandlingForm</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Volume Name&#39;</span><span class="p">),</span>
+                           <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">(</span>
+                               <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;readonly&#39;</span><span class="p">:</span> <span class="s1">&#39;readonly&#39;</span><span class="p">}))</span>
+    <span class="n">volume_type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Type&#39;</span><span class="p">))</span>
+    <span class="n">MIGRATION_POLICY_CHOICES</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;never&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Never&#39;</span><span class="p">)),</span>
+                                <span class="p">(</span><span class="s1">&#39;on-demand&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;On Demand&#39;</span><span class="p">))]</span>
+    <span class="n">migration_policy</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Migration Policy&#39;</span><span class="p">),</span>
+                                         <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(),</span>
+                                         <span class="n">choices</span><span class="o">=</span><span class="p">(</span><span class="n">MIGRATION_POLICY_CHOICES</span><span class="p">),</span>
+                                         <span class="n">initial</span><span class="o">=</span><span class="s1">&#39;never&#39;</span><span class="p">,</span>
+                                         <span class="n">required</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RetypeForm</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">volume_types</span> <span class="o">=</span> <span class="n">cinder</span><span class="o">.</span><span class="n">volume_type_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unable to retrieve the volume type list.&#39;</span><span class="p">)</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">error_message</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect_url</span><span class="p">)</span>
+
+        <span class="n">origin_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;volume_type&#39;</span><span class="p">]</span>
+        <span class="n">types_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                      <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">volume_types</span>
+                      <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">origin_type</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">types_list</span><span class="p">:</span>
+            <span class="n">types_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Select a new volume type&quot;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">types_list</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No other volume types available&quot;</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;volume_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">types_list</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RetypeForm.handle"><a class="viewcode-back" href="../../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.project.volumes.volumes.forms.html#openstack_dashboard.dashboards.project.volumes.volumes.forms.RetypeForm.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">volume_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cinder</span><span class="o">.</span><span class="n">volume_retype</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                 <span class="n">volume_id</span><span class="p">,</span>
+                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_type&#39;</span><span class="p">],</span>
+                                 <span class="n">data</span><span class="p">[</span><span class="s1">&#39;migration_policy&#39;</span><span class="p">])</span>
+
+            <span class="n">message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s1">&#39;Successfully sent the request to change the volume &#39;</span>
+                <span class="s1">&#39;type to &quot;</span><span class="si">%(vtype)s</span><span class="s1">&quot; for volume: &quot;</span><span class="si">%(name)s</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                      <span class="s1">&#39;vtype&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;volume_type&#39;</span><span class="p">]}</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span> <span class="o">%</span> <span class="n">params</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">redirect</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;horizon:project:volumes:index&quot;</span><span class="p">)</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to change the volume type for volume: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">)</span> \
+                <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">error_message</span><span class="p">,</span> <span class="n">redirect</span><span class="o">=</span><span class="n">redirect</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

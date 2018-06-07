@@ -1,0 +1,502 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The run_tests.sh Script &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="The horizon Module" href="horizon.html" />
+    <link rel="prev" title="JavaScript Testing" href="../topics/javascript_testing.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-run-tests-sh-script">
+<h1>The <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> Script<a class="headerlink" href="#the-run-tests-sh-script" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<p class="topic-title first">Contents:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#first-run" id="id1">First Run</a></li>
+<li><a class="reference internal" href="#i-just-want-to-run-the-tests" id="id2">I just want to run the tests!</a><ul>
+<li><a class="reference internal" href="#running-a-subset-of-tests" id="id3">Running a subset of tests</a></li>
+<li><a class="reference internal" href="#running-the-integration-tests" id="id4">Running the integration tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-dashboard-and-panel-templates" id="id5">Using Dashboard and Panel Templates</a><ul>
+<li><a class="reference internal" href="#dashboards" id="id6">Dashboards</a></li>
+<li><a class="reference internal" href="#panels" id="id7">Panels</a></li>
+<li><a class="reference internal" href="#javascript-tests" id="id8">JavaScript Tests</a></li>
+<li><a class="reference internal" href="#javascript-code-style-checks" id="id9">JavaScript Code Style Checks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#give-me-metrics" id="id10">Give me metrics!</a><ul>
+<li><a class="reference internal" href="#eslint" id="id11">ESLint</a></li>
+<li><a class="reference internal" href="#coverage" id="id12">Coverage</a></li>
+<li><a class="reference internal" href="#pep8" id="id13">PEP8</a></li>
+<li><a class="reference internal" href="#pylint" id="id14">PyLint</a></li>
+<li><a class="reference internal" href="#tab-characters" id="id15">Tab Characters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-the-development-server" id="id16">Running the development server</a></li>
+<li><a class="reference internal" href="#generating-the-documentation" id="id17">Generating the documentation</a></li>
+<li><a class="reference internal" href="#updating-the-translation-files" id="id18">Updating the translation files</a></li>
+<li><a class="reference internal" href="#starting-clean" id="id19">Starting clean</a></li>
+<li><a class="reference internal" href="#non-interactive-mode" id="id20">Non-interactive Mode</a></li>
+<li><a class="reference internal" href="#environment-backups" id="id21">Environment Backups</a></li>
+<li><a class="reference internal" href="#environment-versioning" id="id22">Environment Versioning</a></li>
+</ul>
+</div>
+<p>Horizon ships with a script called <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> at the root of the
+repository. This script provides many crucial functions for the project,
+and also makes several otherwise complex tasks trivial for you as a
+developer.</p>
+<div class="section" id="first-run">
+<h2><a class="toc-backref" href="#id1">First Run</a><a class="headerlink" href="#first-run" title="Permalink to this headline">¶</a></h2>
+<p>If you start with a clean copy of the Horizon repository, the first thing
+you should do is to run <tt class="docutils literal"><span class="pre">./run_tests.sh</span></tt> from the root of the repository.
+This will do two things for you:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Set up a virtual environment for both the <tt class="docutils literal"><span class="pre">horizon</span></tt> module and
+the <tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt> project using <tt class="docutils literal"><span class="pre">./tools/install_venv.py</span></tt>.</li>
+<li>Run the tests for both <tt class="docutils literal"><span class="pre">horizon</span></tt> and <tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt> using
+their respective environments and verify that everything is working.</li>
+</ol>
+</div></blockquote>
+<p>Setting up the environment the first time can take several minutes, but only
+needs to be done once. If dependencies are added in the future, updating the
+environments will be necessary but not as time consuming.</p>
+</div>
+<div class="section" id="i-just-want-to-run-the-tests">
+<h2><a class="toc-backref" href="#id2">I just want to run the tests!</a><a class="headerlink" href="#i-just-want-to-run-the-tests" title="Permalink to this headline">¶</a></h2>
+<p>Running the full set of unit tests quickly and easily is the main goal of this
+script. All you need to do is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh
+</pre></div>
+</div>
+<p>Yep, that&#8217;s it. However, for a more thorough test run you can include the
+Selenium tests by using the <tt class="docutils literal"><span class="pre">--with-selenium</span></tt> flag:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --with-selenium
+</pre></div>
+</div>
+<p>If you run horizon in a minimal installation VM, you will probably need
+the following (steps for Fedora 18 minimal installation):</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Install these packages in the VM:
+<tt class="docutils literal"><span class="pre">yum</span> <span class="pre">install</span> <span class="pre">xorg-x11-xauth</span> <span class="pre">xorg-x11-fonts-Type1.noarch</span></tt>.</li>
+<li>Install firefox in the VM:
+<tt class="docutils literal"><span class="pre">yum</span> <span class="pre">install</span> <span class="pre">firefox</span></tt>.</li>
+<li>Connect to the VM by <tt class="docutils literal"><span class="pre">ssh</span> <span class="pre">-X</span></tt>
+(if you run <tt class="docutils literal"><span class="pre">set|grep</span> <span class="pre">DISP</span></tt>, you should see that the DISPLAY is set).</li>
+<li>Run
+<tt class="docutils literal"><span class="pre">./run_tests.sh</span> <span class="pre">--with-selenium</span></tt>.</li>
+</ol>
+</div></blockquote>
+<div class="section" id="running-a-subset-of-tests">
+<h3><a class="toc-backref" href="#id3">Running a subset of tests</a><a class="headerlink" href="#running-a-subset-of-tests" title="Permalink to this headline">¶</a></h3>
+<p>Instead of running all tests, you can specify an individual directory, file,
+class, or method that contains test code.</p>
+<p>To run the tests in the <tt class="docutils literal"><span class="pre">horizon/test/tests/tables.py</span></tt> file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh horizon.test.tests.tables
+</pre></div>
+</div>
+<p>To run the tests in the <cite>WorkflowsTests</cite> class in
+<tt class="docutils literal"><span class="pre">horizon/test/tests/workflows</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh horizon.test.tests.workflows:WorkflowsTests
+</pre></div>
+</div>
+<p>To run just the <cite>WorkflowsTests.test_workflow_view</cite> test method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh horizon.test.tests.workflows:WorkflowsTests.test_workflow_view
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-the-integration-tests">
+<h3><a class="toc-backref" href="#id4">Running the integration tests</a><a class="headerlink" href="#running-the-integration-tests" title="Permalink to this headline">¶</a></h3>
+<p>The Horizon integration tests treat Horizon as a black box, and similar
+to Tempest must be run against an existing OpenStack system. These
+tests are not run by default.</p>
+<ol class="arabic">
+<li><p class="first">Update the configuration file
+<cite>openstack_dashboard/test/integration_tests/horizon.conf</cite> as
+required (the format is similar to the Tempest configuration file).</p>
+</li>
+<li><p class="first">Run the tests with the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ ./run_tests.sh --integration
+</pre></div>
+</div>
+</li>
+</ol>
+<p>Like for the unit tests, you can choose to only run a subset.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>$ ./run_tests.sh --integration openstack_dashboard.test.integration_tests.tests.test_login
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="using-dashboard-and-panel-templates">
+<h2><a class="toc-backref" href="#id5">Using Dashboard and Panel Templates</a><a class="headerlink" href="#using-dashboard-and-panel-templates" title="Permalink to this headline">¶</a></h2>
+<p>Horizon has a set of convenient management commands for creating new
+dashboards and panels based on basic templates.</p>
+<div class="section" id="dashboards">
+<h3><a class="toc-backref" href="#id6">Dashboards</a><a class="headerlink" href="#dashboards" title="Permalink to this headline">¶</a></h3>
+<p>To create a new dashboard, run the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh -m startdash &lt;dash_name&gt;
+</pre></div>
+</div>
+<p>This will create a directory with the given dashboard name, a <tt class="docutils literal"><span class="pre">dashboard.py</span></tt>
+module with the basic dashboard code filled in, and various other common
+&#8220;boilerplate&#8221; code.</p>
+<p>Available options:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">--target</span></tt>: the directory in which the dashboard files should be created.
+Default: A new directory within the current directory.</li>
+</ul>
+</div>
+<div class="section" id="panels">
+<h3><a class="toc-backref" href="#id7">Panels</a><a class="headerlink" href="#panels" title="Permalink to this headline">¶</a></h3>
+<p>To create a new panel, run the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests -m startpanel &lt;panel_name&gt;
+</pre></div>
+</div>
+<p>This will create a directory with the given panel name, and <tt class="docutils literal"><span class="pre">panel.py</span></tt>
+module with the basic panel code filled in, and various other common
+&#8220;boilerplate&#8221; code.</p>
+<p>Available options:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">-d</span></tt>, <tt class="docutils literal"><span class="pre">--dashboard</span></tt>: The dotted python path to your dashboard app (the
+module which containers the <tt class="docutils literal"><span class="pre">dashboard.py</span></tt> file.). If not specified, the
+target dashboard should be specified in a pluggable settings file for the
+panel.</li>
+<li><tt class="docutils literal"><span class="pre">--target</span></tt>: the directory in which the panel files should be created.
+If the value is <tt class="docutils literal"><span class="pre">auto</span></tt> the panel will be created as a new directory inside
+the dashboard module&#8217;s directory structure. Default: A new directory within
+the current directory.</li>
+</ul>
+</div>
+<div class="section" id="javascript-tests">
+<h3><a class="toc-backref" href="#id8">JavaScript Tests</a><a class="headerlink" href="#javascript-tests" title="Permalink to this headline">¶</a></h3>
+<p>You can also run JavaScript unit tests using Karma.  Karma is a test
+environment that allows for multiple test runners and reporters, including
+such features as code coverage.  Karma allows developer to run tests live,
+as it can watch source and test files for changes.</p>
+<p>The default configuration also performs coverage reports, which are saved
+to <tt class="docutils literal"><span class="pre">horizon/.coverage-karma/</span></tt> and <tt class="docutils literal"><span class="pre">openstack_dashboard/.coverage-karma/</span></tt>.</p>
+<p>To run the Karma tests for Horizon and Dashboard using the <cite>run_tests.sh</cite>
+script:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --karma
+</pre></div>
+</div>
+<p>To run the Karma tests for Horizon and Dashboard using <cite>npm</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>npm install # You only need to execute this once.
+npm test
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These two methods are equivalent. The former merely executes
+the latter.</p>
+</div>
+</div>
+<div class="section" id="javascript-code-style-checks">
+<h3><a class="toc-backref" href="#id9">JavaScript Code Style Checks</a><a class="headerlink" href="#javascript-code-style-checks" title="Permalink to this headline">¶</a></h3>
+<p>You can run the JavaScript code style checks, or linting, using eslint.
+ESLint is a permissively licensed, sophisticated language parser and
+linter that confirms both our style guidelines, and checks the code for
+common errors that may create unexpected behavior.</p>
+<p>To run eslint for Horizon and Dashboard using the <cite>run_tests.sh</cite>
+script:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --eslint
+</pre></div>
+</div>
+<p>To run eslint for Horizon and Dashboard using <cite>npm</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>npm install # You only need to execute this once.
+npm run lint
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These two methods are equivalent. The former merely executes
+the latter.</p>
+</div>
+</div>
+</div>
+<div class="section" id="give-me-metrics">
+<h2><a class="toc-backref" href="#id10">Give me metrics!</a><a class="headerlink" href="#give-me-metrics" title="Permalink to this headline">¶</a></h2>
+<p>You can generate various reports and metrics using command line arguments
+to <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt>.</p>
+<div class="section" id="eslint">
+<h3><a class="toc-backref" href="#id11">ESLint</a><a class="headerlink" href="#eslint" title="Permalink to this headline">¶</a></h3>
+<p>To run ESLint, a JavaScript code style checker:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --eslint
+</pre></div>
+</div>
+</div>
+<div class="section" id="coverage">
+<h3><a class="toc-backref" href="#id12">Coverage</a><a class="headerlink" href="#coverage" title="Permalink to this headline">¶</a></h3>
+<p>To run coverage reports:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --coverage
+</pre></div>
+</div>
+<p>The reports are saved to <tt class="docutils literal"><span class="pre">./reports/</span></tt> and <tt class="docutils literal"><span class="pre">./coverage.xml</span></tt>.</p>
+</div>
+<div class="section" id="pep8">
+<h3><a class="toc-backref" href="#id13">PEP8</a><a class="headerlink" href="#pep8" title="Permalink to this headline">¶</a></h3>
+<p>You can check for PEP8 violations as well:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --pep8
+</pre></div>
+</div>
+<p>The results are saved to <tt class="docutils literal"><span class="pre">./pep8.txt</span></tt>.</p>
+</div>
+<div class="section" id="pylint">
+<h3><a class="toc-backref" href="#id14">PyLint</a><a class="headerlink" href="#pylint" title="Permalink to this headline">¶</a></h3>
+<p>For more detailed code analysis you can run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --pylint
+</pre></div>
+</div>
+<p>The output will be saved in <tt class="docutils literal"><span class="pre">./pylint.txt</span></tt>.</p>
+</div>
+<div class="section" id="tab-characters">
+<h3><a class="toc-backref" href="#id15">Tab Characters</a><a class="headerlink" href="#tab-characters" title="Permalink to this headline">¶</a></h3>
+<p>For those who dislike having a mix of tab characters and spaces for indentation
+there&#8217;s a command to check for that in Python, CSS, JavaScript and HTML files:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --tabs
+</pre></div>
+</div>
+<p>This will output a total &#8220;tab count&#8221; and a list of the offending files.</p>
+</div>
+</div>
+<div class="section" id="running-the-development-server">
+<h2><a class="toc-backref" href="#id16">Running the development server</a><a class="headerlink" href="#running-the-development-server" title="Permalink to this headline">¶</a></h2>
+<p>As an added bonus, you can run Django&#8217;s development server directly from
+the root of the repository with <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --runserver
+</pre></div>
+</div>
+<p>This is effectively just an alias for:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./tools/with_venv.sh ./manage.py runserver
+</pre></div>
+</div>
+</div>
+<div class="section" id="generating-the-documentation">
+<h2><a class="toc-backref" href="#id17">Generating the documentation</a><a class="headerlink" href="#generating-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>You can build Horizon&#8217;s documentation automatically by running:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --docs
+</pre></div>
+</div>
+<p>The output is stored in <tt class="docutils literal"><span class="pre">./doc/build/html/</span></tt>.</p>
+</div>
+<div class="section" id="updating-the-translation-files">
+<h2><a class="toc-backref" href="#id18">Updating the translation files</a><a class="headerlink" href="#updating-the-translation-files" title="Permalink to this headline">¶</a></h2>
+<p>You can update all of the translation files for both the <tt class="docutils literal"><span class="pre">horizon</span></tt> app and
+<tt class="docutils literal"><span class="pre">openstack_dashboard</span></tt> project with a single command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --makemessages
+</pre></div>
+</div>
+<p>or, more compactly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --m
+</pre></div>
+</div>
+</div>
+<div class="section" id="starting-clean">
+<h2><a class="toc-backref" href="#id19">Starting clean</a><a class="headerlink" href="#starting-clean" title="Permalink to this headline">¶</a></h2>
+<p>If you ever want to start clean with a new environment for Horizon, you can
+run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --force
+</pre></div>
+</div>
+<p>That will blow away the existing environments and create new ones for you.</p>
+</div>
+<div class="section" id="non-interactive-mode">
+<h2><a class="toc-backref" href="#id20">Non-interactive Mode</a><a class="headerlink" href="#non-interactive-mode" title="Permalink to this headline">¶</a></h2>
+<p>There is an optional flag which will run the script in a non-interactive
+(and eventually less verbose) mode:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --quiet
+</pre></div>
+</div>
+<p>This will automatically take the default action for actions which would
+normally prompt for user input such as installing/updating the environment.</p>
+</div>
+<div class="section" id="environment-backups">
+<h2><a class="toc-backref" href="#id21">Environment Backups</a><a class="headerlink" href="#environment-backups" title="Permalink to this headline">¶</a></h2>
+<p>To speed up the process of doing clean checkouts, running continuous
+integration tests, etc. there are options for backing up the current
+environment and restoring from a backup:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>./run_tests.sh --restore-environment
+./run_tests.sh --backup-environment
+</pre></div>
+</div>
+<p>The environment backup is stored in <tt class="docutils literal"><span class="pre">/tmp/.horizon_environment/</span></tt>.</p>
+</div>
+<div class="section" id="environment-versioning">
+<h2><a class="toc-backref" href="#id22">Environment Versioning</a><a class="headerlink" href="#environment-versioning" title="Permalink to this headline">¶</a></h2>
+<p>Horizon keeps track of changes to the environment by comparing the
+current requirements files (<tt class="docutils literal"><span class="pre">requirements.txt</span></tt> and
+<tt class="docutils literal"><span class="pre">test-requirements.txt</span></tt>) and the files last time the virtual
+environment was created or updated. If there is any difference,
+the virtual environment will be update automatically when you run
+<tt class="docutils literal"><span class="pre">run_tests.sh</span></tt>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">The <tt class="docutils literal"><span class="pre">run_tests.sh</span></tt> Script</a><ul>
+<li><a class="reference internal" href="#first-run">First Run</a></li>
+<li><a class="reference internal" href="#i-just-want-to-run-the-tests">I just want to run the tests!</a><ul>
+<li><a class="reference internal" href="#running-a-subset-of-tests">Running a subset of tests</a></li>
+<li><a class="reference internal" href="#running-the-integration-tests">Running the integration tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-dashboard-and-panel-templates">Using Dashboard and Panel Templates</a><ul>
+<li><a class="reference internal" href="#dashboards">Dashboards</a></li>
+<li><a class="reference internal" href="#panels">Panels</a></li>
+<li><a class="reference internal" href="#javascript-tests">JavaScript Tests</a></li>
+<li><a class="reference internal" href="#javascript-code-style-checks">JavaScript Code Style Checks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#give-me-metrics">Give me metrics!</a><ul>
+<li><a class="reference internal" href="#eslint">ESLint</a></li>
+<li><a class="reference internal" href="#coverage">Coverage</a></li>
+<li><a class="reference internal" href="#pep8">PEP8</a></li>
+<li><a class="reference internal" href="#pylint">PyLint</a></li>
+<li><a class="reference internal" href="#tab-characters">Tab Characters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-the-development-server">Running the development server</a></li>
+<li><a class="reference internal" href="#generating-the-documentation">Generating the documentation</a></li>
+<li><a class="reference internal" href="#updating-the-translation-files">Updating the translation files</a></li>
+<li><a class="reference internal" href="#starting-clean">Starting clean</a></li>
+<li><a class="reference internal" href="#non-interactive-mode">Non-interactive Mode</a></li>
+<li><a class="reference internal" href="#environment-backups">Environment Backups</a></li>
+<li><a class="reference internal" href="#environment-versioning">Environment Versioning</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../topics/javascript_testing.html"
+                                  title="previous chapter">JavaScript Testing</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="horizon.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">horizon</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/ref/run_tests.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="horizon.html" title="The horizon Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../topics/javascript_testing.html" title="JavaScript Testing"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

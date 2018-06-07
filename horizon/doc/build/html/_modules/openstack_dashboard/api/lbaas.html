@@ -1,0 +1,519 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.lbaas &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.lbaas</h1><div class="highlight"><pre>
+<span></span><span class="c1">#    Copyright 2013, Big Switch Networks, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api</span> <span class="kn">import</span> <span class="n">neutron</span>
+
+<span class="n">neutronclient</span> <span class="o">=</span> <span class="n">neutron</span><span class="o">.</span><span class="n">neutronclient</span>
+
+
+<div class="viewcode-block" id="Vip"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.Vip">[docs]</a><span class="k">class</span> <span class="nc">Vip</span><span class="p">(</span><span class="n">neutron</span><span class="o">.</span><span class="n">NeutronAPIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for neutron load balancer vip.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Vip</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Pool"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.Pool">[docs]</a><span class="k">class</span> <span class="nc">Pool</span><span class="p">(</span><span class="n">neutron</span><span class="o">.</span><span class="n">NeutronAPIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for neutron load balancer pool.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;provider&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">apiresource</span><span class="p">:</span>
+            <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;provider&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;admin_state&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="s1">&#39;UP&#39;</span> <span class="k">if</span> <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;DOWN&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Pool</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Member"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.Member">[docs]</a><span class="k">class</span> <span class="nc">Member</span><span class="p">(</span><span class="n">neutron</span><span class="o">.</span><span class="n">NeutronAPIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for neutron load balancer member.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;admin_state&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="s1">&#39;UP&#39;</span> <span class="k">if</span> <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;DOWN&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Member</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="PoolStats"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.PoolStats">[docs]</a><span class="k">class</span> <span class="nc">PoolStats</span><span class="p">(</span><span class="n">neutron</span><span class="o">.</span><span class="n">NeutronAPIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for neutron load balancer pool stats.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PoolStats</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="PoolMonitor"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.PoolMonitor">[docs]</a><span class="k">class</span> <span class="nc">PoolMonitor</span><span class="p">(</span><span class="n">neutron</span><span class="o">.</span><span class="n">NeutronAPIDictWrapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for neutron load balancer pool health monitor.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiresource</span><span class="p">):</span>
+        <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;admin_state&#39;</span><span class="p">]</span> <span class="o">=</span> \
+            <span class="s1">&#39;UP&#39;</span> <span class="k">if</span> <span class="n">apiresource</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;DOWN&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PoolMonitor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">apiresource</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="vip_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.vip_create">[docs]</a><span class="k">def</span> <span class="nf">vip_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a vip for a specified pool.</span>
+
+<span class="sd">    :param request: request context</span>
+<span class="sd">    :param address: virtual IP address</span>
+<span class="sd">    :param name: name for vip</span>
+<span class="sd">    :param description: description for vip</span>
+<span class="sd">    :param subnet_id: subnet_id for subnet of vip</span>
+<span class="sd">    :param protocol_port: transport layer port number for vip</span>
+<span class="sd">    :returns: Vip object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vip&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;subnet_id&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;protocol_port&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;protocol_port&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;protocol&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;protocol&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;session_persistence&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;session_persistence&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]</span>
+                    <span class="p">}}</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;connection_limit&#39;</span><span class="p">):</span>
+        <span class="n">body</span><span class="p">[</span><span class="s1">&#39;vip&#39;</span><span class="p">][</span><span class="s1">&#39;connection_limit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;connection_limit&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">):</span>
+        <span class="n">body</span><span class="p">[</span><span class="s1">&#39;vip&#39;</span><span class="p">][</span><span class="s1">&#39;address&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">]</span>
+
+    <span class="n">vip</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">create_vip</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vip&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Vip</span><span class="p">(</span><span class="n">vip</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="vip_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.vip_list">[docs]</a><span class="k">def</span> <span class="nf">vip_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">vips</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">list_vips</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vips&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Vip</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vips</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="vip_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.vip_get">[docs]</a><span class="k">def</span> <span class="nf">vip_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_vip_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">,</span> <span class="n">expand_resource</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_vip_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">,</span> <span class="n">expand_resource</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">vip</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">show_vip</span><span class="p">(</span><span class="n">vip_id</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vip&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expand_resource</span><span class="p">:</span>
+        <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;subnet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">neutron</span><span class="o">.</span><span class="n">subnet_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">])</span>
+        <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">neutron</span><span class="o">.</span><span class="n">port_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;port_id&#39;</span><span class="p">])</span>
+        <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Vip</span><span class="p">(</span><span class="n">vip</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="vip_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.vip_update">[docs]</a><span class="k">def</span> <span class="nf">vip_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">vip</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">update_vip</span><span class="p">(</span><span class="n">vip_id</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vip&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Vip</span><span class="p">(</span><span class="n">vip</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="vip_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.vip_delete">[docs]</a><span class="k">def</span> <span class="nf">vip_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">vip_id</span><span class="p">):</span>
+    <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">delete_vip</span><span class="p">(</span><span class="n">vip_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_create">[docs]</a><span class="k">def</span> <span class="nf">pool_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a pool for specified protocol</span>
+
+<span class="sd">    :param request: request context</span>
+<span class="sd">    :param name: name for pool</span>
+<span class="sd">    :param description: description for pool</span>
+<span class="sd">    :param subnet_id: subnet_id for subnet of pool</span>
+<span class="sd">    :param protocol: load balanced protocol</span>
+<span class="sd">    :param lb_method: load balancer method</span>
+<span class="sd">    :param admin_state_up: admin state (default on)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pool&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;subnet_id&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;protocol&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;protocol&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;lb_method&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lb_method&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;provider&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;provider&#39;</span><span class="p">],</span>
+                     <span class="p">}}</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">create_pool</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Pool</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_get_vip</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">,</span> <span class="n">vip_dict</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vip_dict</span><span class="p">:</span>
+                <span class="n">vip</span> <span class="o">=</span> <span class="n">vip_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pool</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vip</span> <span class="o">=</span> <span class="n">_vip_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to get VIP for pool &quot;</span>
+                                        <span class="s2">&quot;</span><span class="si">%(pool)s</span><span class="s2">.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;pool&quot;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]})</span>
+            <span class="n">vip</span> <span class="o">=</span> <span class="n">Vip</span><span class="p">({</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;vip_id&#39;</span><span class="p">],</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">vip</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+
+<div class="viewcode-block" id="pool_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_list">[docs]</a><span class="k">def</span> <span class="nf">pool_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_pool_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">expand_subnet</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">expand_vip</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_pool_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">expand_subnet</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">expand_vip</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">pools</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">list_pools</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pools&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expand_subnet</span><span class="p">:</span>
+        <span class="n">subnets</span> <span class="o">=</span> <span class="n">neutron</span><span class="o">.</span><span class="n">subnet_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">subnet_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subnets</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">:</span>
+            <span class="n">p</span><span class="p">[</span><span class="s1">&#39;subnet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subnet_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">expand_vip</span><span class="p">:</span>
+        <span class="n">vips</span> <span class="o">=</span> <span class="n">vip_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">vip_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">v</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vips</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">:</span>
+            <span class="n">p</span><span class="p">[</span><span class="s1">&#39;vip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_vip</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">vip_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Pool</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="pool_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_get">[docs]</a><span class="k">def</span> <span class="nf">pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">,</span> <span class="n">expand_resource</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">,</span> <span class="n">expand_resource</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">show_pool</span><span class="p">(</span><span class="n">pool_id</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to get pool detail.&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">expand_resource</span><span class="p">:</span>
+        <span class="c1"># TODO(lyj): The expand resource(subnet, member etc.) attached</span>
+        <span class="c1"># to a pool could be deleted without cleanup pool related database,</span>
+        <span class="c1"># this will cause exceptions if we trying to get the deleted resources.</span>
+        <span class="c1"># so we need to handle the situation by showing a warning message here.</span>
+        <span class="c1"># we can safely remove the try/except once the neutron bug is fixed</span>
+        <span class="c1"># https://bugs.launchpad.net/neutron/+bug/1406854</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;subnet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">neutron</span><span class="o">.</span><span class="n">subnet_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;subnet_id&#39;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to get subnet for pool &quot;</span>
+                                        <span class="s2">&quot;</span><span class="si">%(pool)s</span><span class="s2">.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;pool&quot;</span><span class="p">:</span> <span class="n">pool_id</span><span class="p">})</span>
+        <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;vip&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_vip</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">,</span> <span class="n">vip_dict</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="c1"># Check here to reduce the additional request if pool[&#39;members&#39;] is</span>
+        <span class="c1"># empty</span>
+        <span class="k">if</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;members&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;members&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_member_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">expand_pool</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                               <span class="n">pool_id</span><span class="o">=</span><span class="n">pool_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to get members for pool &quot;</span>
+                                            <span class="s2">&quot;</span><span class="si">%(pool)s</span><span class="s2">.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;pool&quot;</span><span class="p">:</span> <span class="n">pool_id</span><span class="p">})</span>
+        <span class="c1"># If the filter to get health monitors list is empty, all health</span>
+        <span class="c1"># monitors will be returned in the tenant.</span>
+        <span class="k">if</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;health_monitors&#39;</span><span class="p">]:</span>
+            <span class="n">monitors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">monitor_id</span> <span class="ow">in</span> <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;health_monitors&#39;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">monitors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_pool_health_monitor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                             <span class="n">monitor_id</span><span class="p">,</span>
+                                                             <span class="bp">False</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                     <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Unable to get health monitor &quot;</span>
+                                       <span class="s2">&quot;</span><span class="si">%(monitor_id)s</span><span class="s2"> for pool </span><span class="si">%(pool)s</span><span class="s2">.&quot;</span><span class="p">)</span>
+                                     <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;pool&quot;</span><span class="p">:</span> <span class="n">pool_id</span><span class="p">,</span>
+                                        <span class="s2">&quot;monitor_id&quot;</span><span class="p">:</span> <span class="n">monitor_id</span><span class="p">})</span>
+            <span class="n">pool</span><span class="p">[</span><span class="s1">&#39;health_monitors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">monitors</span>
+    <span class="k">return</span> <span class="n">Pool</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="pool_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_update">[docs]</a><span class="k">def</span> <span class="nf">pool_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">update_pool</span><span class="p">(</span><span class="n">pool_id</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pool&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Pool</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_delete">[docs]</a><span class="k">def</span> <span class="nf">pool_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool</span><span class="p">):</span>
+    <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">delete_pool</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+
+<span class="c1"># not linked to UI yet</span></div>
+<div class="viewcode-block" id="pool_stats"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_stats">[docs]</a><span class="k">def</span> <span class="nf">pool_stats</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pool_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">retrieve_pool_stats</span><span class="p">(</span><span class="n">pool_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PoolStats</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_health_monitor_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_health_monitor_create">[docs]</a><span class="k">def</span> <span class="nf">pool_health_monitor_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a health monitor</span>
+
+<span class="sd">    :param request: request context</span>
+<span class="sd">    :param type: type of monitor</span>
+<span class="sd">    :param delay: delay of monitor</span>
+<span class="sd">    :param timeout: timeout of monitor</span>
+<span class="sd">    :param max_retries: max retries [1..10]</span>
+<span class="sd">    :param http_method: http method</span>
+<span class="sd">    :param url_path: url path</span>
+<span class="sd">    :param expected_codes: http return code</span>
+<span class="sd">    :param admin_state_up: admin state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">monitor_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">monitor_type</span><span class="p">,</span>
+                               <span class="s1">&#39;delay&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;delay&#39;</span><span class="p">],</span>
+                               <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">],</span>
+                               <span class="s1">&#39;max_retries&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;max_retries&#39;</span><span class="p">],</span>
+                               <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]</span>
+                               <span class="p">}}</span>
+    <span class="k">if</span> <span class="n">monitor_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;HTTP&#39;</span><span class="p">,</span> <span class="s1">&#39;HTTPS&#39;</span><span class="p">]:</span>
+        <span class="n">body</span><span class="p">[</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">][</span><span class="s1">&#39;http_method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;http_method&#39;</span><span class="p">]</span>
+        <span class="n">body</span><span class="p">[</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">][</span><span class="s1">&#39;url_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;url_path&#39;</span><span class="p">]</span>
+        <span class="n">body</span><span class="p">[</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">][</span><span class="s1">&#39;expected_codes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;expected_codes&#39;</span><span class="p">]</span>
+    <span class="n">mon</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">create_health_monitor</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s1">&#39;health_monitor&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PoolMonitor</span><span class="p">(</span><span class="n">mon</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_health_monitor_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_health_monitor_list">[docs]</a><span class="k">def</span> <span class="nf">pool_health_monitor_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">monitors</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">list_health_monitors</span><span class="p">(</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;health_monitors&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">PoolMonitor</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">monitors</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="pool_health_monitor_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_health_monitor_get">[docs]</a><span class="k">def</span> <span class="nf">pool_health_monitor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">monitor_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_pool_health_monitor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">monitor_id</span><span class="p">,</span> <span class="n">expand_resource</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_pool_health_monitor_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">monitor_id</span><span class="p">,</span> <span class="n">expand_resource</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">monitor</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">show_health_monitor</span><span class="p">(</span><span class="n">monitor_id</span>
+                                                  <span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expand_resource</span><span class="p">:</span>
+        <span class="n">pool_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;pools&#39;</span><span class="p">]]</span>
+        <span class="c1"># If the filter to get pools list is empty, all pools will be</span>
+        <span class="c1"># returned in the tenant.</span>
+        <span class="k">if</span> <span class="n">pool_ids</span><span class="p">:</span>
+            <span class="n">monitor</span><span class="p">[</span><span class="s1">&#39;pools&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_pool_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">pool_ids</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PoolMonitor</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="pool_health_monitor_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_health_monitor_update">[docs]</a><span class="k">def</span> <span class="nf">pool_health_monitor_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">monitor_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">monitor</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">update_health_monitor</span><span class="p">(</span><span class="n">monitor_id</span><span class="p">,</span> <span class="n">kwargs</span>
+                                                    <span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PoolMonitor</span><span class="p">(</span><span class="n">monitor</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_health_monitor_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_health_monitor_delete">[docs]</a><span class="k">def</span> <span class="nf">pool_health_monitor_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">mon_id</span><span class="p">):</span>
+    <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">delete_health_monitor</span><span class="p">(</span><span class="n">mon_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="member_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.member_create">[docs]</a><span class="k">def</span> <span class="nf">member_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a load balance member</span>
+
+<span class="sd">    :param request: request context</span>
+<span class="sd">    :param pool_id: pool_id of pool for member</span>
+<span class="sd">    :param address: IP address</span>
+<span class="sd">    :param protocol_port: transport layer port number</span>
+<span class="sd">    :param weight: weight for member</span>
+<span class="sd">    :param admin_state_up: admin_state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;member&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pool_id&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],</span>
+                       <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;address&#39;</span><span class="p">],</span>
+                       <span class="s1">&#39;protocol_port&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;protocol_port&#39;</span><span class="p">],</span>
+                       <span class="s1">&#39;admin_state_up&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;admin_state_up&#39;</span><span class="p">]</span>
+                       <span class="p">}}</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">):</span>
+        <span class="n">body</span><span class="p">[</span><span class="s1">&#39;member&#39;</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">create_member</span><span class="p">(</span><span class="n">body</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;member&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Member</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="member_list"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.member_list">[docs]</a><span class="k">def</span> <span class="nf">member_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_member_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">expand_pool</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_member_list</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">expand_pool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">list_members</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;members&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expand_pool</span><span class="p">:</span>
+        <span class="n">pools</span> <span class="o">=</span> <span class="n">_pool_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">pool_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">p</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pools</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+            <span class="n">m</span><span class="p">[</span><span class="s1">&#39;pool_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pool_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">name_or_id</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Member</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">members</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="member_get"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.member_get">[docs]</a><span class="k">def</span> <span class="nf">member_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_member_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">,</span> <span class="n">expand_pool</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_member_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">,</span> <span class="n">expand_pool</span><span class="p">):</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">show_member</span><span class="p">(</span><span class="n">member_id</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;member&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expand_pool</span><span class="p">:</span>
+        <span class="n">member</span><span class="p">[</span><span class="s1">&#39;pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_pool_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">Member</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="member_update"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.member_update">[docs]</a><span class="k">def</span> <span class="nf">member_update</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">member_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">update_member</span><span class="p">(</span><span class="n">member_id</span><span class="p">,</span> <span class="n">kwargs</span>
+                                                  <span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;member&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Member</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="member_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.member_delete">[docs]</a><span class="k">def</span> <span class="nf">member_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">mem_id</span><span class="p">):</span>
+    <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">delete_member</span><span class="p">(</span><span class="n">mem_id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_monitor_association_create"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_monitor_association_create">[docs]</a><span class="k">def</span> <span class="nf">pool_monitor_association_create</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Associate a health monitor with pool</span>
+
+<span class="sd">    :param request: request context</span>
+<span class="sd">    :param monitor_id: id of monitor</span>
+<span class="sd">    :param pool_id: id of pool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;health_monitor&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">],</span> <span class="p">}}</span>
+
+    <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">associate_health_monitor</span><span class="p">(</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],</span> <span class="n">body</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="pool_monitor_association_delete"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.api.lbaas.html#openstack_dashboard.api.lbaas.pool_monitor_association_delete">[docs]</a><span class="k">def</span> <span class="nf">pool_monitor_association_delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Disassociate a health monitor from pool</span>
+
+<span class="sd">    :param request: request context</span>
+<span class="sd">    :param monitor_id: id of monitor</span>
+<span class="sd">    :param pool_id: id of pool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">neutronclient</span><span class="p">(</span><span class="n">request</span><span class="p">)</span><span class="o">.</span><span class="n">disassociate_health_monitor</span><span class="p">(</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;pool_id&#39;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;monitor_id&#39;</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

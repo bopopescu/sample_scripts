@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Horizon TestCase Classes &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="local.conf" href="local_conf.html" />
+    <link rel="prev" title="Horizon Exceptions" href="exceptions.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-horizon.test.helpers">
+<span id="horizon-testcase-classes"></span><h1>Horizon TestCase Classes<a class="headerlink" href="#module-horizon.test.helpers" title="Permalink to this headline">¶</a></h1>
+<p>Horizon provides a base test case class which provides several useful
+pre-prepared attributes for testing Horizon components.</p>
+<dl class="class">
+<dt id="horizon.test.helpers.TestCase">
+<em class="property">class </em><tt class="descclassname">horizon.test.helpers.</tt><tt class="descname">TestCase</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="../_modules/horizon/test/helpers.html#TestCase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.test.helpers.TestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialized base test case class for Horizon which gives access to
+numerous additional features:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The <tt class="docutils literal"><span class="pre">mox</span></tt> mocking framework via <tt class="docutils literal"><span class="pre">self.mox</span></tt>.</li>
+<li>A <tt class="docutils literal"><span class="pre">RequestFactory</span></tt> class which supports Django&#8217;s <tt class="docutils literal"><span class="pre">contrib.messages</span></tt>
+framework via <tt class="docutils literal"><span class="pre">self.factory</span></tt>.</li>
+<li>A ready-to-go request object via <tt class="docutils literal"><span class="pre">self.request</span></tt>.</li>
+</ul>
+</div></blockquote>
+<dl class="method">
+<dt id="horizon.test.helpers.TestCase.assertMessageCount">
+<tt class="descname">assertMessageCount</tt><big>(</big><em>response=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/horizon/test/helpers.html#TestCase.assertMessageCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.test.helpers.TestCase.assertMessageCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asserts that the specified number of messages have been attached
+for various message types. Usage would look like
+<tt class="docutils literal"><span class="pre">self.assertMessageCount(success=1)</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="horizon.test.helpers.TestCase.assertNoMessages">
+<tt class="descname">assertNoMessages</tt><big>(</big><em>response=None</em><big>)</big><a class="reference internal" href="../_modules/horizon/test/helpers.html#TestCase.assertNoMessages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#horizon.test.helpers.TestCase.assertNoMessages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asserts that no messages have been attached by the
+<tt class="docutils literal"><span class="pre">contrib.messages</span></tt> framework.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-openstack_dashboard.test.helpers"></span><p>The OpenStack Dashboard also provides test case classes for greater
+ease-of-use when testing APIs and OpenStack-specific auth scenarios.</p>
+<dl class="class">
+<dt id="openstack_dashboard.test.helpers.TestCase">
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.test.helpers.</tt><tt class="descname">TestCase</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#TestCase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.TestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialized base test case class for Horizon.</p>
+<p>It gives access to numerous additional features:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A full suite of test data through various attached objects and
+managers (e.g. <tt class="docutils literal"><span class="pre">self.servers</span></tt>, <tt class="docutils literal"><span class="pre">self.user</span></tt>, etc.). See the
+docs for
+<tt class="xref py py-class docutils literal"><span class="pre">TestData</span></tt>
+for more information.</li>
+<li>The <tt class="docutils literal"><span class="pre">mox</span></tt> mocking framework via <tt class="docutils literal"><span class="pre">self.mox</span></tt>.</li>
+<li>A set of request context data via <tt class="docutils literal"><span class="pre">self.context</span></tt>.</li>
+<li>A <tt class="docutils literal"><span class="pre">RequestFactory</span></tt> class which supports Django&#8217;s <tt class="docutils literal"><span class="pre">contrib.messages</span></tt>
+framework via <tt class="docutils literal"><span class="pre">self.factory</span></tt>.</li>
+<li>A ready-to-go request object via <tt class="docutils literal"><span class="pre">self.request</span></tt>.</li>
+<li>The ability to override specific time data controls for easier testing.</li>
+<li>Several handy additional assertion methods.</li>
+</ul>
+</div></blockquote>
+<dl class="method">
+<dt id="openstack_dashboard.test.helpers.TestCase.add_panel_mocks">
+<tt class="descname">add_panel_mocks</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#TestCase.add_panel_mocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.TestCase.add_panel_mocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Global mocks on panels that get called on all views.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openstack_dashboard.test.helpers.TestCase.assertFormErrors">
+<tt class="descname">assertFormErrors</tt><big>(</big><em>response</em>, <em>count=0</em>, <em>message=None</em>, <em>context_name='form'</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#TestCase.assertFormErrors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.TestCase.assertFormErrors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for form errors.</p>
+<p>Asserts that the response does contain a form in its
+context, and that form has errors, if count were given,
+it must match the exact numbers of errors</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openstack_dashboard.test.helpers.TestCase.assertNoFormErrors">
+<tt class="descname">assertNoFormErrors</tt><big>(</big><em>response</em>, <em>context_name='form'</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#TestCase.assertNoFormErrors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.TestCase.assertNoFormErrors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for no form errors.</p>
+<p>Asserts that the response either does not contain a form in its
+context, or that if it does, that form has no errors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openstack_dashboard.test.helpers.TestCase.assertRedirectsNoFollow">
+<tt class="descname">assertRedirectsNoFollow</tt><big>(</big><em>response</em>, <em>expected_url</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#TestCase.assertRedirectsNoFollow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.TestCase.assertRedirectsNoFollow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for redirect.</p>
+<p>Asserts that the given response issued a 302 redirect without
+processing the view which is redirected to.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="openstack_dashboard.test.helpers.TestCase.assertStatusCode">
+<tt class="descname">assertStatusCode</tt><big>(</big><em>response</em>, <em>expected_code</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#TestCase.assertStatusCode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.TestCase.assertStatusCode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates an expected status code.</p>
+<p>Matches camel case of other assert functions</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="openstack_dashboard.test.helpers.APITestCase">
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.test.helpers.</tt><tt class="descname">APITestCase</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#APITestCase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.APITestCase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Testing APIs.</p>
+<p>For use with tests which deal with the underlying clients rather than
+stubbing out the openstack_dashboard.api.* methods.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="openstack_dashboard.test.helpers.BaseAdminViewTests">
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.test.helpers.</tt><tt class="descname">BaseAdminViewTests</tt><big>(</big><em>methodName='runTest'</em><big>)</big><a class="reference internal" href="../_modules/openstack_dashboard/test/helpers.html#BaseAdminViewTests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#openstack_dashboard.test.helpers.BaseAdminViewTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets an active user with the &#8220;admin&#8221; role.</p>
+<p>For testing admin-only views and functionality.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="exceptions.html"
+                                  title="previous chapter">Horizon Exceptions</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="local_conf.html"
+                                  title="next chapter">local.conf</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/ref/test.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="local_conf.html" title="local.conf"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="Horizon Exceptions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

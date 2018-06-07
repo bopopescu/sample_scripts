@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.api.rest.glance &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.api.rest.glance</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2015, Hewlett-Packard Development Company, L.P.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="sd">&quot;&quot;&quot;API for the glance service.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="nb">zip</span> <span class="k">as</span> <span class="n">izip</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">generic</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">rest_utils</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.api.rest</span> <span class="kn">import</span> <span class="n">urls</span>
+
+
+<span class="n">CLIENT_KEYWORDS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;resource_type&#39;</span><span class="p">,</span> <span class="s1">&#39;marker&#39;</span><span class="p">,</span> <span class="s1">&#39;sort_dir&#39;</span><span class="p">,</span> <span class="s1">&#39;sort_key&#39;</span><span class="p">,</span> <span class="s1">&#39;paginate&#39;</span><span class="p">}</span>
+
+
+<span class="nd">@urls.register</span>
+<span class="k">class</span> <span class="nc">Image</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Image"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.Image">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for retrieving a single image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;glance/images/(?P&lt;image_id&gt;[^/]+|default)/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">):</span>
+<div class="viewcode-block" id="Image.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.Image.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a specific image</span>
+
+<span class="sd">        http://localhost/api/glance/images/cc758c90-3d98-4ea1-af44-aab405c9c915</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">ImageProperties</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="ImageProperties"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.ImageProperties">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for retrieving only a custom properties of single image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;glance/images/(?P&lt;image_id&gt;[^/]+)/properties/&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">):</span>
+<div class="viewcode-block" id="ImageProperties.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.ImageProperties.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get custom properties of specific image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">)</span><span class="o">.</span><span class="n">properties</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">(</span><span class="n">data_required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">):</span>
+<div class="viewcode-block" id="ImageProperties.patch"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.ImageProperties.patch">[docs]</a>        <span class="sd">&quot;&quot;&quot;Update custom properties of specific image.</span>
+
+<span class="sd">        This method returns HTTP 204 (no content) on success.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_update_properties</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">image_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;removed&#39;</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">request</span><span class="o">.</span><span class="n">DATA</span><span class="p">[</span><span class="s1">&#39;updated&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">Images</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="Images"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.Images">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for Glance images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;glance/images/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="Images.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.Images.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a list of images.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;. Each item is</span>
+<span class="sd">        an image.</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/glance/images?sort_dir=desc&amp;sort_key=name&amp;name=cirros-0.3.2-x86_64-uec  #flake8: noqa</span>
+
+<span class="sd">        The following get parameters may be passed in the GET</span>
+<span class="sd">        request:</span>
+
+<span class="sd">        :param paginate: If true will perform pagination based on settings.</span>
+<span class="sd">        :param marker: Specifies the namespace of the last-seen image.</span>
+<span class="sd">             The typical pattern of limit and marker is to make an</span>
+<span class="sd">             initial limited request and then to use the last</span>
+<span class="sd">             namespace from the response as the marker parameter</span>
+<span class="sd">             in a subsequent limited request. With paginate, limit</span>
+<span class="sd">             is automatically set.</span>
+<span class="sd">        :param sort_dir: The sort direction (&#39;asc&#39; or &#39;desc&#39;).</span>
+<span class="sd">        :param sort_key: The field to sort on (for example, &#39;created_at&#39;).</span>
+<span class="sd">             Default is created_at.</span>
+
+<span class="sd">        Any additional request parameters will be passed through the API as</span>
+<span class="sd">        filters. There are v1/v2 complications which are being addressed as a</span>
+<span class="sd">        separate work stream: https://review.openstack.org/#/c/150084/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filters</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">parse_filters_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                                          <span class="n">CLIENT_KEYWORDS</span><span class="p">)</span>
+
+        <span class="n">images</span><span class="p">,</span> <span class="n">has_more_data</span><span class="p">,</span> <span class="n">has_prev_data</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">image_list_detailed</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;items&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">images</span><span class="p">],</span>
+            <span class="s1">&#39;has_more_data&#39;</span><span class="p">:</span> <span class="n">has_more_data</span><span class="p">,</span>
+            <span class="s1">&#39;has_prev_data&#39;</span><span class="p">:</span> <span class="n">has_prev_data</span><span class="p">,</span>
+        <span class="p">}</span>
+
+
+<span class="nd">@urls.register</span></div></div>
+<span class="k">class</span> <span class="nc">MetadefsNamespaces</span><span class="p">(</span><span class="n">generic</span><span class="o">.</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="MetadefsNamespaces"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.MetadefsNamespaces">[docs]</a>    <span class="sd">&quot;&quot;&quot;API for Single Glance Metadata Definitions.</span>
+
+<span class="sd">       http://docs.openstack.org/developer/glance/metadefs-concepts.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url_regex</span> <span class="o">=</span> <span class="s1">r&#39;glance/metadefs/namespaces/$&#39;</span>
+
+    <span class="nd">@rest_utils.ajax</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<div class="viewcode-block" id="MetadefsNamespaces.get"><a class="viewcode-back" href="../../../../sourcecode/openstack_dashboard/openstack_dashboard.api.rest.glance.html#openstack_dashboard.api.rest.glance.MetadefsNamespaces.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a list of metadata definition namespaces.</span>
+
+<span class="sd">        The listing result is an object with property &quot;items&quot;. Each item is</span>
+<span class="sd">        a namespace.</span>
+
+<span class="sd">        Example GET:</span>
+<span class="sd">        http://localhost/api/glance/metadefs/namespaces?resource_types=OS::Nova::Flavor&amp;sort_dir=desc&amp;marker=OS::Compute::Watchdog&amp;paginate=False&amp;sort_key=namespace  #flake8: noqa</span>
+
+<span class="sd">        The following get parameters may be passed in the GET</span>
+<span class="sd">        request:</span>
+
+<span class="sd">        :param resource_type: Namespace resource type.</span>
+<span class="sd">            If specified returned namespace properties will have prefixes</span>
+<span class="sd">            proper for selected resource type.</span>
+<span class="sd">        :param paginate: If true will perform pagination based on settings.</span>
+<span class="sd">        :param marker: Specifies the namespace of the last-seen namespace.</span>
+<span class="sd">             The typical pattern of limit and marker is to make an</span>
+<span class="sd">             initial limited request and then to use the last</span>
+<span class="sd">             namespace from the response as the marker parameter</span>
+<span class="sd">             in a subsequent limited request. With paginate, limit</span>
+<span class="sd">             is automatically set.</span>
+<span class="sd">        :param sort_dir: The sort direction (&#39;asc&#39; or &#39;desc&#39;).</span>
+<span class="sd">        :param sort_key: The field to sort on (for example, &#39;created_at&#39;).</span>
+<span class="sd">             Default is namespace. The way base namespaces are loaded into</span>
+<span class="sd">             glance typically at first deployment is done in a single</span>
+<span class="sd">             transaction giving them a potentially unpredictable sort result</span>
+<span class="sd">             when using create_at.</span>
+
+<span class="sd">        Any additional request parameters will be passed through the API as</span>
+<span class="sd">        filters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filters</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">rest_utils</span><span class="o">.</span><span class="n">parse_filters_kwargs</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">CLIENT_KEYWORDS</span>
+        <span class="p">)</span>
+
+        <span class="n">names</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;items&#39;</span><span class="p">,</span> <span class="s1">&#39;has_more_data&#39;</span><span class="p">,</span> <span class="s1">&#39;has_prev_data&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">izip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">api</span><span class="o">.</span><span class="n">glance</span><span class="o">.</span><span class="n">metadefs_namespace_full_list</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)))</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

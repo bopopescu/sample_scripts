@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.utils.settings &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.utils.settings</h1><div class="highlight"><pre>
+<span></span><span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pkgutil</span>
+
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">importlib</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">file_discovery</span> <span class="k">as</span> <span class="n">fd</span>
+
+
+<div class="viewcode-block" id="import_submodules"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.utils.settings.html#openstack_dashboard.utils.settings.import_submodules">[docs]</a><span class="k">def</span> <span class="nf">import_submodules</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Import all submodules and make them available in a dict.&quot;&quot;&quot;</span>
+    <span class="n">submodules</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">loader</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ispkg</span> <span class="ow">in</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">iter_modules</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">__path__</span><span class="p">,</span>
+                                                    <span class="n">module</span><span class="o">.</span><span class="n">__name__</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">submodule</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># FIXME: Make the errors non-fatal (do we want that?).</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Error importing </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parent</span><span class="p">,</span> <span class="n">child</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">submodules</span><span class="p">[</span><span class="n">child</span><span class="p">]</span> <span class="o">=</span> <span class="n">submodule</span>
+    <span class="k">return</span> <span class="n">submodules</span>
+
+</div>
+<div class="viewcode-block" id="import_dashboard_config"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.utils.settings.html#openstack_dashboard.utils.settings.import_dashboard_config">[docs]</a><span class="k">def</span> <span class="nf">import_dashboard_config</span><span class="p">(</span><span class="n">modules</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Imports configuration from all the modules and merges it.&quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">submodule</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">import_submodules</span><span class="p">(</span><span class="n">module</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">submodule</span><span class="p">,</span> <span class="s1">&#39;DASHBOARD&#39;</span><span class="p">):</span>
+                <span class="n">dashboard</span> <span class="o">=</span> <span class="n">submodule</span><span class="o">.</span><span class="n">DASHBOARD</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">dashboard</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">submodule</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">submodule</span><span class="p">,</span> <span class="s1">&#39;PANEL&#39;</span><span class="p">)</span>
+                  <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">submodule</span><span class="p">,</span> <span class="s1">&#39;PANEL_GROUP&#39;</span><span class="p">)):</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">submodule</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">submodule</span><span class="o">.</span><span class="n">__dict__</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Skipping </span><span class="si">%s</span><span class="s2"> because it doesn&#39;t have DASHBOARD&quot;</span>
+                                <span class="s2">&quot;, PANEL or PANEL_GROUP defined.&quot;</span><span class="p">,</span>
+                                <span class="n">submodule</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">config</span><span class="p">),</span>
+                  <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;__name__&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="update_dashboards"><a class="viewcode-back" href="../../../sourcecode/openstack_dashboard/openstack_dashboard.utils.settings.html#openstack_dashboard.utils.settings.update_dashboards">[docs]</a><span class="k">def</span> <span class="nf">update_dashboards</span><span class="p">(</span><span class="n">modules</span><span class="p">,</span> <span class="n">horizon_config</span><span class="p">,</span> <span class="n">installed_apps</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Imports dashboard and panel configuration from modules and applies it.</span>
+
+<span class="sd">    The submodules from specified modules are imported, and the configuration</span>
+<span class="sd">    for the specific dashboards is merged, with the later modules overriding</span>
+<span class="sd">    settings from the former. Then the configuration is applied to</span>
+<span class="sd">    horizon_config and installed_apps, in alphabetical order of files from</span>
+<span class="sd">    which the configurations were imported.</span>
+
+<span class="sd">    For example, given this setup:</span>
+
+<span class="sd">        | foo/__init__.py</span>
+<span class="sd">        | foo/_10_baz.py</span>
+<span class="sd">        | foo/_20_qux.py</span>
+
+<span class="sd">        | bar/__init__.py</span>
+<span class="sd">        | bar/_30_baz_.py</span>
+
+<span class="sd">    and being called with ``modules=[foo, bar]``, we will first have the</span>
+<span class="sd">    configuration from ``_10_baz`` and ``_30_baz`` merged, then the</span>
+<span class="sd">    configurations will be applied in order ``qux``, ``baz`` (``baz`` is</span>
+<span class="sd">    second, because the most recent file which contributed to it, ``_30_baz``,</span>
+<span class="sd">    comes after ``_20_qux``).</span>
+
+<span class="sd">    Panel specific configurations are stored in horizon_config. Dashboards</span>
+<span class="sd">    from both plugin-based and openstack_dashboard must be registered before</span>
+<span class="sd">    the panel configuration can be applied. Making changes to the panel is</span>
+<span class="sd">    deferred until the horizon autodiscover is completed, configurations are</span>
+<span class="sd">    applied in alphabetical order of files where it was imported.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config_dashboards</span> <span class="o">=</span> <span class="n">horizon_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dashboards&#39;</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">if</span> <span class="n">config_dashboards</span> <span class="ow">or</span> <span class="n">horizon_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;default_dashboard&#39;</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s1">&#39;&quot;dashboards&quot; and &quot;default_dashboard&quot; in (local_)settings is &#39;</span>
+            <span class="s1">&#39;DEPRECATED now and may be unsupported in some future release. &#39;</span>
+            <span class="s1">&#39;The preferred way to specify the order of dashboards and the &#39;</span>
+            <span class="s1">&#39;default dashboard is the pluggable dashboard mechanism (in </span><span class="si">%s</span><span class="s1">).&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                       <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">])</span>
+        <span class="p">)</span>
+
+    <span class="n">enabled_dashboards</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">disabled_dashboards</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">exceptions</span> <span class="o">=</span> <span class="n">horizon_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;exceptions&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">apps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">angular_modules</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">js_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">js_spec_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">scss_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">panel_customization</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">update_horizon_config</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">import_dashboard_config</span><span class="p">(</span><span class="n">modules</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DISABLED&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DASHBOARD&#39;</span><span class="p">):</span>
+                <span class="n">disabled_dashboards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DASHBOARD&#39;</span><span class="p">))</span>
+            <span class="k">continue</span>
+
+        <span class="n">_apps</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADD_INSTALLED_APPS&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">apps</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">_apps</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;AUTO_DISCOVER_STATIC_FILES&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_app</span> <span class="ow">in</span> <span class="n">_apps</span><span class="p">:</span>
+                <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">_app</span><span class="p">)</span>
+                <span class="n">base_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;static/&#39;</span><span class="p">)</span>
+                <span class="n">fd</span><span class="o">.</span><span class="n">populate_horizon_config</span><span class="p">(</span><span class="n">horizon_config</span><span class="p">,</span> <span class="n">base_path</span><span class="p">)</span>
+
+        <span class="n">add_exceptions</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADD_EXCEPTIONS&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">for</span> <span class="n">category</span><span class="p">,</span> <span class="n">exc_list</span> <span class="ow">in</span> <span class="n">add_exceptions</span><span class="p">:</span>
+            <span class="n">exceptions</span><span class="p">[</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">exceptions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="p">())</span>
+                                             <span class="o">+</span> <span class="n">exc_list</span><span class="p">))</span>
+
+        <span class="n">angular_modules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADD_ANGULAR_MODULES&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="c1"># avoid pulling in dashboard javascript dependencies multiple times</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">js_files</span><span class="p">)</span>
+        <span class="n">js_files</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADD_JS_FILES&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                         <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">])</span>
+        <span class="n">js_spec_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADD_JS_SPEC_FILES&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">scss_files</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ADD_SCSS_FILES&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="n">update_horizon_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;UPDATE_HORIZON_CONFIG&#39;</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DASHBOARD&#39;</span><span class="p">):</span>
+            <span class="n">dashboard</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="n">enabled_dashboards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dashboard</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DEFAULT&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+                <span class="n">horizon_config</span><span class="p">[</span><span class="s1">&#39;default_dashboard&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dashboard</span>
+        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANEL&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANEL_GROUP&#39;</span><span class="p">):</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;__builtins__&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+            <span class="n">panel_customization</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="c1"># Preserve the dashboard order specified in settings</span>
+    <span class="n">dashboards</span> <span class="o">=</span> <span class="p">([</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">config_dashboards</span>
+                   <span class="k">if</span> <span class="n">d</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">disabled_dashboards</span><span class="p">]</span> <span class="o">+</span>
+                  <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">enabled_dashboards</span>
+                   <span class="k">if</span> <span class="n">d</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config_dashboards</span><span class="p">])</span>
+
+    <span class="n">horizon_config</span><span class="p">[</span><span class="s1">&#39;panel_customization&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">panel_customization</span>
+    <span class="n">horizon_config</span><span class="p">[</span><span class="s1">&#39;dashboards&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dashboards</span><span class="p">)</span>
+    <span class="n">horizon_config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;exceptions&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span>
+    <span class="n">horizon_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">update_horizon_config</span><span class="p">)</span>
+    <span class="n">horizon_config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;angular_modules&#39;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">angular_modules</span><span class="p">)</span>
+    <span class="n">horizon_config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;js_files&#39;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">js_files</span><span class="p">)</span>
+    <span class="n">horizon_config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;js_spec_files&#39;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">js_spec_files</span><span class="p">)</span>
+    <span class="n">horizon_config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;scss_files&#39;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">scss_files</span><span class="p">)</span>
+    <span class="n">installed_apps</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">apps</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

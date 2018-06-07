@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The openstack_dashboard.dashboards.admin.networks.ports.tables Module &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../index.html" />
+    <link rel="up" title="Source Code Index" href="../autoindex.html" />
+    <link rel="next" title="The openstack_dashboard.dashboards.admin.networks.ports.forms Module" href="openstack_dashboard.dashboards.admin.networks.ports.forms.html" />
+    <link rel="prev" title="The openstack_dashboard.dashboards.admin.networks.ports.urls Module" href="openstack_dashboard.dashboards.admin.networks.ports.urls.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-openstack-dashboard-dashboards-admin-networks-ports-tables-module">
+<h1>The <tt class="xref py py-mod docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.networks.ports.tables</span></tt> Module<a class="headerlink" href="#the-openstack-dashboard-dashboards-admin-networks-ports-tables-module" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.networks.ports.tables.</tt><tt class="descname">CreatePort</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#CreatePort"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.LinkAction</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.networks.ports.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'create_port'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b90770c8&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'plus', 'name': 'create', 'url': 'horizon:admin:networks:addport', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b9075a90&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">classes</tt><em class="property"> = ('ajax-modal',)</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">get_link_url</tt><big>(</big><em>datum=None</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#CreatePort.get_link_url"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">icon</tt><em class="property"> = 'plus'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'create'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'create_port'),)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:networks:addport'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9075a90&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.networks.ports.tables.</tt><tt class="descname">DeletePort</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#DeletePort"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.policy.PolicyTargetMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">horizon.tables.actions.DeleteAction</span></tt></p>
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_past</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#DeletePort.action_past"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt>
+<em class="property">static </em><tt class="descname">action_present</tt><big>(</big><em>count</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#DeletePort.action_present"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.networks.ports.tables', 'handle': &lt;function handle at 0x7ff3bea06cf8&gt;, 'update': &lt;function update at 0x7ff3bea06b90&gt;, 'policy_rules': (('network', 'delete_port'),), 'get_success_url': &lt;function get_success_url at 0x7ff3bea06c08&gt;, 'get_param_name': &lt;function get_param_name at 0x7ff3bea061b8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'help_text': &lt;django.utils.functional.__proxy__ object at 0x7ff3be9d6250&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, '__init__': &lt;function __init__ at 0x7ff3bea06d70&gt;, 'name': 'delete', 'action_present': &lt;staticmethod object at 0x7ff3b9849788&gt;, 'action_past': &lt;staticmethod object at 0x7ff3b933cda8&gt;, 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bea06ed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bea06a28&gt;, '_get_action_name': &lt;function _get_action_name at 0x7ff3bea06aa0&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'action': &lt;function action at 0x7ff3bea06de8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06c80&gt;, '__doc__': 'A table action used to perform delete operations on table data.\n\n    .. attribute:: name\n\n        A short name or &quot;slug&quot; representing this action.\n        Defaults to \'delete\'\n\n    .. method:: action_present\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_present (PendingDeprecation)\n\n        A string containing the transitive verb describing the delete action.\n        Defaults to \'Delete\'\n\n        NOTE: action_present attribute is bad for translations and should be\n        avoided. Please use the action_present method instead.\n        This form is kept for legacy.\n\n    .. method:: action_past\n\n        Method accepting an integer/long parameter and returning the display\n        forms of the name properly pluralised (depending on the integer) and\n        translated in a string or tuple/list.\n\n    .. attribute:: action_past (PendingDeprecation)\n\n        A string set to the past tense of action_present.\n        Defaults to \'Deleted\'\n\n        NOTE: action_past attribute is bad for translations and should be\n        avoided. Please use the action_past method instead.\n        This form is kept for legacy.\n\n    .. attribute:: data_type_singular (PendingDeprecation)\n\n        A string used to name the data to be deleted.\n\n    .. attribute:: data_type_plural (PendingDeprecation)\n\n        Optional. Plural of ``data_type_singular``.\n        Defaults to ``data_type_singular`` appended with an \'s\'.  Relying on\n        the default is bad for translations and should not be done, so it\'s\n        absence will raise a DeprecationWarning. It is currently kept as\n        optional for legacy code.\n\n        NOTE: data_type_singular and data_type_plural attributes are bad for\n        translations and should be avoided. Please use the action_present and\n        action_past methods. This form is kept for legacy.\n    ', 'delete': &lt;function delete at 0x7ff3b9077050&gt;}</em></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt>
+<tt class="descname">delete</tt><big>(</big><em>request</em>, <em>obj_id</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#DeletePort.delete"><span class="viewcode-link">[source]</span></a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">policy_rules</tt><em class="property"> = (('network', 'delete_port'),)</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.networks.ports.tables.</tt><tt class="descname">PortsTable</tt><big>(</big><em>request</em>, <em>data=None</em>, <em>needs_form_wrapper=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#PortsTable"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.networks.ports.tables.PortsTable</span></tt></p>
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#PortsTable.Meta"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">hidden_title</tt><em class="property"> = False</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">name</tt><em class="property"> = 'ports'</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">row_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.networks.ports.tables.UpdatePort'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.networks.ports.tables.DeletePort'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">table_actions</tt><em class="property"> = (&lt;class 'openstack_dashboard.dashboards.admin.networks.ports.tables.CreatePort'&gt;, &lt;class 'openstack_dashboard.dashboards.admin.networks.ports.tables.DeletePort'&gt;)</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">verbose_name</tt><em class="property"> = &lt;django.utils.functional.__proxy__ object at 0x7ff3b9075bd0&gt;</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">PortsTable.</tt><tt class="descname">base_actions</tt><em class="property"> = OrderedDict([('create', &lt;CreatePort: create&gt;), ('delete', &lt;DeletePort: delete&gt;), ('update', &lt;UpdatePort: update&gt;)])</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descclassname">PortsTable.</tt><tt class="descname">base_columns</tt><em class="property"> = OrderedDict([('name', &lt;Column: name&gt;), ('fixed_ips', &lt;Column: fixed_ips&gt;), ('attached', &lt;Column: attached&gt;), ('status', &lt;Column: status&gt;), ('admin_state', &lt;Column: admin_state&gt;), ('mac_state', &lt;Column: mac_state&gt;)])</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><tt class="descclassname">openstack_dashboard.dashboards.admin.networks.ports.tables.</tt><tt class="descname">UpdatePort</tt><big>(</big><em>attrs=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../../_modules/openstack_dashboard/dashboards/admin/networks/ports/tables.html#UpdatePort"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">openstack_dashboard.dashboards.project.networks.ports.tables.UpdatePort</span></tt></p>
+<dl class="attribute">
+<dt>
+<tt class="descname">base_options</tt><em class="property"> = {'__module__': 'openstack_dashboard.dashboards.admin.networks.ports.tables', 'render': &lt;function render at 0x7ff3bea06320&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'policy_rules': (('network', 'update_port'),), 'get_link_url': &lt;function get_link_url at 0x7ff3b91cef50&gt;, 'ajax': False, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'base_options': {'__module__': 'horizon.tables.actions', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'update': &lt;function update at 0x7ff3bec1eed8&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06140&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'allowed': &lt;function allowed at 0x7ff3bec1ede8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'base_options': {...}, '__doc__': 'Common base class for all ``Action`` classes.', '__init__': &lt;function __init__ at 0x7ff3bec1ec80&gt;}, 'get_ajax_update_url': &lt;function get_ajax_update_url at 0x7ff3bea062a8&gt;, '__init__': &lt;function __init__ at 0x7ff3bea06230&gt;, 'icon': 'pencil', 'name': 'update', 'url': 'horizon:admin:networks:editport', 'data_type_matched': &lt;function data_type_matched at 0x7ff3bec1ecf8&gt;, 'get_default_classes': &lt;function get_default_classes at 0x7ff3bec1ef50&gt;, 'get_policy_target': &lt;function get_policy_target at 0x7ff3bec1ed70&gt;, 'associate_with_table': &lt;function associate_with_table at 0x7ff3bea06398&gt;, '_allowed': &lt;function _allowed at 0x7ff3bec1ee60&gt;, 'classes': ('ajax-modal',), '__repr__': &lt;function __repr__ at 0x7ff3bea060c8&gt;, 'get_default_attrs': &lt;function get_default_attrs at 0x7ff3bea06050&gt;, 'verbose_name': &lt;django.utils.functional.__proxy__ object at 0x7ff3b90c2cd0&gt;, '__doc__': 'A table action which is simply a link rather than a form POST.\n\n    .. attribute:: name\n\n        Required. The short name or &quot;slug&quot; representing this\n        action. This name should not be changed at runtime.\n\n    .. attribute:: verbose_name\n\n        A string which will be rendered as the link text. (Required)\n\n    .. attribute:: url\n\n        A string or a callable which resolves to a url to be used as the link\n        target. You must either define the ``url`` attribute or override\n        the ``get_link_url`` method on the class.\n\n    .. attribute:: allowed_data_types\n\n        A list that contains the allowed data types of the action.  If the\n        datum\'s type is in this list, the action will be shown on the row\n        for the datum.\n\n        Defaults to be an empty list (``[]``). When set to empty, the action\n        will accept any kind of data.\n    '}</em></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<tt class="descname">url</tt><em class="property"> = 'horizon:admin:networks:editport'</em></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.admin.networks.ports.urls.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.networks.ports.urls</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="openstack_dashboard.dashboards.admin.networks.ports.forms.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">openstack_dashboard.dashboards.admin.networks.ports.forms</span></tt> Module</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../../_sources/sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.networks.ports.tables.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.admin.networks.ports.forms.html" title="The openstack_dashboard.dashboards.admin.networks.ports.forms Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="openstack_dashboard.dashboards.admin.networks.ports.urls.html" title="The openstack_dashboard.dashboards.admin.networks.ports.urls Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../autoindex.html" accesskey="U">Source Code Index</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

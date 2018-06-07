@@ -1,0 +1,370 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deploying Horizon &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../index.html" />
+    <link rel="next" title="Settings and Configuration" href="settings.html" />
+    <link rel="prev" title="Installing Horizon" href="install.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="deploying-horizon">
+<h1>Deploying Horizon<a class="headerlink" href="#deploying-horizon" title="Permalink to this headline">¶</a></h1>
+<p>This guide aims to cover some common questions, concerns and pitfalls you
+may encounter when deploying Horizon in a production environment.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="settings.html"><em>Settings and Configuration</em></a></p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The Service Catalog returned by the Identity Service after a user
+has successfully authenticated determines the dashboards and panels
+that will be available within the OpenStack Dashboard. If you are not
+seeing a particular service you expected (e.g. Object Storage/Swift or
+Networking/Neutron) make sure your Service Catalog is configured correctly.</p>
+<p class="last">Prior to the Essex release of Horizon these features were controlled by
+individual settings in the <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> file. This code has been
+long-since removed and those pre-Essex settings have no impact now.</p>
+</div>
+<div class="section" id="configure-your-identity-service-host">
+<h2>Configure Your Identity Service Host<a class="headerlink" href="#configure-your-identity-service-host" title="Permalink to this headline">¶</a></h2>
+<p>The one thing you <em>must</em> do in order to run Horizon is to specify the
+host for your OpenStack Identity Service endpoint. To do this, set the value
+of the <tt class="docutils literal"><span class="pre">OPENSTACK_HOST</span></tt> settings in your <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> file.</p>
+</div>
+<div class="section" id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
+<p>Logging is an important concern for production deployments, and the intricacies
+of good logging configuration go far beyond what can be covered here. However
+there are a few points worth noting about the logging included with Horizon,
+how to customize it, and where other components may take over:</p>
+<ul class="simple">
+<li>Horizon&#8217;s logging uses Django&#8217;s logging configuration mechanism, which
+can be customized in your <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> file through the
+<tt class="docutils literal"><span class="pre">LOGGING</span></tt> dictionary.</li>
+<li>Horizon&#8217;s default logging example sets the log level to <tt class="docutils literal"><span class="pre">&quot;INFO&quot;</span></tt>, which is
+a reasonable choice for production deployments. For development, however,
+you may want to change the log level to <tt class="docutils literal"><span class="pre">&quot;DEBUG&quot;</span></tt>.</li>
+<li>Horizon also uses a number of 3rd-party clients which log separately. The
+log level for these can still be controlled through Horizon&#8217;s <tt class="docutils literal"><span class="pre">LOGGING</span></tt>
+config, however behaviors may vary beyond Horizon&#8217;s control.</li>
+<li>For more information regarding configuring logging in Horizon, please
+read the <a class="reference external" href="https://docs.djangoproject.com/en/1.5/topics/logging">Django logging directive</a> and the <a class="reference external" href="http://docs.python.org/2/library/logging.html">Python logging directive</a>
+documentation. Horizon is built on Python and Django.</li>
+</ul>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">At this time there is <a class="reference external" href="https://bugs.launchpad.net/keystone/+bug/1004114">a known bug in python-keystoneclient</a> where it will
+log the complete request body of any request sent to Keystone through it
+(including logging passwords in plain text) when the log level is set to
+<tt class="docutils literal"><span class="pre">&quot;DEBUG&quot;</span></tt>. If this behavior is not desired, make sure your log level is
+<tt class="docutils literal"><span class="pre">&quot;INFO&quot;</span></tt> or higher.</p>
+</div>
+</div>
+<div class="section" id="file-uploads">
+<h2>File Uploads<a class="headerlink" href="#file-uploads" title="Permalink to this headline">¶</a></h2>
+<p>Horizon allows users to upload files via their web browser to other OpenStack
+services such as Glance and Swift. Files uploaded through this mechanism are
+first stored on the Horizon server before being forwarded on - files are not
+uploaded directly or streamed as Horizon receives them. As Horizon itself does
+not impose any restrictions on the size of file uploads, production deployments
+will want to consider configuring their server hosting the Horizon application
+to enforce such a limit to prevent large uploads exhausting system resources
+and disrupting services. Deployments using Apache2 can use the
+<a class="reference external" href="http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestbody">LimitRequestBody directive</a> to achieve this.</p>
+<p>Uploads to the Glance image store service tend to be particularly large - in
+the order of hundreds of megabytes to multiple gigabytes. Deployments are able
+to disable local image uploads through Horizon by setting
+<tt class="docutils literal"><span class="pre">HORIZON_IMAGES_ALLOW_UPLOAD</span></tt> to <tt class="docutils literal"><span class="pre">False</span></tt> in your <tt class="docutils literal"><span class="pre">local_settings.py</span></tt>
+file.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<blockquote class="last">
+<div>This will not disable image creation altogether, as this setting does not
+affect images created by specifying an image location (URL) as the image source.</div></blockquote>
+</div>
+</div>
+<div class="section" id="session-storage">
+<h2>Session Storage<a class="headerlink" href="#session-storage" title="Permalink to this headline">¶</a></h2>
+<p>Horizon uses <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/http/sessions/">Django&#8217;s sessions framework</a> for handling user session data;
+however that&#8217;s not the end of the story. There are numerous session backends
+available, which are controlled through the <tt class="docutils literal"><span class="pre">SESSION_ENGINE</span></tt> setting in
+your <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> file. What follows is a quick discussion of the
+pros and cons of each of the common options as they pertain to deploying
+Horizon specifically.</p>
+<div class="section" id="local-memory-cache">
+<h3>Local Memory Cache<a class="headerlink" href="#local-memory-cache" title="Permalink to this headline">¶</a></h3>
+<p>Enabled by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">SESSION_ENGINE</span> <span class="o">=</span> <span class="s1">&#39;django.contrib.sessions.backends.cache&#39;</span>
+<span class="n">CACHES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;BACKEND&#39;</span><span class="p">:</span> <span class="s1">&#39;django.core.cache.backends.locmem.LocMemCache&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Local memory storage is the quickest and easiest session backend to set up,
+as it has no external dependencies whatsoever. However, it has two significant
+drawbacks:</p>
+<blockquote>
+<div><ul class="simple">
+<li>No shared storage across processes or workers.</li>
+<li>No persistence after a process terminates.</li>
+</ul>
+</div></blockquote>
+<p>The local memory backend is enabled as the default for Horizon solely because
+it has no dependencies. It is not recommended for production use, or even for
+serious development work. For better options, read on.</p>
+</div>
+<div class="section" id="memcached">
+<h3>Memcached<a class="headerlink" href="#memcached" title="Permalink to this headline">¶</a></h3>
+<p>Enabled by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>SESSION_ENGINE = &#39;django.contrib.sessions.backends.cache&#39;
+CACHES = {
+    &#39;BACKEND&#39;: &#39;django.core.cache.backends.memcached.MemcachedCache&#39;
+    &#39;LOCATION&#39;: &#39;my_memcached_host:11211&#39;,
+}
+</pre></div>
+</div>
+<p>External caching using an application such as memcached offers persistence
+and shared storage, and can be very useful for small-scale deployment and/or
+development. However, for distributed and high-availability scenarios
+memcached has inherent problems which are beyond the scope of this
+documentation.</p>
+<p>Memcached is an extremely fast and efficient cache backend for cases where it
+fits the deployment need. But it&#8217;s not appropriate for all scenarios.</p>
+<p>Requirements:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Memcached service running and accessible.</li>
+<li>Python memcached module installed.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="database">
+<h3>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h3>
+<p>Enabled by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">SESSION_ENGINE</span> <span class="o">=</span> <span class="s1">&#39;django.core.cache.backends.db.DatabaseCache&#39;</span>
+<span class="n">DATABASES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="c1"># Database configuration here</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Database-backed sessions are scalable (using an appropriate database strategy),
+persistent, and can be made high-concurrency and highly-available.</p>
+<p>The downside to this approach is that database-backed sessions are one of the
+slower session storages, and incur a high overhead under heavy usage. Proper
+configuration of your database deployment can also be a substantial
+undertaking and is far beyond the scope of this documentation.</p>
+</div>
+<div class="section" id="cached-database">
+<h3>Cached Database<a class="headerlink" href="#cached-database" title="Permalink to this headline">¶</a></h3>
+<p>To mitigate the performance issues of database queries, you can also consider
+using Django&#8217;s <tt class="docutils literal"><span class="pre">cached_db</span></tt> session backend which utilizes both your database
+and caching infrastructure to perform write-through caching and efficient
+retrieval. You can enable this hybrid setting by configuring both your database
+and cache as discussed above and then using:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">SESSION_ENGINE</span> <span class="o">=</span> <span class="s2">&quot;django.contrib.sessions.backends.cached_db&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cookies">
+<h3>Cookies<a class="headerlink" href="#cookies" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">signed_cookies</span></tt> is a session backend that is available to you which avoids
+server load and scaling problems.</p>
+<p>This backend stores session data in a cookie which is stored by the
+user&#8217;s browser. The backend uses a cryptographic signing technique to ensure
+session data is not tampered with during transport (<strong>this is not the same
+as encryption, session data is still readable by an attacker</strong>).</p>
+<p>The pros of this session engine are that it doesn&#8217;t require any additional
+dependencies or infrastructure overhead, and it scales indefinitely as long
+as the quantity of session data being stored fits into a normal cookie.</p>
+<p>The biggest downside is that it places session data into storage on the user&#8217;s
+machine and transports it over the wire. It also limits the quantity of
+session data which can be stored.</p>
+<p>For a thorough discussion of the security implications of this session backend,
+please read the <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/http/sessions/#using-cookie-based-sessions">Django documentation on cookie-based sessions</a>.</p>
+</div>
+<div class="section" id="secure-site-recommendations">
+<h3>Secure Site Recommendations<a class="headerlink" href="#secure-site-recommendations" title="Permalink to this headline">¶</a></h3>
+<p>When implementing Horizon for public usage, with the website served through
+HTTPS, it is recommended that the following settings are applied.</p>
+<p>To help protect the session cookies from <a class="reference external" href="https://www.owasp.org/index.php/HttpOnly">cross-site scripting</a>, add the
+following to <tt class="docutils literal"><span class="pre">local_settings.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CSRF_COOKIE_HTTPONLY</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">SESSION_COOKIE_HTTPONLY</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>Client-side JavaScript will not be able to access the cookie if this set to
+True. Note that the HTTPOnly is a flag included in Set-Cookie HTTP response
+header and is not honored consistently by all browsers.</p>
+<p>Additionally, adding the following flags to <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> marks the
+cookies as secure, which ensures that the cookie is only sent under an HTTPS
+connection:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">CSRF_COOKIE_SECURE</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">SESSION_COOKIE_SECURE</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+<p>You can also disable <a class="reference external" href="https://wiki.mozilla.org/The_autocomplete_attribute_and_web_documents_using_XHTML">browser autocompletion</a> for the authentication form by
+modifying the <tt class="docutils literal"><span class="pre">HORIZON_CONFIG</span></tt> dictionary in <tt class="docutils literal"><span class="pre">local_settings.py</span></tt> by adding
+the key <tt class="docutils literal"><span class="pre">password_autocomplete</span></tt> with the value <tt class="docutils literal"><span class="pre">off</span></tt> as shown here:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>HORIZON_CONFIG = {
+...
+    &#39;password_autocomplete&#39;: &#39;off&#39;,
+}
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">Deploying Horizon</a><ul>
+<li><a class="reference internal" href="#configure-your-identity-service-host">Configure Your Identity Service Host</a></li>
+<li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#file-uploads">File Uploads</a></li>
+<li><a class="reference internal" href="#session-storage">Session Storage</a><ul>
+<li><a class="reference internal" href="#local-memory-cache">Local Memory Cache</a></li>
+<li><a class="reference internal" href="#memcached">Memcached</a></li>
+<li><a class="reference internal" href="#database">Database</a></li>
+<li><a class="reference internal" href="#cached-database">Cached Database</a></li>
+<li><a class="reference internal" href="#cookies">Cookies</a></li>
+<li><a class="reference internal" href="#secure-site-recommendations">Secure Site Recommendations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="install.html"
+                                  title="previous chapter">Installing Horizon</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="settings.html"
+                                  title="next chapter">Settings and Configuration</a></p>
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/topics/deployment.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="settings.html" title="Settings and Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installing Horizon"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

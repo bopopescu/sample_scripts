@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>openstack_dashboard.dashboards.admin.instances.tables &mdash; horizon 8.0.2.dev30 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/tweaks.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '8.0.2.dev30',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="horizon 8.0.2.dev30 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+  <div id="header">
+    <h1 id="logo"><a href="http://www.openstack.org/">OpenStack</a></h1>
+    <ul id="navigation">
+      
+      <li><a href="http://www.openstack.org/" title="Go to the Home page" class="link">Home</a></li>
+      <li><a href="http://www.openstack.org/projects/" title="Go to the OpenStack Projects page">Projects</a></li>
+      <li><a href="http://www.openstack.org/user-stories/" title="Go to the User Stories page" class="link">User Stories</a></li>
+      <li><a href="http://www.openstack.org/community/" title="Go to the Community page" class="link">Community</a></li>
+      <li><a href="http://www.openstack.org/blog/" title="Go to the OpenStack Blog">Blog</a></li>
+      <li><a href="http://wiki.openstack.org/" title="Go to the OpenStack Wiki">Wiki</a></li>
+      <li><a href="http://docs.openstack.org/" title="Go to OpenStack Documentation" class="current">Documentation</a></li>
+      
+    </ul>
+  </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for openstack_dashboard.dashboards.admin.instances.tables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2012 OpenStack Foundation</span>
+<span class="c1"># Copyright 2012 Nebula, Inc.</span>
+<span class="c1">#</span>
+<span class="c1">#    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#    not use this file except in compliance with the License. You may obtain</span>
+<span class="c1">#    a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#         http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#    Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1">#    distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT</span>
+<span class="c1">#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the</span>
+<span class="c1">#    License for the specific language governing permissions and limitations</span>
+<span class="c1">#    under the License.</span>
+
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">title</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ungettext_lazy</span>
+
+<span class="kn">from</span> <span class="nn">horizon</span> <span class="kn">import</span> <span class="n">tables</span>
+<span class="kn">from</span> <span class="nn">horizon.utils</span> <span class="kn">import</span> <span class="n">filters</span>
+
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">api</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard.dashboards.project.instances</span> \
+    <span class="kn">import</span> <span class="n">tables</span> <span class="k">as</span> <span class="n">project_tables</span>
+<span class="kn">from</span> <span class="nn">openstack_dashboard</span> <span class="kn">import</span> <span class="n">policy</span>
+
+
+<div class="viewcode-block" id="AdminEditInstance"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminEditInstance">[docs]</a><span class="k">class</span> <span class="nc">AdminEditInstance</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">EditInstance</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:instances:update&quot;</span>
+
+</div>
+<div class="viewcode-block" id="AdminConsoleLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminConsoleLink">[docs]</a><span class="k">class</span> <span class="nc">AdminConsoleLink</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">ConsoleLink</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:instances:detail&quot;</span>
+
+</div>
+<div class="viewcode-block" id="AdminLogLink"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminLogLink">[docs]</a><span class="k">class</span> <span class="nc">AdminLogLink</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">LogLink</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:instances:detail&quot;</span>
+
+</div>
+<div class="viewcode-block" id="MigrateInstance"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.MigrateInstance">[docs]</a><span class="k">class</span> <span class="nc">MigrateInstance</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">BatchAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;migrate&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;btn-migrate&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-danger&quot;</span><span class="p">)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;compute_extension:admin_actions:migrate&quot;</span><span class="p">),)</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Migrating instances may cause some unrecoverable results.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MigrateInstance.action_present"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.MigrateInstance.action_present">[docs]</a>    <span class="k">def</span> <span class="nf">action_present</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Migrate Instance&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Migrate Instances&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MigrateInstance.action_past"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.MigrateInstance.action_past">[docs]</a>    <span class="k">def</span> <span class="nf">action_past</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ungettext_lazy</span><span class="p">(</span>
+            <span class="s2">u&quot;Scheduled migration (pending confirmation) of Instance&quot;</span><span class="p">,</span>
+            <span class="s2">u&quot;Scheduled migration (pending confirmation) of Instances&quot;</span><span class="p">,</span>
+            <span class="n">count</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MigrateInstance.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.MigrateInstance.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">ACTIVE_STATES</span>
+                 <span class="ow">or</span> <span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;SHUTOFF&#39;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">is_deleting</span><span class="p">(</span><span class="n">instance</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="MigrateInstance.action"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.MigrateInstance.action">[docs]</a>    <span class="k">def</span> <span class="nf">action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">):</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">nova</span><span class="o">.</span><span class="n">server_migrate</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj_id</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="LiveMigrateInstance"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.LiveMigrateInstance">[docs]</a><span class="k">class</span> <span class="nc">LiveMigrateInstance</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">PolicyTargetMixin</span><span class="p">,</span>
+                          <span class="n">tables</span><span class="o">.</span><span class="n">LinkAction</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;live_migrate&quot;</span>
+    <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Live Migrate Instance&quot;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;horizon:admin:instances:live_migrate&quot;</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;ajax-modal&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-migrate&quot;</span><span class="p">,</span> <span class="s2">&quot;btn-danger&quot;</span><span class="p">)</span>
+    <span class="n">policy_rules</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;compute_extension:admin_actions:migrateLive&quot;</span><span class="p">),)</span>
+
+<div class="viewcode-block" id="LiveMigrateInstance.allowed"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.LiveMigrateInstance.allowed">[docs]</a>    <span class="k">def</span> <span class="nf">allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">instance</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">ACTIVE_STATES</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">project_tables</span><span class="o">.</span><span class="n">is_deleting</span><span class="p">(</span><span class="n">instance</span><span class="p">))</span>
+
+</div></div>
+<div class="viewcode-block" id="AdminUpdateRow"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminUpdateRow">[docs]</a><span class="k">class</span> <span class="nc">AdminUpdateRow</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">UpdateRow</span><span class="p">):</span>
+<div class="viewcode-block" id="AdminUpdateRow.get_data"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminUpdateRow.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">):</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AdminUpdateRow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+        <span class="n">tenant</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">keystone</span><span class="o">.</span><span class="n">tenant_get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span>
+                                         <span class="n">instance</span><span class="o">.</span><span class="n">tenant_id</span><span class="p">,</span>
+                                         <span class="n">admin</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">tenant_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tenant</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span>
+
+</div></div>
+<div class="viewcode-block" id="AdminInstanceFilterAction"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminInstanceFilterAction">[docs]</a><span class="k">class</span> <span class="nc">AdminInstanceFilterAction</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">FilterAction</span><span class="p">):</span>
+    <span class="c1"># Change default name of &#39;filter&#39; to distinguish this one from the</span>
+    <span class="c1"># project instances table filter, since this is used as part of the</span>
+    <span class="c1"># session property used for persisting the filter.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;filter_admin_instances&quot;</span>
+    <span class="n">filter_type</span> <span class="o">=</span> <span class="s2">&quot;server&quot;</span>
+    <span class="n">filter_choices</span> <span class="o">=</span> <span class="p">((</span><span class="s1">&#39;project&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Host =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;ip&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;IPv4 Address =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;ip6&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;IPv6 Address =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image ID =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">),</span>
+                      <span class="p">(</span><span class="s1">&#39;flavor&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Flavor ID =&quot;</span><span class="p">),</span> <span class="bp">True</span><span class="p">))</span>
+
+</div>
+<div class="viewcode-block" id="AdminInstancesTable"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminInstancesTable">[docs]</a><span class="k">class</span> <span class="nc">AdminInstancesTable</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">DataTable</span><span class="p">):</span>
+    <span class="n">TASK_STATUS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;shutoff&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;suspended&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;paused&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;rescue&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;shelved&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;shelved_offloaded&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">tenant</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;tenant_name&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Project&quot;</span><span class="p">))</span>
+    <span class="c1"># NOTE(gabriel): Commenting out the user column because all we have</span>
+    <span class="c1"># is an ID, and correlating that at production scale using our current</span>
+    <span class="c1"># techniques isn&#39;t practical. It can be added back in when we have names</span>
+    <span class="c1"># returned in a practical manner by the API.</span>
+    <span class="c1"># user = tables.Column(&quot;user_id&quot;, verbose_name=_(&quot;User&quot;))</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;OS-EXT-SRV-ATTR:host&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Host&quot;</span><span class="p">),</span>
+                         <span class="n">classes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;nowrap-col&#39;</span><span class="p">,))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                         <span class="n">link</span><span class="o">=</span><span class="s2">&quot;horizon:admin:instances:detail&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">))</span>
+    <span class="n">image_name</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;image_name&quot;</span><span class="p">,</span>
+                               <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Image Name&quot;</span><span class="p">))</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">get_ips</span><span class="p">,</span>
+                       <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;IP Address&quot;</span><span class="p">),</span>
+                       <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s2">&quot;ip&quot;</span><span class="p">})</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">get_size</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Size&quot;</span><span class="p">),</span>
+                         <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s1">&#39;size&#39;</span><span class="p">})</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">,</span>
+        <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">filters</span><span class="o">.</span><span class="n">replace_underscores</span><span class="p">),</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Status&quot;</span><span class="p">),</span>
+        <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">status_choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+        <span class="n">display_choices</span><span class="o">=</span><span class="n">project_tables</span><span class="o">.</span><span class="n">STATUS_DISPLAY_CHOICES</span><span class="p">)</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;OS-EXT-STS:task_state&quot;</span><span class="p">,</span>
+                         <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Task&quot;</span><span class="p">),</span>
+                         <span class="n">empty_value</span><span class="o">=</span><span class="n">project_tables</span><span class="o">.</span><span class="n">TASK_DISPLAY_NONE</span><span class="p">,</span>
+                         <span class="n">status</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                         <span class="n">status_choices</span><span class="o">=</span><span class="n">TASK_STATUS_CHOICES</span><span class="p">,</span>
+                         <span class="n">display_choices</span><span class="o">=</span><span class="n">project_tables</span><span class="o">.</span><span class="n">TASK_DISPLAY_CHOICES</span><span class="p">)</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">get_power_state</span><span class="p">,</span>
+                          <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">filters</span><span class="o">.</span><span class="n">replace_underscores</span><span class="p">),</span>
+                          <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Power State&quot;</span><span class="p">),</span>
+                          <span class="n">display_choices</span><span class="o">=</span><span class="n">project_tables</span><span class="o">.</span><span class="n">POWER_DISPLAY_CHOICES</span><span class="p">)</span>
+    <span class="n">created</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;created&quot;</span><span class="p">,</span>
+                            <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Time since created&quot;</span><span class="p">),</span>
+                            <span class="n">filters</span><span class="o">=</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">parse_isotime</span><span class="p">,</span>
+                                     <span class="n">filters</span><span class="o">.</span><span class="n">timesince_sortable</span><span class="p">),</span>
+                            <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;data-type&#39;</span><span class="p">:</span> <span class="s1">&#39;timesince&#39;</span><span class="p">})</span>
+
+<div class="viewcode-block" id="AdminInstancesTable.Meta"><a class="viewcode-back" href="../../../../../sourcecode/openstack_dashboard/openstack_dashboard.dashboards.admin.instances.tables.html#openstack_dashboard.dashboards.admin.instances.tables.AdminInstancesTable.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;instances&quot;</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Instances&quot;</span><span class="p">)</span>
+        <span class="n">status_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="s2">&quot;task&quot;</span><span class="p">]</span>
+        <span class="n">table_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">TerminateInstance</span><span class="p">,</span>
+                         <span class="n">AdminInstanceFilterAction</span><span class="p">)</span>
+        <span class="n">row_class</span> <span class="o">=</span> <span class="n">AdminUpdateRow</span>
+        <span class="n">row_actions</span> <span class="o">=</span> <span class="p">(</span><span class="n">project_tables</span><span class="o">.</span><span class="n">ConfirmResize</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">RevertResize</span><span class="p">,</span>
+                       <span class="n">AdminEditInstance</span><span class="p">,</span>
+                       <span class="n">AdminConsoleLink</span><span class="p">,</span>
+                       <span class="n">AdminLogLink</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">CreateSnapshot</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">TogglePause</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">ToggleSuspend</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">ToggleShelve</span><span class="p">,</span>
+                       <span class="n">MigrateInstance</span><span class="p">,</span>
+                       <span class="n">LiveMigrateInstance</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">SoftRebootInstance</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">RebootInstance</span><span class="p">,</span>
+                       <span class="n">project_tables</span><span class="o">.</span><span class="n">TerminateInstance</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+<div class="sphinxsidebar">
+    <div class="sphinxsidebarwrapper">
+              <h3>Other Versions</h3>
+              <ul class="this-page-menu">
+                  <li><a href="/9.0.1" rel="nofollow">9.0.1</a></li>
+                  <li><a href="/9.0.0.0rc2" rel="nofollow">9.0.0.0rc2</a></li>
+                  <li><a href="/9.0.0.0rc1" rel="nofollow">9.0.0.0rc1</a></li>
+                  <li><a href="/9.0.0.0b3" rel="nofollow">9.0.0.0b3</a></li>
+                  <li><a href="/9.0.0.0b2" rel="nofollow">9.0.0.0b2</a></li>
+              </ul>
+            <h3>Project Source</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://git.openstack.org/cgit/openstack/horizon
+"
+                     rel="nofollow">Project Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../../../../../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+    </div>
+</div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">horizon 8.0.2.dev30 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, OpenStack Foundation.
+      Last updated on Tue May 3 00:51:49 2016, commit d585e5e.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+//Tracking docs.openstack.org/developer/<projectname> only
+//The URL is built from the project variable in conf.py
+var pageTracker = _gat._getTracker("UA-17511903-1");
+pageTracker._setCookiePath("/developer/horizon");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

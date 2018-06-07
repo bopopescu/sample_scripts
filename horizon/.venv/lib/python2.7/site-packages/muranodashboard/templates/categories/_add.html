@@ -1,0 +1,14 @@
+{% extends 'horizon/common/_modal_form.html' %}
+{% load i18n %}
+{% load url from future %}
+
+{% block modal-body-right %}
+    <h3>{% trans 'Description:' %}</h3>
+    <p>{% trans 'Add new category to the application catalog. ' %}</p>
+    <p>
+        <strong>{% trans 'Name' %}:</strong>
+        {% blocktrans %}Provide desired name for a new
+            category{% endblocktrans %}
+    </p>
+
+{% endblock %}

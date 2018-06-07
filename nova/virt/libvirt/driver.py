@@ -41,7 +41,7 @@ import tempfile
 import time
 import uuid
 
-import pymysql
+#import pymysql
 import json
 import datetime
 import socket
@@ -441,23 +441,23 @@ MIN_QEMU_S390_VERSION = (2, 3, 0)
 NO_COMPRESSION_TYPES = ('qcow2',)
 
 def notify(receiver, vmname, flavor, whattodo,ipaddressa):
-    me = "expostack@mydomain.com"
+    me = "expostack@exponential.com"
     msg = MIMEMultipart('related')
     msgAlternative = MIMEMultipart('alternative')
     receiversplit = receiver.split("@")
     if len(receiversplit)==2:
        aaaa=""
     else:
-       receiver = "esm@mydomain.com"
+       receiver = "esm@exponential.com"
     msg['From'] = me
     you = receiver;
     msg['To'] = receiver;
     msg.preamble = 'This is a multi-part message in MIME format.'
     text = "Hi!"
     if ipaddressa  in ipcalc.Network('10.26.32.0/20'):
-       domainnam = ".vpc.prod.la1.us.mydomain.com"
+       domainnam = ".vpc.prod.la1.us.tribalfusion.net"
     else:
-       domainnam = ".vpc.dev.la1.us.mydomain.com"
+       domainnam = ".vpc.dev.la1.us.tribalfusion.net"
 
     if whattodo == "createrequestsuccess":
        msg['Subject'] = "Virtual Machine " + vmname + domainnam + " is activated"
@@ -475,7 +475,7 @@ def notify(receiver, vmname, flavor, whattodo,ipaddressa):
     msg.attach(msgAlternative)
     msgAlternative.attach(part1)
     msgAlternative.attach(part2)
-    s = smtplib.SMTP('mail.mydomain.com')
+    s = smtplib.SMTP('mail.tribalfusion.com')
     s.sendmail(me, you, msg.as_string())
     s.quit()
 
@@ -2575,8 +2575,8 @@ class LibvirtDriver(driver.ComputeDriver):
             if state == power_state.RUNNING:
                 LOG.info(_LI("Instance spawned successfully."),
                          instance=instance)
-                db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
-                cursor = db.cursor()
+                #db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+                #cursor = db.cursor()
 
                 for ipaddress in network_info:
                     jordanipaddress = ipaddress['network']['subnets'][0]['ips'][0]['address'];
@@ -2586,13 +2586,13 @@ class LibvirtDriver(driver.ComputeDriver):
             #   port = 1053
                 try:
             #      s.connect((host, port))
-            #      s.send("root XXXXXXX " + instance.hostname + " " + jordanipaddress + " create")
+            #      s.send("root H&perS0nic " + instance.hostname + " " + jordanipaddress + " create")
             #      data = s.recv(1024)
             #      LOG.info(_LI("Instance Data %s."),
             #            {'data': data })
 		   if jordanipaddress  in ipcalc.Network('10.26.32.0/20'):
-                        print("vpc.prod.scl1.us.mydomain.com")
-                        cmd_dns='dns/vpc.prod.scl1.us.mydomain.com/a/' + instance.hostname + '/set/' + jordanipaddress
+                        print("vpc.prod.scl1.us.tribalfusion.net")
+                        cmd_dns='dns/vpc.prod.scl1.us.tribalfusion.net/a/' + instance.hostname + '/set/' + jordanipaddress
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                              r = requests.get(dnsapiurl)
@@ -2602,8 +2602,8 @@ class LibvirtDriver(driver.ComputeDriver):
                                 data='SuccessCreate'
                                 r = requests.get(dnsapiurl)
                    else:
-                        print("vpc.dev.scl1.us.mydomain.com")
-                        cmd_dns="dns/vpc.dev.scl1.us.mydomain.com/a/" + instance.hostname + "/set/" + jordanipaddress
+                        print("vpc.dev.scl1.us.tribalfusion.net")
+                        cmd_dns="dns/vpc.dev.scl1.us.tribalfusion.net/a/" + instance.hostname + "/set/" + jordanipaddress
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                                 r = requests.get(dnsapiurl)
@@ -2621,20 +2621,65 @@ class LibvirtDriver(driver.ComputeDriver):
                       ownername = context.user_name
                       generatetime1 = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')
                       generatetime = str(generatetime1)
-                      sql = "insert into lease_active_vms values ('" + instance.hostname + "','" + generatetime + "','','success','days','" + ownername + "','" + jordanipaddress + "')";
-                      cursor.execute(sql)
-                      leasedays = "1"
-                      selectlease = "select leasedays from leaseinfo where vmname='" + instance.hostname + "'"
-                      cursor.execute(selectlease)
-                      resultnew = cursor.fetchall()
-                      for rows in resultnew:
-                          leasedays = str(rows[0])
-                      updatednsrequest = "update lease_active_vms set leasedays='"+leasedays+"',ipaddress='"+jordanipaddress+"' where hostname='"+instance.hostname+"'"
-                      cursor.execute(updatednsrequest)
-                      deleteleaseinfo = "delete from leaseinfo where vmname='" + instance.hostname + "'"
-                      cursor.execute(deleteleaseinfo)
-                      db.commit()
-                      db.close()
+                      leasedays=3
+                      #url = "http://controller:3000/Leaseactivevms/"+str(instance.hostname)
+                      #payload = {"Hostname" :instance.hostname,"leasedays" : leasedays ,"Owner" :ownername,"Ipaddress" :jordanipaddress }
+                      #headers = {
+                      #'Content-Type': "application/json",
+                      #'Cache-Control': "no-cache",
+                      #'Postman-Token': "57a92d24-2b8b-48f0-a0ff-a2313b06551e"
+                      #}
+                      #response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+                      #print(response.text)
+                      #return response.text
+                      #sql = "insert into lease_active_vms values ('" + instance.hostname + "','" + generatetime + "','','success','days','" + ownername + "','" + jordanipaddress + "')";
+                      #cursor.execute(sql)
+                      try:
+                         url = "http://controller:3000/Leaseinfo/" +str(instance.hostname)
+                         headers = {
+                         'Cache-Control': "no-cache",
+                         'Postman-Token': "89738a5a-f5f0-419c-b4fe-f9c3820e38e2"
+                         }
+                         response = requests.request("GET", url, headers=headers)
+                         print(json.loads(response.text))
+                         leasedays = json.loads(response.text)[0]['leasedays']
+                         #leasedays = "1"
+                      except:
+                            LOG.info(_LI("\n Instance create  request failed .. trying again1  \n"))
+                      try:
+                         url = "http://controller:3000/Leaseactivevms/"+str(instance.hostname)
+                         payload = {"Hostname" :instance.hostname,"leasedays" : leasedays,"Owner" :ownername,"Ipaddress" :jordanipaddress }
+                         headers = {
+                         'Content-Type': "application/json",
+                         'Cache-Control': "no-cache",
+                         'Postman-Token': "57a92d24-2b8b-48f0-a0ff-a2313b06551e"
+                         }
+                         response = requests.request("POST", url, data=json.dumps(payload), headers=headers)
+                         print(response.text)
+                         #return response.text
+                      except:
+                            LOG.info(_LI("\n Instance create  request failed .. trying again2  \n"))
+                      try:
+                         url = "http://controller:3000/Leaseinfo/" +str(instance.hostname)
+                         headers = {
+                         'Cache-Control': "no-cache",
+                         'Postman-Token': "fd05bd0f-65b2-41c8-966f-b8d353204ac0"
+                         }
+                         response = requests.request("DELETE", url, headers=headers)
+                         print(response.text)
+                      except:
+                            LOG.info(_LI("\n Instance create  request failed .. trying again3  \n"))
+                      #selectlease = "select leasedays from leaseinfo where vmname='" + instance.hostname + "'"
+                      #cursor.execute(selectlease)
+                      #resultnew = cursor.fetchall()
+                      #for rows in resultnew:
+                      #    leasedays = str(rows[0])
+                      #updatednsrequest = "update lease_active_vms set leasedays='"+leasedays+"',ipaddress='"+jordanipaddress+"' where hostname='"+instance.hostname+"'"
+                      #cursor.execute(updatednsrequest)
+                      #deleteleaseinfo = "delete from leaseinfo where vmname='" + instance.hostname + "'"
+                      #cursor.execute(deleteleaseinfo)
+                      #db.commit()
+                      #db.close()
                       flavorname = instance.get_flavor()
                       flavorinst = flavorname.name
                       notify(ownername,instance.hostname,str(flavorinst),"createrequestsuccess",jordanipaddress)
@@ -2644,6 +2689,16 @@ class LibvirtDriver(driver.ComputeDriver):
                    else:
                       LOG.info(_LI("Failed to create DNS Entry for instance."),
                              instance=instance)
+                      try:
+                         url = "http://controller:3000/Leaseactivevms/" +str(instance.hostname)
+                         headers = {
+                         'Cache-Control': "no-cache",
+                         'Postman-Token': "fd05bd0f-65b2-41c8-966f-b8d353204ac0"
+                         }
+                         response = requests.request("DELETE", url, headers=headers)
+                         print(response.text)
+                      except:
+                            LOG.info(_LI("\n Instance create  request failed .. trying again4  \n"))
 #                     deletevmerro = "delete from lease_active_vms where hostname='" + instance.hostname + "'"
 #                     cursor.execute(deletevmerro)
 #                     db.commit()
@@ -7354,36 +7409,52 @@ class LibvirtDriver(driver.ComputeDriver):
                      instance=instance)
             return False
 
-        db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='XXXXXXX', db='expo_nova')
-        cursor = db.cursor()
+        #db = pymysql.connect(host="controller", port=3306, user='expostack', passwd='BSoniC', db='expo_nova')
+        #cursor = db.cursor()
         generatetime1 = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')
         generatetime = str(generatetime1)
+        url = "http://controller:3000/Leaseactivevms/"+str(instance.hostname)
 
-        selectlease = "select ipaddress,owner from lease_active_vms where hostname='" + instance.hostname + "'"
-        LOG.info(_LI("Query : %s"),{'query' : selectlease})
-        cursor.execute(selectlease)
-        resultnew = cursor.fetchall()
-        for rows in resultnew:
-            jordanipaddress = str(rows[0])
-            ownername = str(rows[1])
-            sql = "delete from lease_active_vms where hostname='" + instance.hostname + "'";
-            cursor.execute(sql)
-            db.commit()
-            db.close()
-
-           #s = socket.socket()
-           #host = "10.29.1.90"
-           #port = 1053
-            try:
+        headers = {
+        'Cache-Control': "no-cache",
+        'Postman-Token': "1a73129e-f3e5-4919-81a9-e71030ac075c"
+        }
+        response = requests.request("GET", url, headers=headers)
+        jordanipaddress = str(json.loads(response.text)[0]['ipaddress'])
+        ownername = str(json.loads(response.text)[0]['owner'])
+        #selectlease = "select ipaddress,owner from lease_active_vms where hostname='" + instance.hostname + "'"
+        #LOG.info(_LI("Query : %s"),{'query' : selectlease})
+        try:
+           url = "http://controller:3000/Leaseactivevms/" +str(instance.hostname)
+           headers = {
+           'Cache-Control': "no-cache",
+           'Postman-Token': "fd05bd0f-65b2-41c8-966f-b8d353204ac0"
+           }
+           response = requests.request("DELETE", url, headers=headers)
+           print(response.text)
+        except:
+              LOG.info(_LI("\n Instance delete  request failed .. trying again4  \n")) 
+        #cursor.execute(selectlease)
+        #resultnew = cursor.fetchall()
+        #for rows in resultnew:
+        #jordanipaddress = str(rows[0])
+        #ownername = str(rows[1])
+        #sql = "delete from lease_active_vms where hostname='" + instance.hostname + "'";
+        #cursor.execute(sql)
+        #db.commit()
+        #db.close()
+        #s = socket.socket()
+        #host = "10.29.1.90"
+        #port = 1053
+        try:
            #   s.connect((host, port))
-           #   s.send("root XXXXXXX " + instance.hostname + " " + jordanipaddress + " delete")
+           #   s.send("root H&perS0nic " + instance.hostname + " " + jordanipaddress + " delete")
            #   data = s.recv(1024)
                 flavorname = instance.get_flavor()
                 flavorinst = flavorname.name
-
                 if jordanipaddress  in ipcalc.Network('10.26.32.0/20'):
-                        print("vpc.prod.scl1.us.mydomain.com")
-                        cmd_dns='dns/vpc.prod.scl1.us.mydomain.com/a/' + instance.hostname + '/remove'
+                        print("vpc.prod.scl1.us.tribalfusion.net")
+                        cmd_dns='dns/vpc.prod.scl1.us.tribalfusion.net/a/' + instance.hostname + '/remove/' + jordanipaddress
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                                 r = requests.get(dnsapiurl)
@@ -7393,8 +7464,8 @@ class LibvirtDriver(driver.ComputeDriver):
                                 data='SuccessDelete'
                                 r = requests.get(dnsapiurl)
                 else:
-                        print("vpc.dev.scl1.us.mydomain.com")
-                        cmd_dns="dns/vpc.dev.scl1.us.mydomain.com/a/" + instance.hostname + "/remove"
+                        print("vpc.dev.scl1.us.tribalfusion.net")
+                        cmd_dns="dns/vpc.dev.scl1.us.tribalfusion.net/a/" + instance.hostname + "/remove/" + jordanipaddress
                         dnsapiurl="http://10.29.1.90:3111/" + cmd_dns
                         try:
                                 r = requests.get(dnsapiurl)
@@ -7403,12 +7474,11 @@ class LibvirtDriver(driver.ComputeDriver):
                                 LOG.info(_LI("\n Instance DNS request failed .. trying again secondary DNS \n"))
                                 data='SuccessDelete'
                                 r = requests.get(dnsapiurl)
-            except  msg:
+        except  msg:
                LOG.info(_LI("Unable to connect to DNS server 10.29.1.90."),
                      instance=instance)
                return False
-
-            finally:
+        finally:
                if data == "SuccessDelete" :
                   notify(ownername,instance.hostname, str(flavorinst),"deleterequestsuccess",jordanipaddress)
                   LOG.info(_LI('Deletion of %s complete'), target_del, instance=instance)

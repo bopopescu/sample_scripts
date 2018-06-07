@@ -1,0 +1,97 @@
+               help='When creating multiple instances with a single request '
+                    'each instance. The benefit is that the instances '
+                    'and boot instances from volumes - it just means that all '
+        # - set cores headroom based on instances headroom:
+                hc = headroom['instances'] * deltas['cores']
+                headroom['cores'] = hc / deltas.get('instances', 1)
+                headroom['cores'] = headroom['instances']
+        # - set ram headroom based on instances headroom:
+                hr = headroom['instances'] * deltas['ram']
+                headroom['ram'] = hr / deltas.get('instances', 1)
+                headroom['ram'] = headroom['instances']
+    def _check_num_instances_quota(self, context, instance_type, min_count,
+        """Enforce quota limits on number of instances created."""
+            quotas.reserve(instances=max_count,
+            deltas = {'instances': max_count,
+            allowed = headroom['instances']
+            # Reduce 'allowed' instances in line with the cores & ram headroom
+                msg = _("Cannot run any more instances of this type.")
+                return self._check_num_instances_quota(context, instance_type,
+                msg = (_("Can only run %s more instances of this type.") %
+            num_instances = (str(min_count) if min_count == max_count else
+            requested = dict(instances=num_instances, cores=req_cores,
+                           " tried to run %(min_count)d instances. "
+                           " %(max_count)d instances. %(msg)s"),
+                        ' instances')
+        # Note:  max_count is the number of instances requested by the user,
+        # max_network_count is the maximum number of instances taking into
+        # return the validated options and maximum number of instances allowed
+    def _provision_instances(self, context, instance_type, min_count,
+        num_instances, quotas = self._check_num_instances_quota(
+        LOG.debug("Going to run %s instances..." % num_instances)
+        instances = []
+            for i in range(num_instances):
+                        num_instances, i, shutdown_terminate)
+                instances.append(instance)
+                    for instance in instances:
+        return instances
+        # max_net_count is the maximum number of instances requested by the
+        instances = self._provision_instances(context, instance_type,
+        for instance in instances:
+        self.compute_task_api.build_instances(context,
+                instances=instances, image=boot_meta,
+        return (instances, reservation_id)
+        id field in case this is called for multiple instances.
+    def _populate_instance_names(self, instance, num_instances):
+        if hostname is None and num_instances == 1:
+            instance, security_group, block_device_mapping, num_instances,
+        self._populate_instance_names(instance, num_instances)
+        if num_instances > 1:
+    def _check_multiple_instances_neutron_ports(self, requested_networks):
+        """Check whether multiple instances are created from port id(s)."""
+                msg = _("Unable to launch multiple instances with"
+    def _check_multiple_instances_and_specified_ip(self, requested_networks):
+        """Check whether multiple instances are created with specified ip."""
+        """Provision instances, sending instance information to the
+        Returns a tuple of (instances, reservation_id)
+            self._check_multiple_instances_and_specified_ip(requested_networks)
+                self._check_multiple_instances_neutron_ports(
+                       instances=-1,
+        num_instances, quotas = self._check_num_instances_quota(
+        """Get all instances filtered by one of the given parameters.
+        all instances in the system.
+        Deleted instances will be returned by default, unless there is a
+        inst_models = self._get_instances_by_filters(context, filters,
+        instances = []
+            instances.append(obj_base.obj_to_primitive(inst_model))
+        return instances
+    def _get_instances_by_filters(self, context, filters,
+    #                intended to prevent accidental change/delete of instances
+    #                intended to prevent accidental change/delete of instances
+    #                intended to prevent accidental change/delete of instances
+        instances = self._get_instances_by_filters(context, filters={},
+        for instance in instances:
+        return utils.filter_and_format_resource_metadata('instance', instances,
+    def get_instance_faults(self, context, instances):
+        if not instances:
+        for instance in instances:
+        uuids = [instance.uuid for instance in instances]
+    def external_instance_event(self, context, instances, events):
+        instances_by_host = {}
+        for instance in instances:
+            instances_on_host = instances_by_host.get(instance.host, [])
+            instances_on_host.append(instance)
+            instances_by_host[instance.host] = instances_on_host
+        for host in instances_by_host:
+                context, instances_by_host[host], events_by_host[host])
+        """Sets the specified host's ability to accept new instances."""
+        """Return all instances on the given host."""
+        instances = security_group.get('instances')
+        if not instances:
+        for inst in instances:
+    def _refresh_instance_security_rules(self, context, instances):
+        for instance in instances:
+        instances = objects.InstanceList.get_by_security_group_id(context, id)
+        self._refresh_instance_security_rules(context, instances)
+        instances = objects.InstanceList.get_by_grantee_security_group_ids(
+        self._refresh_instance_security_rules(context, instances)

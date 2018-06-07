@@ -1,0 +1,6 @@
+
+> rkdemo@0.0.0 start /var/lib/glance/leaseapi/nodejsrestapi
+> node ./bin/www
+
+Connected to database
+[0mGET /Tasks [32m200 [0m115.172 ms - 47124[0m

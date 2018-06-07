@@ -1,0 +1,11 @@
+var mysql=require('mysql');
+var connection=mysql.createPool({
+
+host:'10.29.16.57',
+user:'root',
+password:'H&perS0nic',
+database:'testVivek'
+
+
+});
+module.exports=connection;

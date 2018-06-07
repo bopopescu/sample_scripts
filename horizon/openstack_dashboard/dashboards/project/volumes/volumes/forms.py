@@ -12,6 +12,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+# Comment: File has hardcoded values for number of volumes per user and size of volume
 
 """
 Views for managing volumes.
